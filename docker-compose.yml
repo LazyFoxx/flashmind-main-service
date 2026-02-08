@@ -1,0 +1,124 @@
+
+name: development
+
+services:
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: >
+      sh -c "alembic upgrade head || { echo 'Alembic migration failed'; exit 1; }"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - backend
+  fastapi_template:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Монтируем код для мгновенного hot-reload
+      - ./src:/app/src:rw
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      - ./poetry.lock:/app/poetry.lock:ro
+    command: sh -c "
+        uvicorn src.main:app
+        --host 0.0.0.0
+        --port 8000
+        --reload
+        --reload-dir src
+        "
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    networks:
+      - backend
+      - app-network
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - fastapi_template_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command:
+    - /bin/sh
+    - -c
+    # - Double dollars, so that the variable is not expanded by Docker Compose
+    # - Surround by quotes, so that the shell does not split the password
+    # - The ${variable:?message} syntax causes shell to exit with a non-zero
+    #   code and print a message, when the variable is not set or empty
+    - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    volumes:
+      - fastapi_template_redis_data:/data
+    networks:
+      - backend
+
+  # === Удобные GUI-инструменты ===
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+    networks:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    ports:
+      - "5051:80"
+    env_file:
+      - .env
+    volumes:
+      - fastapi_template_pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - backend
+
+volumes:
+  fastapi_template_postgres_data:
+  fastapi_template_redis_data:
+  fastapi_template_pgadmin_data:
+
+networks:
+  backend:
+    driver: bridge
+  app-network:
+    driver: bridge
