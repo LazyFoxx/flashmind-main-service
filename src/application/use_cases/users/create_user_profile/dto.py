@@ -8,7 +8,7 @@ class CreateProfileUserInput:
     user_id: UUID
     first_name: str
     last_name: str
-    avatar_url: str
+    avatar_key: Optional[str] = None
     bio: Optional[str] = None
 
 

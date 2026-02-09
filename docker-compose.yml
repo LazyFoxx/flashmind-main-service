@@ -16,7 +16,7 @@ services:
     restart: "no"
     networks:
       - backend
-  fastapi_template:
+  fastapi_main_service:
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -54,7 +54,7 @@ services:
     env_file:
       - .env
     volumes:
-      - fastapi_template_postgres_data:/var/lib/postgresql/data
+      - fastapi_main_service_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 10s
@@ -79,7 +79,7 @@ services:
     #   code and print a message, when the variable is not set or empty
     - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
     volumes:
-      - fastapi_template_redis_data:/data
+      - fastapi_main_service_redis_data:/data
     networks:
       - backend
 
@@ -106,16 +106,16 @@ services:
     env_file:
       - .env
     volumes:
-      - fastapi_template_pgadmin_data:/var/lib/pgadmin
+      - fastapi_main_service_pgadmin_data:/var/lib/pgadmin
     depends_on:
       - postgres
     networks:
       - backend
 
 volumes:
-  fastapi_template_postgres_data:
-  fastapi_template_redis_data:
-  fastapi_template_pgadmin_data:
+  fastapi_main_service_postgres_data:
+  fastapi_main_service_redis_data:
+  fastapi_main_service_pgadmin_data:
 
 networks:
   backend:

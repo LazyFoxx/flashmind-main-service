@@ -1,8 +1,10 @@
+from typing import Annotated, Optional
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
+from src.application.interfaces.cloud_storage import AbstractCloudStorage
 from src.application.use_cases import CreateUserProfileUseCase, GetUserProfileUseCase
 from src.application.use_cases.users.create_user_profile.dto import (
     CreateProfileUserInput,
@@ -49,17 +51,35 @@ async def get_user_profile(
 )
 @inject
 async def create_user_profile(
-    payload: CreateUserProfileRequest,
+    # form: Annotated[CreateUserProfileRequest, Form()],
+
+    first_name : Annotated[str, Form(min_length=2, max_length=50)],
+    last_name  : Annotated[str, Form(min_length=2, max_length=50)],
     use_case: FromDishka[CreateUserProfileUseCase],
+    storage: FromDishka[AbstractCloudStorage],
+    bio        : Annotated[Optional[str], Form(max_length=500)] = None,
+    avatar     : Annotated[Optional[UploadFile], File()] = None,
     user_id: UUID = Depends(get_current_user_id),
 ) -> UserProfileResponse:
+    
+
+    avatar_key = None
+    print(avatar)
+    if avatar and avatar.filename:
+        avatar_key = await storage.put_avatar(
+            user_id=str(user_id),
+            category="avatar",
+            file=avatar
+        )
+
     dto = CreateProfileUserInput(
         user_id=user_id,
-        first_name=payload.first_name,
-        last_name=payload.last_name,
-        avatar_url=str(payload.avatar_url),
-        bio=payload.bio,
+        first_name=first_name,
+        last_name=last_name,
+        avatar_key=avatar_key,
+        bio=bio,
     )
+
     user_profile = await use_case.execute(input_dto=dto)
 
     return UserProfileResponse(

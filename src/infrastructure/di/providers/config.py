@@ -4,6 +4,7 @@ from src.core.settings import (
     AuthSettings,
     DatabaseSettings,
     RedisSettings,
+    S3Settings
 )
 
 
@@ -21,3 +22,7 @@ class ConfigProvider(Provider):
     @provide(scope=Scope.APP)
     def auth_settings(self) -> AuthSettings:
         return AuthSettings()
+    
+    @provide(scope=Scope.APP)
+    def s3_settings(self) -> S3Settings:
+        return S3Settings()

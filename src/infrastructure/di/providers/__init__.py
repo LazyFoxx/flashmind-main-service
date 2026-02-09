@@ -3,6 +3,7 @@ from .config import ConfigProvider
 from .db import DbProvider
 from .redis import RedisProvider
 from .use_cases import UseCaseProvider
+from .storage import StorageProvider
 
 __all__ = [
     "UseCaseProvider",
@@ -11,4 +12,5 @@ __all__ = [
     "RedisProvider",
     "JWKSProvider",
     "AuthProvider",
+    "StorageProvider",
 ]

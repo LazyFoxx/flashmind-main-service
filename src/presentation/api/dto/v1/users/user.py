@@ -1,5 +1,6 @@
 from typing import Optional
 
+from fastapi import UploadFile
 from pydantic import BaseModel, Field, HttpUrl
 
 
@@ -24,10 +25,13 @@ class UserProfileResponse(BaseModel):
 
 class CreateUserProfileRequest(BaseModel):
     first_name: str = Field(
-        ..., min_length=2, max_length=50, description="Имя пользователя"
+        ..., min_length=2, max_length=50, description="Имя"
     )
     last_name: str = Field(
-        ..., min_length=2, max_length=50, description="Фамилия пользователя"
+        ..., min_length=2, max_length=50, description="Фамилия"
     )
-    avatar_url: HttpUrl = Field(..., description="URL аватара пользователя")
-    bio: Optional[str] = Field(None, description="Краткая информация о пользователе")
+    bio: Optional[str] = Field(None, max_length=500, description="Краткая информация о пользователе")
+
+    avatar: Optional[UploadFile] = Field(default=None)
+
+    model_config = {"extra": "forbid"}

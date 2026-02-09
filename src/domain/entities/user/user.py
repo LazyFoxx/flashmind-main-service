@@ -12,5 +12,5 @@ class User:
     id: UUID
     first_name: str
     last_name: str
-    avatar_url: str
+    avatar_key: str
     bio: Optional[str] = None
