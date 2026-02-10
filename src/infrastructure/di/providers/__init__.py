@@ -4,6 +4,7 @@ from .db import DbProvider
 from .redis import RedisProvider
 from .use_cases import UseCaseProvider
 from .storage import StorageProvider
+from .rabbit import RabbitProvider
 
 __all__ = [
     "UseCaseProvider",
@@ -13,4 +14,5 @@ __all__ = [
     "JWKSProvider",
     "AuthProvider",
     "StorageProvider",
+    "RabbitProvider",
 ]

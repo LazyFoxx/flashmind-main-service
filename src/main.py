@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -5,6 +6,8 @@ from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.infrastructure.di.providers.rabbit import USER_REGISTERED
+from src.infrastructure.rabbit import RabbitConsumer
 from src.core.logging.config import setup_logging
 from src.core.middleware.logging_middleware import LoggingMiddleware
 from src.core.settings import cors_config
@@ -19,6 +22,18 @@ container = get_container()
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # startup
     setup_logging()
+
+    consumer: RabbitConsumer = await container.get(RabbitConsumer)
+
+    # Запускаем consumer в background task
+    asyncio.create_task(
+        consumer.start_consuming(
+            queue_name="register_user",
+            container=container,      # передаем контейнер
+            callback_key=USER_REGISTERED,  # передаем ключ DI
+        )
+    )
+
     yield
     # shutdown
     await container.close()

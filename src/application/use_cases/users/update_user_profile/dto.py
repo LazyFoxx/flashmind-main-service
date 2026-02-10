@@ -4,7 +4,7 @@ from uuid import UUID
 
 
 @dataclass(frozen=True, slots=True)
-class CreateProfileUserInput:
+class UpdateProfileUserInput:
     user_id: UUID
     first_name: str
     last_name: str
@@ -13,7 +13,7 @@ class CreateProfileUserInput:
 
 
 @dataclass(frozen=True, slots=True)
-class CreateProfileUserOutput:
+class UpdateProfileUserOutput:
     first_name: str
     last_name: str
     avatar_url: str

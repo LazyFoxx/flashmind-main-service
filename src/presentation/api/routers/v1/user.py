@@ -6,9 +6,6 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
 from src.application.interfaces.cloud_storage import AbstractCloudStorage
 from src.application.use_cases import CreateUserProfileUseCase, GetUserProfileUseCase
-from src.application.use_cases.users.create_user_profile.dto import (
-    CreateProfileUserInput,
-)
 from src.application.use_cases.users.get_user_profile.dto import GetProfileUserInput
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1.users.user import (
@@ -19,72 +16,59 @@ from src.presentation.api.dto.v1.users.user import (
 router = APIRouter(prefix="/user", tags=["user"])
 
 
-@router.get(
-    "/profile",
-    response_model=UserProfileResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Получить профиль пользователя",
-    description=("Возвращает имя, фамилию, ссылку на аватар и т д."),
-)
-@inject
-async def get_user_profile(
-    use_case: FromDishka[GetUserProfileUseCase],
-    user_id: UUID = Depends(get_current_user_id),
-) -> UserProfileResponse:
-    dto = GetProfileUserInput(user_id=user_id)
-    user_profile = await use_case.execute(input_dto=dto)
+# @router.get(
+#     "/profile",
+#     response_model=UserProfileResponse,
+#     status_code=status.HTTP_200_OK,
+#     summary="Получить профиль пользователя",
+#     description=("Возвращает имя, фамилию, ссылку на аватар и т д."),
+# )
+# @inject
+# async def get_user_profile(
+#     use_case: FromDishka[GetUserProfileUseCase],
+#     user_id: UUID = Depends(get_current_user_id),
+# ) -> UserProfileResponse:
+#     dto = GetProfileUserInput(user_id=user_id)
+#     user_profile = await use_case.execute(input_dto=dto)
 
-    return UserProfileResponse(
-        first_name=user_profile.first_name,
-        last_name=user_profile.last_name,
-        avatar_url=user_profile.avatar_url,
-        bio=user_profile.bio,
-    )
+#     return UserProfileResponse(
+#         first_name=user_profile.first_name,
+#         last_name=user_profile.last_name,
+#         avatar_url=user_profile.avatar_url,
+#         bio=user_profile.bio,
+#     )
 
 
-@router.post(
-    "/profile",
-    response_model=UserProfileResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Создать профиль пользователя",
-    description=("Создает новый профиль пользоваетля и возвращает его"),
-)
-@inject
-async def create_user_profile(
-    # form: Annotated[CreateUserProfileRequest, Form()],
+# @router.post(
+#     "/profile",
+#     response_model=UserProfileResponse,
+#     status_code=status.HTTP_201_CREATED,
+#     summary="Создать профиль пользователя",
+#     description=("Создает новый профиль пользоваетля и возвращает его"),
+# )
+# @inject
+# async def create_user_profile(
+#     first_name : Annotated[str, Form(min_length=2, max_length=50)],
+#     last_name  : Annotated[str, Form(min_length=2, max_length=50)],
+#     use_case: FromDishka[CreateUserProfileUseCase],
+#     bio        : Annotated[Optional[str], Form(max_length=500)] = None,
+#     avatar_file: Annotated[Optional[UploadFile], File()] = None,
+#     user_id: UUID = Depends(get_current_user_id),
+# ) -> UserProfileResponse:
 
-    first_name : Annotated[str, Form(min_length=2, max_length=50)],
-    last_name  : Annotated[str, Form(min_length=2, max_length=50)],
-    use_case: FromDishka[CreateUserProfileUseCase],
-    storage: FromDishka[AbstractCloudStorage],
-    bio        : Annotated[Optional[str], Form(max_length=500)] = None,
-    avatar     : Annotated[Optional[UploadFile], File()] = None,
-    user_id: UUID = Depends(get_current_user_id),
-) -> UserProfileResponse:
-    
+#     dto = CreateProfileUserInput(
+#         user_id=user_id,
+#         first_name=first_name,
+#         last_name=last_name,
+#         avatar_file=avatar_file,
+#         bio=bio,
+#     )
 
-    avatar_key = None
-    print(avatar)
-    if avatar and avatar.filename:
-        avatar_key = await storage.put_avatar(
-            user_id=str(user_id),
-            category="avatar",
-            file=avatar
-        )
+#     user_profile = await use_case.execute(input_dto=dto)
 
-    dto = CreateProfileUserInput(
-        user_id=user_id,
-        first_name=first_name,
-        last_name=last_name,
-        avatar_key=avatar_key,
-        bio=bio,
-    )
-
-    user_profile = await use_case.execute(input_dto=dto)
-
-    return UserProfileResponse(
-        first_name=user_profile.first_name,
-        last_name=user_profile.last_name,
-        avatar_url=user_profile.avatar_url,
-        bio=user_profile.bio,
-    )
+#     return UserProfileResponse(
+#         first_name=user_profile.first_name,
+#         last_name=user_profile.last_name,
+#         avatar_url=user_profile.avatar_url,
+#         bio=user_profile.bio,
+#     )
