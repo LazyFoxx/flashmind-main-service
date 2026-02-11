@@ -5,13 +5,18 @@ from PIL import Image
 import io
 from asyncio import to_thread
 from fastapi import HTTPException, UploadFile
+import structlog
 from src.application.interfaces import AbstractCloudStorage
 from src.core.settings import S3Settings
 from botocore.config import Config
+from botocore.exceptions import ClientError
+from src.application.interfaces import AbstractS3Cache
+
 
 class YandexObjectStorage(AbstractCloudStorage):
-    def __init__(self, settings: S3Settings):
+    def __init__(self, settings: S3Settings, cache: AbstractS3Cache):
         self.settings = settings
+        self.cache = cache
         self.botocore_config = Config(
             signature_version="s3v4",
             retries={'max_attempts': 3, 'mode': 'standard'},
@@ -23,6 +28,7 @@ class YandexObjectStorage(AbstractCloudStorage):
             aws_secret_access_key=settings.aws_secret_access_key,
             region_name=settings.region_name,
         )
+        self.logger = structlog.get_logger(__name__)
 
     def _optimize_avatar_to_webp(self,
         content: bytes,
@@ -83,11 +89,17 @@ class YandexObjectStorage(AbstractCloudStorage):
                 CacheControl="public, max-age=2592000"
             )
 
+            self.logger.info("Добавлена фотография в S3", user_id=str(user_id)[:8])
+
         return object_key
 
     async def generate_presigned_url(self, object_key: str, expires_in: int) -> str:
+        # сначала проверяем на наличие в кеш
+        url = await self.cache.get_url(key=object_key)
+        if url:
+            return url
 
-
+        # генерируем новую ссылку
         async with self.session.client(
             "s3",
             endpoint_url=self.settings.endpoint_url,
@@ -102,4 +114,29 @@ class YandexObjectStorage(AbstractCloudStorage):
             ExpiresIn=expires_in,
             HttpMethod="GET"
         )
+        # сохраняем в кэш
+        await self.cache.set_url(key=object_key, url=url, ttl=expires_in-10)
         return url
+    
+    async def delete_object(self, object_key: str, user_id: uuid.UUID) -> bool:
+        async with self.session.client(
+            "s3",
+            endpoint_url=self.settings.endpoint_url,
+            config=self.botocore_config,
+        ) as client:
+            try:
+                await client.delete_object(
+                    Bucket=self.settings.bucket_name,
+                    Key=object_key,
+                )
+                self.logger.info("Обьект успешно удален в хранилище с ключем ", object_key=object_key)
+                return True
+            except ClientError as e:
+                if e.response['Error']['Code'] == 'NoSuchKey':
+                    return True  # Объект не существовал — считаем успешным (идемпотентность)
+                # Логируем другие ошибки, если нужно (в проде добавь logger)
+                self.logger.warning("Обьект не найден в S3 при удалении ", user_id=str(user_id)[:8])
+            except Exception as e:
+                # Общая ошибка
+                self.logger.error("Ошибка удаления обьекта из S3 ", user_id=str(user_id)[:8])
+                raise HTTPException(500, f"Ошибка удаления объекта: {str(e)}")

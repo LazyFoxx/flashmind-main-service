@@ -8,7 +8,7 @@ class UpdateProfileUserInput:
     user_id: UUID
     first_name: str
     last_name: str
-    avatar_key: Optional[str] = None
+    avatar_file: Optional[str] = None
     bio: Optional[str] = None
 
 
