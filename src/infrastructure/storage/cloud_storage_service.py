@@ -51,6 +51,7 @@ class YandexObjectStorage(AbstractCloudStorage):
 
         output = io.BytesIO()
 
+
         # Сохраняем как WebP (lossy)
         img.save(
             output,
