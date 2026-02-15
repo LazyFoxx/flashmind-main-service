@@ -1,0 +1,97 @@
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import List, Optional
+from uuid import UUID
+
+from .card import Card
+
+
+class AbstractCardRepository(ABC):
+    @abstractmethod
+    async def get_by_id(self, card_id: UUID) -> Optional[Card]:
+        """Получить карточку по её уникальному идентификатору.
+
+        Args:
+            card_id: UUID карточки
+
+        Returns:
+            Объект Card, если найден, иначе None
+        """
+        ...
+
+    @abstractmethod
+    async def add(self, card: Card, deck_id: UUID) -> None:
+        """Добавить новую карточку в хранилище и привязать к колоде.
+
+        Карточка должна быть новой (без ID или с временным).
+        После добавления у карточки должен появиться валидный ID из БД.
+
+        Args:
+            card: Объект Card с валидными данными
+            deck_id: UUID колоды, к которой привязать
+
+        Raises:
+            IntegrityError: если фронт/бэк пустой или колода не существует
+        """
+        ...
+
+    @abstractmethod
+    async def update(self, card: Card) -> None:
+        """Обновить существующую карточку (включая FSRS-состояние после review).
+
+        Args:
+            card: Объект Card (новая immutable версия после review)
+
+        Raises:
+            NotFoundError: если карточка не существует
+        """
+        ...
+
+    @abstractmethod
+    async def delete(self, card_id: UUID) -> None:
+        """Удалить карточку.
+
+        Также нужно удалить card_id из Deck (через событие или DeckRepository).
+
+        Args:
+            card_id: UUID карточки
+        """
+        ...
+
+    @abstractmethod
+    async def list_by_deck(self, deck_id: UUID) -> List[Card]:
+        """Получить все карточки колоды.
+
+        Args:
+            deck_id: UUID колоды
+
+        Returns:
+            Список объектов Card
+        """
+        ...
+
+    @abstractmethod
+    async def get_due_cards(
+        self,
+        deck_id: Optional[UUID] = None,
+        user_id: Optional[UUID] = None,
+        now: Optional[datetime] = None,
+        limit: Optional[int] = None,
+    ) -> List[Card]:
+        """Получить карточки, которые пора повторять (due ≤ текущего времени).
+
+        Args:
+            deck_id: UUID конкретной колоды (если None — все колоды пользователя)
+            user_id: UUID пользователя (обязателен, если deck_id = None)
+            now: Момент времени, относительно которого проверяется due
+                 (по умолчанию — текущее UTC-время)
+            limit: Максимальное количество возвращаемых карточек
+                 (None = без ограничения, полезно для пагинации)
+
+        Returns:
+            Список объектов Card, готовых к повторению, отсортированных по due (от более ранних)
+
+        Raises:
+            ValueError: если deck_id и user_id оба None
+        """
+        ...

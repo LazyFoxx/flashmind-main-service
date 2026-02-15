@@ -44,6 +44,7 @@ python-json-logger = "^4.0.0"
 pillow = "^12.1.0"
 aioboto3 = "^15.5.0"
 aio-pika = "^9.5.8"
+fsrs = "^6.3.0"
 
 [tool.poetry.group.dev.dependencies]
 # --- Lint / format ---
