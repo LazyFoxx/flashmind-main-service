@@ -1,11 +1,13 @@
 import json
 from typing import Awaitable, Callable
 
-from dishka import AsyncContainer, DependencyKey
 import structlog
 from aio_pika import IncomingMessage
+from dishka import AsyncContainer, DependencyKey
 
-from src.application.use_cases.users.create_user_profile.use_case import CreateUserProfileUseCase
+from src.application.use_cases.users.create_user_profile.use_case import (
+    CreateUserProfileUseCase,
+)
 
 from .connection import RabbitConnection
 
@@ -21,7 +23,7 @@ class RabbitConsumer:
     async def start_consuming(
         self,
         queue_name: str,
-        container: AsyncContainer,       # корневой контейнер (APP scope)
+        container: AsyncContainer,  # корневой контейнер (APP scope)
         callback_key: DependencyKey,
     ) -> None:
         """
@@ -63,8 +65,7 @@ class RabbitConsumer:
 
 # Callback: Обрабатывает сообщение, извлекает user_id и вызывает Use Case
 async def process_user_registered(
-    message: IncomingMessage,
-    use_case: CreateUserProfileUseCase
+    message: IncomingMessage, use_case: CreateUserProfileUseCase
 ) -> None:
     async with message.process(ignore_processed=True):  # Авто-ack/nack
         try:

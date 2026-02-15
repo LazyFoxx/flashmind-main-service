@@ -1,10 +1,10 @@
 from .auth import AuthProvider
 from .config import ConfigProvider
 from .db import DbProvider
-from .redis import RedisProvider
-from .use_cases import UseCaseProvider
-from .storage import StorageProvider
 from .rabbit import RabbitProvider
+from .redis import RedisProvider
+from .storage import StorageProvider
+from .use_cases import UseCaseProvider
 
 __all__ = [
     "UseCaseProvider",

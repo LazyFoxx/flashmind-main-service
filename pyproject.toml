@@ -70,8 +70,11 @@ target-version = ["py313"]
 [tool.ruff]
 target-version = "py313"
 line-length = 88
+
+[tool.ruff.lint]
+ignore = ["E501", "B903", "B008"]
 select = ["E", "F", "W", "I", "B"]
-ignore = ["E501", "B008"]
+extend-ignore = ["F", "W"]
 
 [tool.mypy]
 python_version = "3.13"

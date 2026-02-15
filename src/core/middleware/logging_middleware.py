@@ -72,7 +72,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         body: Dict[str, Any] = {}
         content_type = request.headers.get("content-type", "").lower()
 
-        if request.method in ["POST", "PUT", "PATCH"] and "application/json" in content_type:
+        if (
+            request.method in ["POST", "PUT", "PATCH"]
+            and "application/json" in content_type
+        ):
             try:
                 body_bytes = await request.body()
                 body = json.loads(body_bytes) if body_bytes else {}

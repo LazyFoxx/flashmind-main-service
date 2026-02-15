@@ -1,18 +1,15 @@
 """Создание таблицы user_profiles
 
 Revision ID: e84d73279050
-Revises: 
+Revises:
 Create Date: 2026-02-08 19:47:23.875005
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
-
-
 # revision identifiers, used by Alembic.
-revision: str = 'e84d73279050'
+revision: str = "e84d73279050"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

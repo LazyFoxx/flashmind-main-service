@@ -80,7 +80,7 @@ def setup_logging() -> None:
         "aio_pika",
         "aiormq",
         "botocore",
-        "boto3"
+        "boto3",
     ]
     for name in noisy:
         logger = logging.getLogger(name)

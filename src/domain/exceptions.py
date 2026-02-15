@@ -1,2 +1,2 @@
-class DomainError(Exception):
-    """Базовый класс для доменных ошибок"""
+# class DomainError(Exception):
+#     """Базовый класс для доменных ошибок"""

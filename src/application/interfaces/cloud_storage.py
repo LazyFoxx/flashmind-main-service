@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Any, Mapping
 from uuid import UUID
 
 from fastapi import UploadFile
@@ -21,7 +20,7 @@ class AbstractCloudStorage(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def generate_presigned_url(object_key: str, expires_in: int) -> str:
+    async def generate_presigned_url(self, object_key: str, expires_in: int) -> str:
         """Получение временной ссылки для просмотра.
 
         Args:
@@ -32,7 +31,7 @@ class AbstractCloudStorage(ABC):
             view_url: str
         """
         raise NotImplementedError
-    
+
     @abstractmethod
     async def delete_object(self, object_key: str, user_id: UUID) -> bool:
         """Удаляет объект из облачного хранилища по ключу.
@@ -45,5 +44,3 @@ class AbstractCloudStorage(ABC):
                   или произошла ошибка при удалении
         """
         raise NotImplementedError
-    
-    

@@ -4,10 +4,10 @@ from .providers import (
     AuthProvider,
     ConfigProvider,
     DbProvider,
-    RedisProvider,
-    UseCaseProvider,
-    StorageProvider,
     RabbitProvider,
+    RedisProvider,
+    StorageProvider,
+    UseCaseProvider,
 )
 
 # Список всех провайдеров
