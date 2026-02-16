@@ -9,7 +9,7 @@ from src.domain.entities import AbstractCardRepository, Card
 from src.infrastructure.db.models import CardModel
 
 
-class SQlAlchemyDeckRepository(AbstractCardRepository):
+class SQlAlchemyCardRepository(AbstractCardRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 

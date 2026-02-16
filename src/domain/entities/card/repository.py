@@ -47,51 +47,51 @@ class AbstractCardRepository(ABC):
         """
         ...
 
-    @abstractmethod
-    async def delete(self, card_id: UUID) -> None:
-        """Удалить карточку.
+    # @abstractmethod
+    # async def delete(self, card_id: UUID) -> None:
+    #     """Удалить карточку.
 
-        Также нужно удалить card_id из Deck (через событие или DeckRepository).
+    #     Также нужно удалить card_id из Deck (через событие или DeckRepository).
 
-        Args:
-            card_id: UUID карточки
-        """
-        ...
+    #     Args:
+    #         card_id: UUID карточки
+    #     """
+    #     ...
 
-    @abstractmethod
-    async def list_by_deck(self, deck_id: UUID) -> List[Card]:
-        """Получить все карточки колоды.
+    # @abstractmethod
+    # async def list_by_deck(self, deck_id: UUID) -> List[Card]:
+    #     """Получить все карточки колоды.
 
-        Args:
-            deck_id: UUID колоды
+    #     Args:
+    #         deck_id: UUID колоды
 
-        Returns:
-            Список объектов Card
-        """
-        ...
+    #     Returns:
+    #         Список объектов Card
+    #     """
+    #     ...
 
-    @abstractmethod
-    async def get_due_cards(
-        self,
-        deck_id: Optional[UUID] = None,
-        user_id: Optional[UUID] = None,
-        now: Optional[datetime] = None,
-        limit: Optional[int] = None,
-    ) -> List[Card]:
-        """Получить карточки, которые пора повторять (due ≤ текущего времени).
+    # @abstractmethod
+    # async def get_due_cards(
+    #     self,
+    #     deck_id: Optional[UUID] = None,
+    #     user_id: Optional[UUID] = None,
+    #     now: Optional[datetime] = None,
+    #     limit: Optional[int] = None,
+    # ) -> List[Card]:
+    #     """Получить карточки, которые пора повторять (due ≤ текущего времени).
 
-        Args:
-            deck_id: UUID конкретной колоды (если None — все колоды пользователя)
-            user_id: UUID пользователя (обязателен, если deck_id = None)
-            now: Момент времени, относительно которого проверяется due
-                 (по умолчанию — текущее UTC-время)
-            limit: Максимальное количество возвращаемых карточек
-                 (None = без ограничения, полезно для пагинации)
+    #     Args:
+    #         deck_id: UUID конкретной колоды (если None — все колоды пользователя)
+    #         user_id: UUID пользователя (обязателен, если deck_id = None)
+    #         now: Момент времени, относительно которого проверяется due
+    #              (по умолчанию — текущее UTC-время)
+    #         limit: Максимальное количество возвращаемых карточек
+    #              (None = без ограничения, полезно для пагинации)
 
-        Returns:
-            Список объектов Card, готовых к повторению, отсортированных по due (от более ранних)
+    #     Returns:
+    #         Список объектов Card, готовых к повторению, отсортированных по due (от более ранних)
 
-        Raises:
-            ValueError: если deck_id и user_id оба None
-        """
-        ...
+    #     Raises:
+    #         ValueError: если deck_id и user_id оба None
+    #     """
+    #     ...

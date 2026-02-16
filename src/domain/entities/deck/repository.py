@@ -50,23 +50,23 @@ class AbstractDeckRepository(ABC):
         """
         ...
 
-    @abstractmethod
-    async def delete(self, deck_id: UUID) -> None:
-        """Удалить колоду и все её карточки (каскадное удаление).
+    # @abstractmethod
+    # async def delete(self, deck_id: UUID) -> None:
+    #     """Удалить колоду и все её карточки (каскадное удаление).
 
-        Args:
-            deck_id: UUID колоды
-        """
-        ...
+    #     Args:
+    #         deck_id: UUID колоды
+    #     """
+    #     ...
 
-    @abstractmethod
-    async def list_by_user(self, user_id: UUID) -> List[Deck]:
-        """Получить список всех колод пользователя.
+    # @abstractmethod
+    # async def list_by_user(self, user_id: UUID) -> List[Deck]:
+    #     """Получить список всех колод пользователя.
 
-        Args:
-            user_id: UUID пользователя
+    #     Args:
+    #         user_id: UUID пользователя
 
-        Returns:
-            Список объектов Deck
-        """
-        ...
+    #     Returns:
+    #         Список объектов Deck
+    #     """
+    #     ...
