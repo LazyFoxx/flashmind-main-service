@@ -75,14 +75,14 @@ class AbstractDeckRepository(ABC):
     #     """
     #     ...
 
-    # @abstractmethod
-    # async def list_by_user(self, user_id: UUID) -> List[Deck]:
-    #     """Получить список всех колод пользователя.
+    @abstractmethod
+    async def list_by_user(self, user_id: UUID) -> List[Deck]:
+        """Получить список всех колод пользователя.
 
-    #     Args:
-    #         user_id: UUID пользователя
+        Args:
+            user_id: UUID пользователя
 
-    #     Returns:
-    #         Список объектов Deck
-    #     """
-    #     ...
+        Returns:
+            Список объектов Deck
+        """
+        ...

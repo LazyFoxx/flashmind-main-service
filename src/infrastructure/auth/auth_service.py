@@ -45,5 +45,4 @@ class AuthService:
             return UUID(claims["sub"])
 
         except (ExpiredTokenError, InvalidClaimError, JoseError, ValueError) as e:
-            self.logger.error("Неверный токен", error=str(e))
-            raise InvalidTokenError from e
+            raise InvalidTokenError(f"{e}") from e

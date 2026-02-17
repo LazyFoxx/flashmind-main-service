@@ -53,13 +53,9 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
     #     """
     #     ...
 
-    # async def list_by_user(self, user_id: UUID) -> List[Deck]:
-    #     """Получить список всех колод пользователя.
-
-    #     Args:
-    #         user_id: UUID пользователя
-
-    #     Returns:
-    #         Список объектов Deck
-    #     """
-    #     ...
+    async def list_by_user(self, user_id: UUID) -> List[Deck]:
+        stmt = select(DeckModel).where(DeckModel.user_id == user_id)
+        result = await self.session.execute(stmt)
+        # Получаем все найденные модели колод, преобразуем их в сущности Deck
+        deck_models = [deck_model.to_entity() for deck_model in result.scalars()]
+        return deck_models

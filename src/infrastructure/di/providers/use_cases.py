@@ -3,6 +3,7 @@ from dishka import Provider, Scope, provide
 from src.application.use_cases import (
     CreateDeckUseCase,
     CreateUserProfileUseCase,
+    GetUserDecksUseCase,
     GetUserProfileUseCase,
     UpdateUserProfileUseCase,
 )
@@ -14,3 +15,4 @@ class UseCaseProvider(Provider):
     update_user_profile = provide(UpdateUserProfileUseCase, scope=Scope.REQUEST)
 
     create_deck = provide(CreateDeckUseCase, scope=Scope.REQUEST)
+    get_user_decks = provide(GetUserDecksUseCase, scope=Scope.REQUEST)

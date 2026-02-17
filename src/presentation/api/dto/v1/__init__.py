@@ -1,7 +1,13 @@
-from .deck import CreateDeckRequest, CreateDeckResponse, ErrorMessageResponse
+from .deck import (
+    CreateDeckRequest,
+    DeckResponse,
+    ErrorMessageResponse,
+    GetUserDecksResponse,
+)
 
 __all__ = [
     "CreateDeckResponse",
-    "CreateDeckRequest",
+    "DeckRequest",
     "ErrorMessageResponse",
+    "GetUserDecksResponse",
 ]
