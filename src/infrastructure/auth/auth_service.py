@@ -2,6 +2,7 @@ import base64
 import json
 from uuid import UUID
 
+import structlog
 from authlib.jose import JoseError
 from authlib.jose.errors import ExpiredTokenError, InvalidClaimError
 
@@ -15,6 +16,7 @@ class AuthService:
     def __init__(self, settings: AuthSettings, jwks: JWKSClient):
         self.settings = settings
         self.jwks = jwks
+        self.logger = structlog.get_logger(__name__)
 
     async def decode_token(self, token: str) -> UUID:
         def b64url_decode(data: str) -> bytes:
@@ -27,7 +29,7 @@ class AuthService:
 
             kid = header["kid"]
             key = await self.jwks.get_key(kid)
-
+            print(self.settings.issuer)
             claims = self.settings.jwt.decode(
                 token,
                 key,
@@ -43,4 +45,5 @@ class AuthService:
             return UUID(claims["sub"])
 
         except (ExpiredTokenError, InvalidClaimError, JoseError, ValueError) as e:
+            self.logger.error("Неверный токен", error=str(e))
             raise InvalidTokenError from e

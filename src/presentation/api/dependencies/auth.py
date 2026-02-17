@@ -40,13 +40,12 @@ async def get_current_user(
 @inject
 async def get_current_user_id(
     auth: FromDishka[AuthService],
-    uow: FromDishka[AbstractUnitOfWork],
     credentials: Annotated[
         HTTPAuthorizationCredentials | None,
         Depends(bearer_scheme),
     ],
 ) -> UUID:
     if not credentials:
-        raise InvalidTokenError
+        raise InvalidTokenError("токен не передан")
     user_id: UUID = await auth.decode_token(credentials.credentials)
     return user_id

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
@@ -10,7 +10,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.domain.entities.card.card import Card
 from src.infrastructure.db.base import Base
 
-from .deck import DeckModel
+if TYPE_CHECKING:
+    from src.infrastructure.db.models import DeckModel
 
 
 class CardModel(Base):

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, String, Text, func
@@ -9,7 +9,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.domain.entities import Deck
 from src.infrastructure.db.base import Base
 
-from .card import CardModel
+if TYPE_CHECKING:
+    from src.infrastructure.db.models import CardModel
 
 
 class DeckModel(Base):
@@ -33,7 +34,7 @@ class DeckModel(Base):
 
     user_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("user_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

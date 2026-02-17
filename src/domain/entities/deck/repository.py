@@ -20,6 +20,22 @@ class AbstractDeckRepository(ABC):
         ...
 
     @abstractmethod
+    async def get_by_name(
+        self, name: str, user_id: Optional[UUID] = None
+    ) -> Optional[Deck]:
+        """
+        Находит колоду по названию и (опционально) по владельцу.
+
+        Args:
+            name: точное название колоды
+            user_id: если передан — фильтруем только колоды этого пользователя
+
+        Returns:
+            Deck или None, если ничего не найдено
+        """
+        ...
+
+    @abstractmethod
     async def add(self, deck: Deck) -> None:
         """Добавить новую колоду в хранилище.
 

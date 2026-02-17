@@ -10,6 +10,11 @@ services:
       sh -c "alembic upgrade head || { echo 'Alembic migration failed'; exit 1; }"
     env_file:
       - .env
+    volumes:
+      # Монтируем код для миграций
+      - ./src:/app/src:rw
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      - ./poetry.lock:/app/poetry.lock:ro
     depends_on:
       postgres:
         condition: service_healthy

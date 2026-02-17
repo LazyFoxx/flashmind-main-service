@@ -14,7 +14,7 @@ from src.presentation.api.dto.v1.users.profile import (
     UserProfileResponse,
 )
 
-router = APIRouter(prefix="/user", tags=["user"])
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get(
