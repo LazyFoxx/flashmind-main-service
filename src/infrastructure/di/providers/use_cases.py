@@ -5,6 +5,7 @@ from src.application.use_cases import (
     CreateUserProfileUseCase,
     GetUserDecksUseCase,
     GetUserProfileUseCase,
+    UpdateDeckUseCase,
     UpdateUserProfileUseCase,
 )
 
@@ -16,3 +17,4 @@ class UseCaseProvider(Provider):
 
     create_deck = provide(CreateDeckUseCase, scope=Scope.REQUEST)
     get_user_decks = provide(GetUserDecksUseCase, scope=Scope.REQUEST)
+    update_deck = provide(UpdateDeckUseCase, scope=Scope.REQUEST)

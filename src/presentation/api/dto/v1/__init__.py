@@ -3,11 +3,13 @@ from .deck import (
     DeckResponse,
     ErrorMessageResponse,
     GetUserDecksResponse,
+    UpdateDeckRequest,
 )
 
 __all__ = [
-    "CreateDeckResponse",
-    "DeckRequest",
+    "CreateDeckRequest",
+    "DeckResponse",
     "ErrorMessageResponse",
     "GetUserDecksResponse",
+    "UpdateDeckRequest",
 ]

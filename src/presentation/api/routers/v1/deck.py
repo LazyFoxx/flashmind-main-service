@@ -8,6 +8,8 @@ from src.application.use_cases import (
     CreateDeckInput,
     CreateDeckUseCase,
     GetUserDecksUseCase,
+    UpdateDeckInput,
+    UpdateDeckUseCase,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
@@ -15,6 +17,7 @@ from src.presentation.api.dto.v1 import (
     DeckResponse,
     ErrorMessageResponse,
     GetUserDecksResponse,
+    UpdateDeckRequest,
 )
 
 router = APIRouter(prefix="/decks", tags=["decks"])
@@ -68,3 +71,30 @@ async def get_user_decks(
     return GetUserDecksResponse(
         decks=[DeckResponse.from_entity(deck) for deck in decks.decks]
     )
+
+
+@router.put(
+    "{deck_id}",
+    response_model=DeckResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Обновить поля колоды",
+    description=(
+        "Частично изменяет колоду. Даже если обновляется одно поля - обязательно отправлять все поля в том числе не измененные"
+    ),
+)
+@inject
+async def update_deck(
+    deck_id: UUID,
+    payload: UpdateDeckRequest,
+    use_case: FromDishka[UpdateDeckUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> DeckResponse:
+    dto = UpdateDeckInput(
+        user_id=user_id,
+        deck_id=deck_id,
+        name=payload.name,
+        description=payload.description,
+    )
+    deck = await use_case.execute(input_dto=dto)
+
+    return DeckResponse(id=deck.deck_id, name=deck.name, description=deck.description)

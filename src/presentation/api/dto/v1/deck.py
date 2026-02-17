@@ -86,3 +86,8 @@ class ErrorMessageResponse(BaseModel):
             ]
         }
     }
+
+
+# изменение полей колоды (update)
+class UpdateDeckRequest(CreateDeckRequest):
+    pass

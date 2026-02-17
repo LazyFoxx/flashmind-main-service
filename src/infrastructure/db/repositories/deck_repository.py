@@ -2,6 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import AbstractDeckRepository, Deck
@@ -38,12 +39,12 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
         stmt = (
             update(DeckModel)
             .where(DeckModel.id == deck.id)
+            .where(DeckModel.user_id == deck.user_id)
             .values(
                 name=deck.name,
                 description=deck.description,
             )
         )
-        await self.session.execute(stmt)
 
     # async def delete(self, deck_id: UUID) -> None:
     #     """Удалить колоду и все её карточки (каскадное удаление).
