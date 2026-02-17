@@ -2,11 +2,13 @@ from typing import Annotated, Optional
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
 
 from src.application.use_cases import (
     CreateDeckInput,
     CreateDeckUseCase,
+    DeleteDeckInput,
+    DeleteDeckUseCase,
     GetUserDecksUseCase,
     UpdateDeckInput,
     UpdateDeckUseCase,
@@ -98,3 +100,25 @@ async def update_deck(
     deck = await use_case.execute(input_dto=dto)
 
     return DeckResponse(id=deck.deck_id, name=deck.name, description=deck.description)
+
+
+@router.delete(
+    "{deck_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Удалить колоду",
+    description=("Удаляет колоду и все связанные с ней карточки"),
+)
+@inject
+async def delete_deck(
+    deck_id: UUID,
+    use_case: FromDishka[DeleteDeckUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> None:
+    dto = DeleteDeckInput(
+        user_id=user_id,
+        deck_id=deck_id,
+    )
+
+    await use_case.execute(input_dto=dto)
+
+    return None

@@ -1,8 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import select, update
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import AbstractDeckRepository, Deck
@@ -46,13 +45,12 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
             )
         )
 
-    # async def delete(self, deck_id: UUID) -> None:
-    #     """Удалить колоду и все её карточки (каскадное удаление).
-
-    #     Args:
-    #         deck_id: UUID колоды
-    #     """
-    #     ...
+    async def delete(self, deck_id: UUID, user_id: UUID) -> None:
+        await self.session.execute(
+            delete(DeckModel)
+            .where(DeckModel.id == deck_id)
+            .where(DeckModel.user_id == user_id)
+        )
 
     async def list_by_user(self, user_id: UUID) -> List[Deck]:
         stmt = select(DeckModel).where(DeckModel.user_id == user_id)

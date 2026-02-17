@@ -74,6 +74,11 @@ class GetUserDecksResponse(BaseModel):
     }
 
 
+# изменение полей колоды (update)
+class UpdateDeckRequest(CreateDeckRequest):
+    pass
+
+
 # обработка ошибок
 class ErrorMessageResponse(BaseModel):
     message: str
@@ -86,8 +91,3 @@ class ErrorMessageResponse(BaseModel):
             ]
         }
     }
-
-
-# изменение полей колоды (update)
-class UpdateDeckRequest(CreateDeckRequest):
-    pass
