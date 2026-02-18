@@ -5,6 +5,7 @@ from src.application.use_cases import (
     CreateDeckUseCase,
     CreateUserProfileUseCase,
     DeleteDeckUseCase,
+    GetCardUseCase,
     GetUserDecksUseCase,
     GetUserProfileUseCase,
     UpdateDeckUseCase,
@@ -23,3 +24,4 @@ class UseCaseProvider(Provider):
     delete_deck = provide(DeleteDeckUseCase, scope=Scope.REQUEST)
 
     create_card = provide(CreateCardUseCase, scope=Scope.REQUEST)
+    get_card = provide(GetCardUseCase, scope=Scope.REQUEST)

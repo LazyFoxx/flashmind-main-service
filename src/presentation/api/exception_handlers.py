@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 
 from src.application.exceptions import (
     CardAlreadyExistsError,
+    CardNotExistsError,
     DeckAlreadyExistsError,
     DeckNotExistsError,
     InvalidTokenError,
@@ -65,9 +66,23 @@ async def card_exist(request: Request, exc: CardAlreadyExistsError) -> JSONRespo
     )
 
 
+async def card_not_exist(request: Request, exc: CardNotExistsError) -> JSONResponse:
+    logger.warning(
+        f"Карточка не найдена",
+        card_id=str(exc.card_id),
+    )
+    return JSONResponse(
+        status_code=404,
+        content={
+            "message": f"Карточка не найдена",
+        },
+    )
+
+
 def setup_exception_handlers(app: FastAPI) -> None:
     """Единая регистрация всех обработчиков ошибок."""
     app.add_exception_handler(InvalidTokenError, invalid_token)  # type: ignore[arg-type]
     app.add_exception_handler(DeckAlreadyExistsError, deck_exist)  # type: ignore[arg-type]
     app.add_exception_handler(CardAlreadyExistsError, card_exist)  # type: ignore[arg-type]
     app.add_exception_handler(DeckNotExistsError, deck_not_exist)  # type: ignore[arg-type]
+    app.add_exception_handler(CardNotExistsError, card_not_exist)  # type: ignore[arg-type]

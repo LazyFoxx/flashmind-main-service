@@ -11,6 +11,11 @@ class UserAlreadyExistsError(ApplicationError):
     pass
 
 
+class CardNotExistsError(Exception):
+    def __init__(self, card_id: UUID):
+        self.card_id = card_id
+
+
 class DeckAlreadyExistsError(Exception):
     def __init__(self, name: str, user_id: UUID):
         self.name = name

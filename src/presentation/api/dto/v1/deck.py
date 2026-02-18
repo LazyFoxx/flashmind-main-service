@@ -91,6 +91,9 @@ class ErrorMessageResponse(BaseModel):
                 {
                     "message": "Карточка с таким front уже существует в этой колоде",
                 },
+                {
+                    "message": "Карточка не найдена",
+                },
             ]
         }
     }
