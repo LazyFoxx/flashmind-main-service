@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import AbstractCardRepository, Card
@@ -65,15 +65,10 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         )
         await self.session.execute(stmt)
 
-    # async def delete(self, card_id: UUID) -> None:
-    #     """Удалить карточку.
+    async def delete(self, card_id: UUID) -> None:
+        await self.session.execute(delete(CardModel).where(CardModel.id == card_id))
 
-    #     Также нужно удалить card_id из Deck (через событие или DeckRepository).
-
-    #     Args:
-    #         card_id: UUID карточки
-    #     """
-    #     ...
+        ...
 
     # async def list_by_deck(self, deck_id: UUID) -> List[Card]:
     #     """Получить все карточки колоды.

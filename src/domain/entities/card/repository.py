@@ -63,16 +63,16 @@ class AbstractCardRepository(ABC):
         """
         ...
 
-    # @abstractmethod
-    # async def delete(self, card_id: UUID) -> None:
-    #     """Удалить карточку.
+    @abstractmethod
+    async def delete(self, card_id: UUID) -> None:
+        """Удалить карточку.
 
-    #     Также нужно удалить card_id из Deck (через событие или DeckRepository).
+        Также нужно удалить card_id из Deck (через событие или DeckRepository).
 
-    #     Args:
-    #         card_id: UUID карточки
-    #     """
-    #     ...
+        Args:
+            card_id: UUID карточки
+        """
+        ...
 
     # @abstractmethod
     # async def list_by_deck(self, deck_id: UUID) -> List[Card]:

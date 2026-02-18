@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
 from src.application.use_cases import (
     CreateCardInput,
     CreateCardUseCase,
+    DeleteCardInput,
+    DeleteCardUseCase,
     GetCardUseCase,
     UpdateCardInput,
     UpdateCardUseCase,
@@ -115,3 +117,25 @@ async def update_card(
     return CardResponse(
         id=card.card_id, deck_id=card.deck_id, front=card.front, back=card.back
     )
+
+
+@router.delete(
+    "{card_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Удалить карточку",
+    description=("Удаляет карточку по id, иденпотентно"),
+)
+@inject
+async def delete_card(
+    card_id: UUID,
+    use_case: FromDishka[DeleteCardUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> None:
+    dto = DeleteCardInput(
+        user_id=user_id,
+        card_id=card_id,
+    )
+
+    await use_case.execute(input_dto=dto)
+
+    return None
