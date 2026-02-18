@@ -8,6 +8,7 @@ from src.application.use_cases import (
     GetCardUseCase,
     GetUserDecksUseCase,
     GetUserProfileUseCase,
+    UpdateCardUseCase,
     UpdateDeckUseCase,
     UpdateUserProfileUseCase,
 )
@@ -25,3 +26,4 @@ class UseCaseProvider(Provider):
 
     create_card = provide(CreateCardUseCase, scope=Scope.REQUEST)
     get_card = provide(GetCardUseCase, scope=Scope.REQUEST)
+    update_card = provide(UpdateCardUseCase, scope=Scope.REQUEST)

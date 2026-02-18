@@ -86,13 +86,7 @@ class ErrorMessageResponse(BaseModel):
         "json_schema_extra": {
             "examples": [
                 {
-                    "message": "У пользователя нет такой колоды",
-                },
-                {
-                    "message": "Карточка с таким front уже существует в этой колоде",
-                },
-                {
-                    "message": "Карточка не найдена",
+                    "message": "Описание ошибки",
                 },
             ]
         }

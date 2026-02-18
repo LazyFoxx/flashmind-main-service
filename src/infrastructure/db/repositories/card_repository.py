@@ -60,6 +60,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                 fsrs_state=card._fsrs_card.to_json(),
                 next_due=card._fsrs_card.due,
                 difficulty=card._fsrs_card.difficulty,
+                in_learning=True,
             )
         )
         await self.session.execute(stmt)

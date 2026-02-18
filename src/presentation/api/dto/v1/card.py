@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from src.domain.entities import Card
 
 
-# создание колоды
+# создание карточки
 class CreateCardRequest(BaseModel):
     deck_id: UUID
     front: str
@@ -38,6 +38,23 @@ class CardResponse(BaseModel):
                     "id": "UUID",
                     "name": "Английский 3000",
                     "description": "Тут собраны 3000 самых популярных слов в английском языке",
+                }
+            ]
+        }
+    }
+
+
+# обновление карточки
+class UpdateCardRequest(BaseModel):
+    front: str
+    back: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "front": "Любовь",
+                    "back": "Это когда она в тебя высмаркивается",
                 }
             ]
         }

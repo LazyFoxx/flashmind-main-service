@@ -20,9 +20,16 @@ class DeleteDeckUseCase:
 
         async with self.uow:
             try:
+
+                # проверяем существование колоды, обеспечиваем иденпотентность
+                deck = await self.uow.decks.get_by_id(input_dto.deck_id)
+                if not deck:
+                    return None
+
                 await self.uow.decks.delete(
                     deck_id=input_dto.deck_id, user_id=input_dto.user_id
                 )
+
                 await self.uow.commit()
                 self.logger.info(
                     "Колода успешно удалена",

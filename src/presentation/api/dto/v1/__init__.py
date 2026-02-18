@@ -1,4 +1,4 @@
-from .card import CardResponse, CreateCardRequest
+from .card import CardResponse, CreateCardRequest, UpdateCardRequest
 from .deck import (
     CreateDeckRequest,
     DeckResponse,
@@ -17,4 +17,5 @@ __all__ = [
     "UserProfileResponse",
     "CardResponse",
     "CreateCardRequest",
+    "UpdateCardRequest",
 ]
