@@ -8,11 +8,14 @@ from .deck import Deck
 
 class AbstractDeckRepository(ABC):
     @abstractmethod
-    async def get_by_id(self, deck_id: UUID) -> Optional[Deck]:
-        """Получить колоду по её уникальному идентификатору.
+    async def get_by_id(
+        self, deck_id: UUID, user_id: Optional[UUID] = None
+    ) -> Optional[Deck]:
+        """Получить колоду по её уникальному идентификатору и (опционально) по владельцу..
 
         Args:
             deck_id: UUID колоды
+            user_id: если передан — фильтруем только колоды этого пользователя
 
         Returns:
             Объект Deck, если найден, иначе None

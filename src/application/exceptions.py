@@ -17,6 +17,18 @@ class DeckAlreadyExistsError(Exception):
         self.user_id = user_id
 
 
+class DeckNotExistsError(Exception):
+    def __init__(self, deck_id: UUID, user_id: UUID):
+        self.deck_id = deck_id
+        self.user_id = user_id
+
+
+class CardAlreadyExistsError(Exception):
+    def __init__(self, front: str, deck_id: UUID):
+        self.front = front
+        self.deck_id = deck_id
+
+
 class InvalidTokenError(ApplicationError):
     pass
 

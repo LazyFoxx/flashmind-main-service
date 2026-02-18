@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
+from fsrs import Card as FSRS_Card
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -39,25 +40,27 @@ class CardModel(Base):
         nullable=False,
     )
 
-    fsrs_state: Mapped[dict[str, Any]] = mapped_column(
-        JSONB,
-        nullable=False,
-        default=dict,
-        server_default="{}",
-    )
-
-    # Колонка ТОЛЬКО для быстрой сортировки и фильтрации по due
-    # Никогда не используй её в бизнес-логике — только в запросах
-    next_due: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
+    in_learning: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
         nullable=False,
         index=True,
     )
 
-    # Тоже самое!
-    difficulty: Mapped[float] = mapped_column(
+    # Поля FSRS заполняются ТОЛЬКО когда in_learning = True
+    fsrs_state: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        JSONB,
+        nullable=True,
+    )
+    next_due: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        index=True,
+    )
+    difficulty: Mapped[Optional[float]] = mapped_column(
         Float,
-        nullable=False,
+        nullable=True,
         index=True,
     )
 
@@ -84,27 +87,46 @@ class CardModel(Base):
         """
         from fsrs import Card as FSRS_Card
 
-        fsrs_card = FSRS_Card.from_json(self.fsrs_state)
+        if not self.in_learning:
+            return Card(
+                id=self.id,
+                deck_id=self.deck_id,
+                front=self.front,
+                back=self.back,
+                _fsrs_card=None,
+            )
 
         return Card(
             id=self.id,
             deck_id=self.deck_id,
             front=self.front,
             back=self.back,
-            _fsrs_card=fsrs_card,
+            _fsrs_card=FSRS_Card.from_json(self.fsrs_state),
         )
 
     @classmethod
     def from_domain(cls, card: Card) -> "CardModel":
-        """
-        Создаёт ORM-модель из доменной сущности.
-        """
+        if not card.in_learning:
+            return CardModel(
+                id=card.id,
+                deck_id=card.deck_id,
+                front=card.front,
+                back=card.back,
+                in_learning=False,
+                fsrs_state=None,
+                next_due=None,
+                difficulty=None,
+            )
+
+        # in_learning = True → берем параметры
+        fsrs_card = card._fsrs_card or FSRS_Card()
         return CardModel(
             id=card.id,
             deck_id=card.deck_id,
             front=card.front,
             back=card.back,
-            fsrs_state=card._fsrs_card.to_json(),
-            next_due=card._fsrs_card.due,
-            difficulty=card._fsrs_card.difficulty,
+            in_learning=True,
+            fsrs_state=fsrs_card.to_json(),
+            next_due=fsrs_card.due,
+            difficulty=fsrs_card.difficulty,
         )

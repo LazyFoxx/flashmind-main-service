@@ -86,8 +86,11 @@ class ErrorMessageResponse(BaseModel):
         "json_schema_extra": {
             "examples": [
                 {
-                    "message": "Колода с таким названием уже существует",
-                }
+                    "message": "У пользователя нет такой колоды",
+                },
+                {
+                    "message": "Карточка с таким front уже существует в этой колоде",
+                },
             ]
         }
     }

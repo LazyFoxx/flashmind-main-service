@@ -19,11 +19,38 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         card_model = result.scalar_one_or_none()
         return card_model.to_entity() if card_model else None
 
+    async def get_by_front(
+        self, front: str, deck_id: Optional[UUID] = None
+    ) -> Optional[Card]:
+        stmt = select(CardModel).where(CardModel.front == front)
+
+        if deck_id is not None:
+            stmt = stmt.where(CardModel.deck_id == deck_id)
+
+        result = await self.session.execute(stmt)
+        card_model = result.scalar_one_or_none()
+        return card_model.to_entity() if card_model else None
+
     async def add(self, card: Card, deck_id: UUID) -> None:
         card_model = CardModel.from_domain(card)
         self.session.add(card_model)
 
     async def update(self, card: Card) -> None:
+
+        if card._fsrs_card is None:
+            stmt = (
+                update(CardModel)
+                .where(CardModel.id == card.id)
+                .values(
+                    front=card.front,
+                    back=card.back,
+                    fsrs_state=None,
+                    next_due=None,
+                    difficulty=None,
+                )
+            )
+            return None
+
         stmt = (
             update(CardModel)
             .where(CardModel.id == card.id)

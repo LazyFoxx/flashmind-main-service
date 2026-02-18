@@ -1,3 +1,4 @@
+from .cards.create_card.use_case import CreateCardInput, CreateCardUseCase
 from .decks.create_deck.use_case import CreateDeckInput, CreateDeckUseCase
 from .decks.delete_deck.use_case import DeleteDeckInput, DeleteDeckUseCase
 from .decks.get_user_decks.use_case import GetUserDecksUseCase
@@ -17,4 +18,6 @@ __all__ = [
     "UpdateDeckUseCase",
     "DeleteDeckInput",
     "DeleteDeckUseCase",
+    "CreateCardInput",
+    "CreateCardUseCase",
 ]

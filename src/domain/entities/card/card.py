@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Optional
 from uuid import UUID, uuid4
 
 from fsrs import Card as FSRS_Card
@@ -16,7 +17,8 @@ class Card:
     deck_id: UUID
     front: str
     back: str
-    _fsrs_card: FSRS_Card = field(default_factory=FSRS_Card)
+    in_learning: bool = False
+    _fsrs_card: Optional[FSRS_Card] = None
 
     def review(self, scheduler: Scheduler, rating: Rating) -> "Card":
         """Бизнес-метод: повторить, верни новую immutable Card."""
@@ -31,5 +33,8 @@ class Card:
 
     def is_due(self, now: datetime) -> bool:
         """Проверить, пора ли повторять."""
+        if self._fsrs_card is None:
+            return False
+
         due_time: datetime = self._fsrs_card.due
         return now >= due_time

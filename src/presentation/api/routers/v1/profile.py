@@ -10,7 +10,7 @@ from src.application.use_cases.users.update_user_profile.dto import (
     UpdateProfileUserInput,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
-from src.presentation.api.dto.v1.users.profile import (
+from src.presentation.api.dto.v1 import (
     UserProfileResponse,
 )
 

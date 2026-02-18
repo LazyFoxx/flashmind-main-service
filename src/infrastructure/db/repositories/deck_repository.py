@@ -12,8 +12,14 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_by_id(self, deck_id: UUID) -> Optional[Deck]:
+    async def get_by_id(
+        self, deck_id: UUID, user_id: Optional[UUID] = None
+    ) -> Optional[Deck]:
         stmt = select(DeckModel).where(DeckModel.id == deck_id)
+
+        if user_id is not None:
+            stmt = stmt.where(DeckModel.user_id == user_id)
+
         result = await self.session.execute(stmt)
         deck_model = result.scalar_one_or_none()
         return deck_model.to_entity() if deck_model else None

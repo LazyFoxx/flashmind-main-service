@@ -1,3 +1,4 @@
+from .card import CardResponse, CreateCardRequest
 from .deck import (
     CreateDeckRequest,
     DeckResponse,
@@ -5,6 +6,7 @@ from .deck import (
     GetUserDecksResponse,
     UpdateDeckRequest,
 )
+from .profile import UserProfileResponse
 
 __all__ = [
     "CreateDeckRequest",
@@ -12,4 +14,7 @@ __all__ = [
     "ErrorMessageResponse",
     "GetUserDecksResponse",
     "UpdateDeckRequest",
+    "UserProfileResponse",
+    "CardResponse",
+    "CreateCardRequest",
 ]

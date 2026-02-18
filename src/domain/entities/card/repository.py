@@ -20,6 +20,22 @@ class AbstractCardRepository(ABC):
         ...
 
     @abstractmethod
+    async def get_by_front(
+        self, front: str, deck_id: Optional[UUID] = None
+    ) -> Optional[Card]:
+        """
+        Находит карточку по лицевой стороне и (опционально) по владельцу.
+
+        Args:
+            front: точное название карточки
+            user_id: если передан — фильтруем только колоды этого пользователя
+
+        Returns:
+            Card или None, если ничего не найдено
+        """
+        ...
+
+    @abstractmethod
     async def add(self, card: Card, deck_id: UUID) -> None:
         """Добавить новую карточку в хранилище и привязать к колоде.
 
