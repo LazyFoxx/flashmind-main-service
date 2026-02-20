@@ -74,17 +74,28 @@ class AbstractCardRepository(ABC):
         """
         ...
 
-    # @abstractmethod
-    # async def list_by_deck(self, deck_id: UUID) -> List[Card]:
-    #     """Получить все карточки колоды.
+    @abstractmethod
+    async def get_all_light_by_user_and_deck(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+        offset: Optional[int] = None,  # None = все
+        limit: Optional[int] = None,  # None = все
+    ) -> List[tuple[UUID, UUID, str]]:
+        """
+        Выводит список всех карточек пользователя без обратной стороны.
+        Если передан параметр фильтрации deck_id - то выводит карточки по колоде пользователя.
+        Если offset и limit переданы, то производится вывод с пагинацией.
 
-    #     Args:
-    #         deck_id: UUID колоды
+        Args:
+            user_id: ID пользователя.
+            deck_id: ID колоды (если передан, то выводятся карточки по этой колоде).
+            offset: Если передан, то пропускает указанное количество карточек.
+            limit: Если передан, ограничивает количество возвращаемых карточек.
 
-    #     Returns:
-    #         Список объектов Card
-    #     """
-    #     ...
+        Returns:
+            List[light_cards]: Список карточек.
+        """
 
     # @abstractmethod
     # async def get_due_cards(

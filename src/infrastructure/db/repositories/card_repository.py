@@ -6,7 +6,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import AbstractCardRepository, Card
-from src.infrastructure.db.models import CardModel
+from src.infrastructure.db.models import CardModel, DeckModel, UserProfileModel
 
 
 class SQlAlchemyCardRepository(AbstractCardRepository):
@@ -70,16 +70,48 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
 
         ...
 
-    # async def list_by_deck(self, deck_id: UUID) -> List[Card]:
-    #     """Получить все карточки колоды.
+    async def get_all_light_by_user_and_deck(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+        offset: Optional[int] = None,  # None = все
+        limit: Optional[int] = None,  # None = все
+    ) -> List[tuple[UUID, UUID, str]]:
 
-    #     Args:
-    #         deck_id: UUID колоды
+        # Базовый запрос для карточек
+        query = select(
+            CardModel.id,
+            CardModel.deck_id,
+            CardModel.front,
+        )
 
-    #     Returns:
-    #         Список объектов Card
-    #     """
-    #     ...
+        # Если есть deck_id, фильтруем по нему
+        if deck_id:
+            query = query.where(CardModel.deck_id == deck_id)
+
+        # Если deck_id не передан, фильтруем по пользователю через колоды
+        else:
+            query = (
+                query.join(
+                    DeckModel
+                )  # Присоединим DeckModel, чтобы фильтровать по колодам пользователя
+                .join(
+                    UserProfileModel
+                )  # Присоединим UserProfileModel, чтобы фильтровать по user_id
+                .where(DeckModel.user_id == user_id)
+            )
+
+        # Добавляем пагинацию (если limit и offset заданы)
+        if limit is not None:
+            query = query.offset(offset).limit(limit)
+
+        # Выполнение запроса
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+
+        # Преобразуем результат в список кортежей
+        cards = [(row[0], row[1], row[2]) for row in rows]
+        return cards
 
     # async def get_due_cards(
     #     self,

@@ -2,19 +2,23 @@ from typing import Annotated, Optional
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile, status
 
 from src.application.use_cases import (
     CreateCardInput,
     CreateCardUseCase,
     DeleteCardInput,
     DeleteCardUseCase,
+    GetCardsInput,
+    GetCardsUseCase,
     GetCardUseCase,
     UpdateCardInput,
     UpdateCardUseCase,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
+    CardLightResponse,
+    CardListResponse,
     CardResponse,
     CreateCardRequest,
     ErrorMessageResponse,
@@ -139,3 +143,38 @@ async def delete_card(
     await use_case.execute(input_dto=dto)
 
     return None
+
+
+@router.get(
+    "",
+    response_model=CardListResponse,
+    summary="Получить все карточки пользователя, или по колоде ( опционально с пагинацией )",
+    description=(""),
+    status_code=200,
+)
+@inject
+async def get_cards(
+    use_case: FromDishka[GetCardsUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+    deck_id: Optional[UUID] = Query(
+        None,
+        description="фильтр по id колод, если не указан то выводит карточки по всем колодам пользователя",
+    ),
+    page: Optional[int] = Query(None, ge=1, description="Номер страницы (None = все)"),
+    per_page: Optional[int] = Query(
+        None, ge=1, le=500, description="Карточек на странице (None = все)"
+    ),
+) -> CardListResponse:
+    dto = GetCardsInput(user_id=user_id, deck_id=deck_id, page=page, per_page=per_page)
+
+    result = await use_case.execute(dto)
+
+    return CardListResponse(
+        cards=[
+            CardLightResponse(id=str(card[0]), deck_id=str(card[1]), front=str(card[2]))
+            for card in result.cards
+        ],
+        total=result.total,
+        page=page,
+        per_page=per_page,
+    )
