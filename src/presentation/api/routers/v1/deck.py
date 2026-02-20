@@ -17,6 +17,7 @@ from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
     CreateDeckRequest,
     DeckResponse,
+    DeckResponseTotalCards,
     ErrorMessageResponse,
     GetUserDecksResponse,
     UpdateDeckRequest,
@@ -71,7 +72,7 @@ async def get_user_decks(
     decks = await use_case.execute(user_id=user_id)
 
     return GetUserDecksResponse(
-        decks=[DeckResponse.from_entity(deck) for deck in decks.decks]
+        decks=[DeckResponseTotalCards.from_entity(deck) for deck in decks.decks]
     )
 
 

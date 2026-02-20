@@ -23,7 +23,7 @@ class GetUserProfileUseCase:
             self.logger.warning(
                 "Пользователь не найден", user_id=input_dto.user_id, exc_info=True
             )
-            raise UserNotFoundError()
+            raise UserNotFoundError(user_id=str(input_dto.user_id))
 
         self.logger.info("Получил профиль пользователя из БД", user_id=str(user.id)[:8])
 

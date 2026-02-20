@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import List, Optional
 from uuid import UUID
 
@@ -30,3 +30,9 @@ class Deck:
             user_id=self.user_id,
             card_ids=new_card_ids,
         )
+
+    def with_updated_total_cards(self, new_total_cards: int) -> "Deck":
+        """
+        Создает новый экземпляр DeckEntity с обновленным полем total_cards.
+        """
+        return replace(self, total_cards=new_total_cards)

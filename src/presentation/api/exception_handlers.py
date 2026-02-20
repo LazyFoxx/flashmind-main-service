@@ -8,6 +8,7 @@ from src.application.exceptions import (
     DeckAlreadyExistsError,
     DeckNotExistsError,
     InvalidTokenError,
+    UserNotFoundError,
 )
 
 logger = structlog.get_logger()
@@ -79,6 +80,19 @@ async def card_not_exist(request: Request, exc: CardNotExistsError) -> JSONRespo
     )
 
 
+async def user_not_found(request: Request, exc: UserNotFoundError) -> JSONResponse:
+    logger.critical(
+        f"Пользователь не найден",
+        user_id=str(exc.user_id),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "message": f"Пользователь не найден",
+        },
+    )
+
+
 def setup_exception_handlers(app: FastAPI) -> None:
     """Единая регистрация всех обработчиков ошибок."""
     app.add_exception_handler(InvalidTokenError, invalid_token)  # type: ignore[arg-type]
@@ -86,3 +100,4 @@ def setup_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(CardAlreadyExistsError, card_exist)  # type: ignore[arg-type]
     app.add_exception_handler(DeckNotExistsError, deck_not_exist)  # type: ignore[arg-type]
     app.add_exception_handler(CardNotExistsError, card_not_exist)  # type: ignore[arg-type]
+    app.add_exception_handler(UserNotFoundError, user_not_found)  # type: ignore[arg-type]

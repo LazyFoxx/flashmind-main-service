@@ -8,6 +8,7 @@ from .card import (
 from .deck import (
     CreateDeckRequest,
     DeckResponse,
+    DeckResponseTotalCards,
     ErrorMessageResponse,
     GetUserDecksResponse,
     UpdateDeckRequest,
@@ -26,4 +27,5 @@ __all__ = [
     "UpdateCardRequest",
     "CardLightResponse",
     "CardListResponse",
+    "DeckResponseTotalCards",
 ]

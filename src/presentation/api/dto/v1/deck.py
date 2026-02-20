@@ -49,8 +49,45 @@ class DeckResponse(BaseModel):
 
 
 # Получить список всех колод пользователя
+class DeckResponseTotalCards(BaseModel):
+    id: str
+    name: str
+    description: str
+    total_cards: int
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "UUID",
+                    "name": "Английский 3000",
+                    "description": "Тут собраны 3000 самых популярных слов в английском языке",
+                    "total_cards": 10,
+                }
+            ]
+        }
+    }
+
+    @classmethod
+    def from_entity(cls, deck: Deck) -> "DeckResponseTotalCards":
+        if deck.total_cards is None:
+            return cls(
+                id=str(deck.id),
+                name=deck.name,
+                description=deck.description,
+                total_cards=0,
+            )
+
+        return cls(
+            id=str(deck.id),
+            name=deck.name,
+            description=deck.description,
+            total_cards=deck.total_cards,
+        )
+
+
 class GetUserDecksResponse(BaseModel):
-    decks: List[DeckResponse]  # используем List для списка объектов
+    decks: List[DeckResponseTotalCards]  # используем List для списка объектов
 
     model_config = {
         "json_schema_extra": {
@@ -61,11 +98,13 @@ class GetUserDecksResponse(BaseModel):
                             "id": "UUID",
                             "name": "Английский 3000",
                             "description": "Тут собраны 3000 самых популярных слов в английском языке",
+                            "total_cards": 11,
                         },
                         {
                             "id": "UUID",
                             "name": "Математика 101",
                             "description": "Основы математики, арифметика и геометрия",
+                            "total_cards": 15,
                         },
                     ]
                 }

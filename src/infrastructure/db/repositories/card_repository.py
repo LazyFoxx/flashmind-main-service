@@ -110,33 +110,30 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         cards = [(row[0], row[1], row[2]) for row in rows]
         return cards
 
-    async def get_total_cards_by_deck(
-        self,
-        deck_id: Optional[UUID] = None,
-        list_decks_id: Optional[List[UUID]] = None,
-    ) -> Union[int, List[Tuple[UUID, int]]]:
-
-        query = select(
-            CardModel.deck_id, func.count(CardModel.id).label("card_count")
-        ).group_by(CardModel.deck_id)
-
-        # Если передан один deck_id, фильтруем по этому deck_id
-        if deck_id:
-            query = query.where(CardModel.deck_id == deck_id)
-            result = await self.session.execute(query)
-            total_cards = result.scalar()
-            return total_cards or 0
-
-        # Если передан список колод
-        elif list_decks_id:
-            query = query.where(CardModel.deck_id.in_(list_decks_id))
-            result = await self.session.execute(query)
-            total_cards = result.fetchall()  # получаем список (deck_id, count)
-            return [(row[0], row[1]) for row in total_cards]
+    async def get_total_cards_by_deck_id(self, deck_id: UUID) -> int:
+        query = select(func.count(CardModel.id)).where(CardModel.deck_id == deck_id)
 
         result = await self.session.execute(query)
-        total_cards = result.scalar()
-        return total_cards or 0
+        return result.scalar_one() or 0
+
+    async def get_total_cards_by_deck_ids(
+        self,
+        deck_ids: List[UUID],
+    ) -> List[Tuple[UUID, int]]:
+
+        query = (
+            select(
+                DeckModel.id.label("deck_id"),
+                func.count(CardModel.id).label("card_count"),
+            )
+            .outerjoin(CardModel, DeckModel.id == CardModel.deck_id)
+            .group_by(DeckModel.id)
+        )
+
+        query = query.where(DeckModel.id.in_(deck_ids))
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+        return [(row.deck_id, row.card_count) for row in rows]
 
     # async def get_due_cards(
     #     self,

@@ -98,24 +98,30 @@ class AbstractCardRepository(ABC):
         """
 
     @abstractmethod
-    async def get_total_cards_by_deck(
-        self,
-        deck_id: Optional[UUID] = None,
-        list_decks_id: Optional[List[UUID]] = None,
-    ) -> Union[int, List[Tuple[UUID, int]]]:
+    async def get_total_cards_by_deck_id(self, deck_id: UUID) -> int:
+        """возвращает количество карточек в колоде как int.
+
+        Args:
+            deck_id (UUID): _description_
+
+        Returns:
+            int: количество карточек в колоде
         """
-        Если передан deck_id, то возвращает количество карточек в колоде как int.
-        Если передан список list_decks_id, то возвращает список с количеством карточек для каждой колоды:
+
+    @abstractmethod
+    async def get_total_cards_by_deck_ids(
+        self,
+        deck_ids: List[UUID],
+    ) -> List[Tuple[UUID, int]]:
+        """
+        возвращает список с количеством карточек для каждой колоды:
         [(deck_id, количество карточек)].
-        Если не передан ни один опциональный аргумент, то возвращает общее количество карточек по всем колодам.
 
         Аргументы:
-            deck_id: ID одной колоды (по умолчанию None, что означает поиск по всем колодам)
-            list_decks_id: Список ID колод (по умолчанию None)
+            deck_ids: Список ID колод (по умолчанию None)
 
         Возвращает:
-            total_cards: int — количество карточек в колоде или по всем колодам,
-            или список кортежей (deck_id, количество карточек).
+            list: [(deck_id, total_cards)]
         """
 
     # @abstractmethod

@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 
 import structlog
 
-from src.application.exceptions import DeckAlreadyExistsError
+from src.application.exceptions import DeckAlreadyExistsError, UserNotFoundError
 from src.application.interfaces import (
     AbstractUnitOfWork,
 )
@@ -27,6 +27,12 @@ class CreateDeckUseCase:
 
         async with self.uow:
             try:
+
+                user = await self.uow.users.get_by_id(user_id=input_dto.user_id)
+
+                if user is None:
+                    raise UserNotFoundError(user_id=str(input_dto.user_id))
+
                 # нельзя иметь две колоды с одним и тем же названием у одного пользователя.
                 existing_deck = await self.uow.decks.get_by_name(
                     new_deck.name, user_id=input_dto.user_id
@@ -45,6 +51,8 @@ class CreateDeckUseCase:
                     user_id=input_dto.user_id,
                 )
             except DeckAlreadyExistsError:
+                raise
+            except UserNotFoundError:
                 raise
             except Exception as e:
                 # возможные не отловленные ошибки
