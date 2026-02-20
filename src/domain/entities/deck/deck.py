@@ -16,6 +16,7 @@ class Deck:
     description: str
     user_id: UUID
     card_ids: List[UUID] = field(default_factory=list)
+    total_cards: Optional[int] = None
 
     def add_card(self, card: Card) -> "Deck":
         """Бизнес-метод: добавить карту, верни новую Deck."""

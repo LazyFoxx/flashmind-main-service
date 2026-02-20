@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import AbstractCardRepository, Card
@@ -78,7 +78,6 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         limit: Optional[int] = None,  # None = все
     ) -> List[tuple[UUID, UUID, str]]:
 
-        # Базовый запрос для карточек
         query = select(
             CardModel.id,
             CardModel.deck_id,
@@ -101,17 +100,43 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                 .where(DeckModel.user_id == user_id)
             )
 
-        # Добавляем пагинацию (если limit и offset заданы)
         if limit is not None:
             query = query.offset(offset).limit(limit)
 
-        # Выполнение запроса
         result = await self.session.execute(query)
         rows = result.fetchall()
 
         # Преобразуем результат в список кортежей
         cards = [(row[0], row[1], row[2]) for row in rows]
         return cards
+
+    async def get_total_cards_by_deck(
+        self,
+        deck_id: Optional[UUID] = None,
+        list_decks_id: Optional[List[UUID]] = None,
+    ) -> Union[int, List[Tuple[UUID, int]]]:
+
+        query = select(
+            CardModel.deck_id, func.count(CardModel.id).label("card_count")
+        ).group_by(CardModel.deck_id)
+
+        # Если передан один deck_id, фильтруем по этому deck_id
+        if deck_id:
+            query = query.where(CardModel.deck_id == deck_id)
+            result = await self.session.execute(query)
+            total_cards = result.scalar()
+            return total_cards or 0
+
+        # Если передан список колод
+        elif list_decks_id:
+            query = query.where(CardModel.deck_id.in_(list_decks_id))
+            result = await self.session.execute(query)
+            total_cards = result.fetchall()  # получаем список (deck_id, count)
+            return [(row[0], row[1]) for row in total_cards]
+
+        result = await self.session.execute(query)
+        total_cards = result.scalar()
+        return total_cards or 0
 
     # async def get_due_cards(
     #     self,
