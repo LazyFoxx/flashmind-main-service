@@ -10,6 +10,7 @@ from src.application.use_cases import (
     GetCardUseCase,
     GetUserDecksUseCase,
     GetUserProfileUseCase,
+    NewToStudyUseCase,
     UpdateCardUseCase,
     UpdateDeckUseCase,
     UpdateUserProfileUseCase,
@@ -31,3 +32,5 @@ class UseCaseProvider(Provider):
     update_card = provide(UpdateCardUseCase, scope=Scope.REQUEST)
     delete_card = provide(DeleteCardUseCase, scope=Scope.REQUEST)
     get_cards = provide(GetCardsUseCase, scope=Scope.REQUEST)
+
+    new_to_study = provide(NewToStudyUseCase, scope=Scope.REQUEST)

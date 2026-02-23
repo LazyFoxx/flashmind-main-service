@@ -124,6 +124,28 @@ class AbstractCardRepository(ABC):
             list: [(deck_id, total_cards)]
         """
 
+    @abstractmethod
+    async def get_by_deck_id(
+        self,
+        deck_id: UUID,
+        in_learning: Optional[bool] = None,
+        limit: Optional[int] = None,
+    ) -> List[Card]:
+        """Получить список Card по id Deck.
+
+        Args:
+            deck_id: UUID конкретной колоды
+            in_learning:
+                - True  → только карточки в обучении (in_learning=True)
+                - False → только новые (in_learning=False)
+                - None  → все карточки
+            limit: Максимальное количество возвращаемых карточек (None = без ограничения)
+
+        Returns:
+            List[Card]  # domain entities
+        """
+        ...
+
     # @abstractmethod
     # async def get_due_cards(
     #     self,
