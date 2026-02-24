@@ -72,3 +72,38 @@ class StudyCardListResponse(BaseModel):
             ]
         }
     }
+
+
+class StudyCardListWithStatsResponse(BaseModel):
+    total: int
+    in_learning: int
+    learned: int
+    learning_today: int
+    cards: List[StudyCardResponse]
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "cards": [
+                        {
+                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                            "deck_id": "123e4567-e89b-12d3-a456-426614174001",
+                            "front": "Любовь",
+                            "back": "Это просто",
+                        },
+                        {
+                            "id": "123e4567-e89b-12d3-a456-426614174002",
+                            "deck_id": "123e4567-e89b-12d3-a456-426614174001",
+                            "front": "Смех",
+                            "back": "Ахахахаа ору",
+                        },
+                    ],
+                    "total": 100,
+                    "in_learning": 30,
+                    "learned": 30,
+                    "learning_today": 15,
+                }
+            ]
+        }
+    }

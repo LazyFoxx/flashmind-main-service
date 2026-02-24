@@ -90,3 +90,18 @@ class AbstractDeckRepository(ABC):
             Список объектов Deck
         """
         ...
+
+    @abstractmethod
+    async def get_info(
+        self,
+        deck_id: UUID,
+    ) -> dict[str, int]:
+        """Получает мета информацюи по колоде.
+
+        Args:
+            deck_id: UUID конкретной колоды (если None — все колоды пользователя)
+
+        Returns:
+            Словарь со статистикой.
+
+        """

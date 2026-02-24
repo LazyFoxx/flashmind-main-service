@@ -1,11 +1,11 @@
 from typing import List, Optional
 from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import AbstractDeckRepository, Deck
-from src.infrastructure.db.models import DeckModel
+from src.infrastructure.db.models import CardModel, DeckModel
 
 
 class SQlAlchemyDeckRepository(AbstractDeckRepository):
@@ -64,3 +64,51 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
         # Получаем все найденные модели колод, преобразуем их в сущности Deck
         deck_models = [deck_model.to_entity() for deck_model in result.scalars()]
         return deck_models
+
+    async def get_info(
+        self,
+        deck_id: UUID,
+    ) -> dict[str, int]:
+        """Получает мета информацюи по колоде.
+
+        Args:
+            deck_id: UUID конкретной колоды (если None — все колоды пользователя)
+
+        Returns:
+            Словарь со статистикой.
+
+        """
+        stmt = (
+            select(func.count())
+            .select_from(CardModel)
+            .where(CardModel.deck_id == deck_id)
+        )
+        result = await self.session.execute(stmt)
+
+        total_cards = result.scalar_one()
+
+        stmt = (
+            select(func.count())
+            .select_from(CardModel)
+            .where(CardModel.deck_id == deck_id)
+            .where(CardModel.in_learning)
+        )
+        result = await self.session.execute(stmt)
+
+        in_learning = result.scalar_one()
+
+        stmt = (
+            select(func.count())
+            .select_from(CardModel)
+            .where(CardModel.deck_id == deck_id)
+            .where(CardModel.stability >= 100)
+        )
+        result = await self.session.execute(stmt)
+
+        learned = result.scalar_one()
+
+        return {
+            "total_cards": total_cards,
+            "in_learning": in_learning,
+            "learned": learned,
+        }

@@ -159,27 +159,23 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         return [card_model.to_entity() for card_model in card_models]
         ...
 
-    # async def get_due_cards(
-    #     self,
-    #     deck_id: Optional[UUID] = None,
-    #     user_id: Optional[UUID] = None,
-    #     now: Optional[datetime] = None,
-    #     limit: Optional[int] = None,
-    # ) -> List[Card]:
-    #     """Получить карточки, которые пора повторять (due ≤ текущего времени).
+    async def get_due_cards(
+        self,
+        deck_id: UUID,
+        due_before: datetime,
+        limit: Optional[int] = None,
+    ) -> list[Card]:
+        query = (
+            select(CardModel)
+            .where(CardModel.deck_id == deck_id)
+            .where(CardModel.next_due <= due_before)
+            .order_by(CardModel.next_due.asc())
+        )
 
-    #     Args:
-    #         deck_id: UUID конкретной колоды (если None — все колоды пользователя)
-    #         user_id: UUID пользователя (обязателен, если deck_id = None)
-    #         now: Момент времени, относительно которого проверяется due
-    #              (по умолчанию — текущее UTC-время)
-    #         limit: Максимальное количество возвращаемых карточек
-    #              (None = без ограничения, полезно для пагинации)
+        if limit is not None:
+            query = query.limit(limit)
 
-    #     Returns:
-    #         Список объектов Card, готовых к повторению, отсортированных по due (от более ранних)
+        result = await self.session.execute(query)
+        card_models = result.scalars().all()
 
-    #     Raises:
-    #         ValueError: если deck_id и user_id оба None
-    #     """
-    #     ...
+        return [card_model.to_entity() for card_model in card_models]

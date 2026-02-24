@@ -64,6 +64,12 @@ class CardModel(Base):
         index=True,
     )
 
+    stability: Mapped[Optional[float]] = mapped_column(
+        Float,
+        nullable=True,
+        index=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
         nullable=False,
@@ -116,6 +122,7 @@ class CardModel(Base):
                 fsrs_state=None,
                 next_due=None,
                 difficulty=None,
+                stability=None,
             )
 
         # in_learning = True → берем параметры
@@ -129,4 +136,5 @@ class CardModel(Base):
             fsrs_state=fsrs_card.to_json(),
             next_due=fsrs_card.due,
             difficulty=fsrs_card.difficulty,
+            stability=fsrs_card.stability,
         )

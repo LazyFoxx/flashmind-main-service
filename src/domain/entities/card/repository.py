@@ -146,28 +146,24 @@ class AbstractCardRepository(ABC):
         """
         ...
 
-    # @abstractmethod
-    # async def get_due_cards(
-    #     self,
-    #     deck_id: Optional[UUID] = None,
-    #     user_id: Optional[UUID] = None,
-    #     now: Optional[datetime] = None,
-    #     limit: Optional[int] = None,
-    # ) -> List[Card]:
-    #     """Получить карточки, которые пора повторять (due ≤ текущего времени).
+    @abstractmethod
+    async def get_due_cards(
+        self,
+        deck_id: UUID,
+        due_before: datetime,
+        limit: Optional[int] = None,
+    ) -> List[Card]:
+        """Получить карточки, которые пора повторять.
 
-    #     Args:
-    #         deck_id: UUID конкретной колоды (если None — все колоды пользователя)
-    #         user_id: UUID пользователя (обязателен, если deck_id = None)
-    #         now: Момент времени, относительно которого проверяется due
-    #              (по умолчанию — текущее UTC-время)
-    #         limit: Максимальное количество возвращаемых карточек
-    #              (None = без ограничения, полезно для пагинации)
+        Args:
+            deck_id: UUID конкретной колоды (если None — все колоды пользователя)
+            due_before: Момент времени, относительно которого проверяется due
+            limit: Максимальное количество возвращаемых карточек
+                 (None = без ограничения)
 
-    #     Returns:
-    #         Список объектов Card, готовых к повторению, отсортированных по due (от более ранних)
+        Returns:
+            Список объектов Card, готовых к повторению, отсортированных по due (от более ранних)
 
-    #     Raises:
-    #         ValueError: если deck_id и user_id оба None
-    #     """
-    #     ...
+        Raises:
+            ValueError: если deck_id и user_id оба None
+        """

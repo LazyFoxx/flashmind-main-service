@@ -14,7 +14,12 @@ from .deck import (
     UpdateDeckRequest,
 )
 from .profile import UserProfileResponse
-from .study import NewToStudyRequest, StudyCardListResponse, StudyCardResponse
+from .study import (
+    NewToStudyRequest,
+    StudyCardListResponse,
+    StudyCardListWithStatsResponse,
+    StudyCardResponse,
+)
 
 __all__ = [
     "CreateDeckRequest",
@@ -32,4 +37,5 @@ __all__ = [
     "StudyCardResponse",
     "StudyCardListResponse",
     "NewToStudyRequest",
+    "StudyCardListWithStatsResponse",
 ]

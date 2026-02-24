@@ -8,6 +8,7 @@ from src.application.use_cases import (
     DeleteDeckUseCase,
     GetCardsUseCase,
     GetCardUseCase,
+    GetStudyCardsUseCase,
     GetUserDecksUseCase,
     GetUserProfileUseCase,
     NewToStudyUseCase,
@@ -34,3 +35,4 @@ class UseCaseProvider(Provider):
     get_cards = provide(GetCardsUseCase, scope=Scope.REQUEST)
 
     new_to_study = provide(NewToStudyUseCase, scope=Scope.REQUEST)
+    get_study_cards = provide(GetStudyCardsUseCase, scope=Scope.REQUEST)

@@ -4,11 +4,17 @@ from uuid import UUID
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile, status
 
-from src.application.use_cases import NewToStudyInput, NewToStudyUseCase
+from src.application.use_cases import (
+    GetStudyCardsInput,
+    GetStudyCardsUseCase,
+    NewToStudyInput,
+    NewToStudyUseCase,
+)
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
     NewToStudyRequest,
     StudyCardListResponse,
+    StudyCardListWithStatsResponse,
     StudyCardResponse,
 )
 
@@ -18,7 +24,7 @@ router = APIRouter(prefix="/study", tags=["study"])
 @router.post(
     "",
     response_model=StudyCardListResponse,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     summary="Получить список новых карточек на обучение",
     description=(
         "Принимает id колоды и количество карточек, которые надо перенесте из новых в изучаемые и возвращает их"
@@ -40,4 +46,36 @@ async def new_to_study_cards(
     return StudyCardListResponse(
         cards=[StudyCardResponse.from_entity(card) for card in study_cards.cards],
         total=study_cards.total,
+    )
+
+
+@router.get(
+    "",
+    response_model=StudyCardListWithStatsResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Получение списка карточек “на изучении” + мета информация по колоде",
+    description=(
+        "принимает обязательный query параметр ?deck_id - id колоды. Возвращает карточки для обучения и информацию по колоде"
+    ),
+)
+@inject
+async def get_study_cards(
+    use_case: FromDishka[GetStudyCardsUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+    deck_id: UUID = Query(
+        description="id колоды",
+    ),
+) -> StudyCardListWithStatsResponse:
+    dto = GetStudyCardsInput(
+        deck_id=deck_id,
+        user_id=user_id,
+    )
+    study_cards = await use_case.execute(input_dto=dto)
+
+    return StudyCardListWithStatsResponse(
+        cards=[StudyCardResponse.from_entity(card) for card in study_cards.cards],
+        total=study_cards.total,
+        in_learning=study_cards.in_learning,
+        learning_today=study_cards.learning_today,
+        learned=study_cards.learned,
     )
