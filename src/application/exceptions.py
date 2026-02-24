@@ -34,6 +34,11 @@ class CardAlreadyExistsError(Exception):
         self.deck_id = deck_id
 
 
+class CardNotInLearningError(Exception):
+    def __init__(self, card_id: UUID):
+        self.card_id = card_id
+
+
 class InvalidTokenError(ApplicationError):
     pass
 

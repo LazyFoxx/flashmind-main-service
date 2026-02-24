@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from src.application.exceptions import (
     CardAlreadyExistsError,
     CardNotExistsError,
+    CardNotInLearningError,
     DeckAlreadyExistsError,
     DeckNotExistsError,
     InvalidTokenError,
@@ -93,6 +94,21 @@ async def user_not_found(request: Request, exc: UserNotFoundError) -> JSONRespon
     )
 
 
+async def card_not_in_learning(
+    request: Request, exc: CardNotInLearningError
+) -> JSONResponse:
+    logger.warning(
+        f"карточка не добавлена в изучаемые",
+        card_id=str(exc.card_id),
+    )
+    return JSONResponse(
+        status_code=422,
+        content={
+            "message": f"Карточка не добавлена в колоду изучаемые",
+        },
+    )
+
+
 def setup_exception_handlers(app: FastAPI) -> None:
     """Единая регистрация всех обработчиков ошибок."""
     app.add_exception_handler(InvalidTokenError, invalid_token)  # type: ignore[arg-type]
@@ -101,3 +117,4 @@ def setup_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(DeckNotExistsError, deck_not_exist)  # type: ignore[arg-type]
     app.add_exception_handler(CardNotExistsError, card_not_exist)  # type: ignore[arg-type]
     app.add_exception_handler(UserNotFoundError, user_not_found)  # type: ignore[arg-type]
+    app.add_exception_handler(CardNotInLearningError, card_not_in_learning)  # type: ignore[arg-type]

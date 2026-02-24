@@ -16,6 +16,7 @@ from .deck import (
 from .profile import UserProfileResponse
 from .study import (
     NewToStudyRequest,
+    ReviewDueCardRequest,
     StudyCardListResponse,
     StudyCardListWithStatsResponse,
     StudyCardResponse,
@@ -38,4 +39,5 @@ __all__ = [
     "StudyCardListResponse",
     "NewToStudyRequest",
     "StudyCardListWithStatsResponse",
+    "ReviewDueCardRequest",
 ]

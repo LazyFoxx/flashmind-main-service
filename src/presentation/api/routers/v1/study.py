@@ -9,10 +9,13 @@ from src.application.use_cases import (
     GetStudyCardsUseCase,
     NewToStudyInput,
     NewToStudyUseCase,
+    ReviewDueCardInput,
+    ReviewDueCardsUseCase,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
     NewToStudyRequest,
+    ReviewDueCardRequest,
     StudyCardListResponse,
     StudyCardListWithStatsResponse,
     StudyCardResponse,
@@ -79,3 +82,32 @@ async def get_study_cards(
         learning_today=study_cards.learning_today,
         learned=study_cards.learned,
     )
+
+
+@router.patch(
+    "",
+    response_model=StudyCardResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Повторить карточку",
+    description=(
+        "принимает id карточки и оценку. В случае если карточка завершена возвращает status 204 No Content а иначе возвращает 200 OK и карточку"
+    ),
+)
+@inject
+async def update_cards_state(
+    payload: ReviewDueCardRequest,
+    use_case: FromDishka[ReviewDueCardsUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> StudyCardResponse | Response:
+    dto = ReviewDueCardInput(
+        card_id=payload.card_id,
+        rating=payload.rating,
+        user_id=user_id,
+    )
+
+    card = await use_case.execute(input_dto=dto)
+
+    if card is None:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    return StudyCardResponse.from_entity(card)

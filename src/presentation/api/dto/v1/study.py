@@ -107,3 +107,21 @@ class StudyCardListWithStatsResponse(BaseModel):
             ]
         }
     }
+
+
+class ReviewDueCardRequest(BaseModel):
+    card_id: UUID
+    rating: int = Field(
+        ..., gt=0, le=4, description=f"1 - снова, 2 - сложно, 3 - хорошо, 4 - легко"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "card_id": "123e4567-e89b-12d3-a456-426614174000",
+                    "rating": 3,
+                }
+            ]
+        }
+    }

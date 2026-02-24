@@ -36,7 +36,6 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         self.session.add(card_model)
 
     async def update(self, card: Card) -> None:
-
         if card._fsrs_card is None:
             stmt = (
                 update(CardModel)
@@ -47,6 +46,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                     fsrs_state=None,
                     next_due=None,
                     difficulty=None,
+                    stability=None,
                 )
             )
             return None
@@ -60,6 +60,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                 fsrs_state=card._fsrs_card.to_json(),
                 next_due=card._fsrs_card.due,
                 difficulty=card._fsrs_card.difficulty,
+                stability=card._fsrs_card.stability,
                 in_learning=card.in_learning,
             )
         )

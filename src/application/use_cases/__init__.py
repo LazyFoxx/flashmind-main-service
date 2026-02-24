@@ -9,6 +9,7 @@ from .decks.get_user_decks.use_case import GetUserDecksUseCase
 from .decks.update_deck.use_case import UpdateDeckInput, UpdateDeckUseCase
 from .study.get_study_cards.use_case import GetStudyCardsInput, GetStudyCardsUseCase
 from .study.new_to_study.use_case import NewToStudyInput, NewToStudyUseCase
+from .study.review_due_card.use_case import ReviewDueCardInput, ReviewDueCardsUseCase
 from .users.create_user_profile.use_case import CreateUserProfileUseCase
 from .users.get_user_profile.use_case import GetUserProfileUseCase
 from .users.update_user_profile.use_case import UpdateUserProfileUseCase
@@ -37,4 +38,6 @@ __all__ = [
     "NewToStudyUseCase",
     "GetStudyCardsInput",
     "GetStudyCardsUseCase",
+    "ReviewDueCardInput",
+    "ReviewDueCardsUseCase",
 ]

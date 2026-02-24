@@ -100,6 +100,7 @@ class CardModel(Base):
                 front=self.front,
                 back=self.back,
                 _fsrs_card=None,
+                in_learning=False,
             )
 
         return Card(
@@ -108,6 +109,7 @@ class CardModel(Base):
             front=self.front,
             back=self.back,
             _fsrs_card=FSRS_Card.from_json(self.fsrs_state),
+            in_learning=True,
         )
 
     @classmethod

@@ -4,7 +4,7 @@ from typing import Any, Optional
 from uuid import UUID, uuid4
 
 from fsrs import Card as FSRS_Card
-from fsrs import Rating, Scheduler
+from fsrs import Rating, ReviewLog, Scheduler
 
 
 @dataclass(slots=True, frozen=True)
@@ -41,19 +41,23 @@ class Card:
         # Возвращаем карточку без FSRS, завершая процесс обучения
         return self._copy(in_learning=False, _fsrs_card=None)
 
-    def review(self, scheduler: Scheduler, rating: Rating) -> "Card":
-        """Бизнес-метод: повторить, верни новую immutable Card."""
+    def review(self, scheduler: Scheduler, rating: Rating) -> tuple["Card", ReviewLog]:
+        """Бизнес-метод: повторить, верни новую immutable Card. и лог"""
 
         if self._fsrs_card is None:
             raise ValueError("Карточка не в состоянии обучения")
 
-        new_fsrs, _ = scheduler.review_card(self._fsrs_card, rating)
-        return Card(
-            id=self.id,
-            deck_id=self.deck_id,
-            front=self.front,
-            back=self.back,
-            _fsrs_card=new_fsrs,
+        new_fsrs, review_log = scheduler.review_card(self._fsrs_card, rating)
+        return (
+            Card(
+                id=self.id,
+                deck_id=self.deck_id,
+                front=self.front,
+                back=self.back,
+                in_learning=self.in_learning,
+                _fsrs_card=new_fsrs,
+            ),
+            review_log,
         )
 
     def is_due(self, now: datetime) -> bool:
@@ -62,4 +66,4 @@ class Card:
             return False
 
         due_time: datetime = self._fsrs_card.due
-        return now >= due_time
+        return due_time <= now
