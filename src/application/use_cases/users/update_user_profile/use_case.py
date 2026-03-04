@@ -62,6 +62,7 @@ class UpdateUserProfileUseCase:
                 self.logger.info(
                     "Профиль пользователя успешно обнавлен в БД",
                     user_id=updated_user.id,
+                    updates=updates
                 )
 
                 existing_user = (
@@ -79,6 +80,12 @@ class UpdateUserProfileUseCase:
             avatar_url = await self.storage.generate_presigned_url(
                 existing_user.avatar_key, expires_in=3600
             )
+        else:
+            avatar_url = ""
+            self.logger.debug(
+                    "У пользователя отсутствует аватар",
+                    user_id=updated_user.id,
+                )
 
         return UpdateProfileUserOutput(
             first_name=existing_user.first_name,

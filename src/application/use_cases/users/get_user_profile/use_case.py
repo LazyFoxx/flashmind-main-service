@@ -27,9 +27,12 @@ class GetUserProfileUseCase:
 
         self.logger.info("Получил профиль пользователя из БД", user_id=str(user.id)[:8])
 
-        avatar_url = await self.storage.generate_presigned_url(
-            object_key=user.avatar_key, expires_in=3600 * 720
-        )
+        if not user.avatar_key:
+            avatar_url = ""
+        else:
+            avatar_url = await self.storage.generate_presigned_url(
+                object_key=user.avatar_key, expires_in=3600 * 720
+            )
 
         return GetProfileUserOutput(
             first_name=user.first_name,
