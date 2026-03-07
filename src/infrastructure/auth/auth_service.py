@@ -25,7 +25,6 @@ class AuthService:
 
         try:
             header_b64, _, *_ = token.split(".")
-            print(token)
             header = json.loads(b64url_decode(header_b64))
 
             kid = header["kid"]
