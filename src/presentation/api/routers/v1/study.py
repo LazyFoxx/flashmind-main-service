@@ -28,7 +28,7 @@ router = APIRouter(prefix="/study", tags=["study"])
     "",
     response_model=StudyCardListResponse,
     status_code=status.HTTP_200_OK,
-    summary="Получить список новых карточек на обучение",
+    summary="Получить список новых карточек на обучение + в этом же списке добавляются список карточек 'на изучении'",
     description=(
         "Принимает id колоды и количество карточек, которые надо перенесте из новых в изучаемые и возвращает их"
     ),

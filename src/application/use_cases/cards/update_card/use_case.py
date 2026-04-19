@@ -37,9 +37,13 @@ class UpdateCardUseCase:
                 # добавляем новою карточку
                 await self.uow.cards.update(updated_card)
                 await self.uow.commit()
+
+                updated_card = await self.uow.cards.get_by_id(input_dto.card_id)
                 self.logger.debug(
                     "Карточка обновлена",
                     front=updated_card.front,
+                    back=updated_card.back,
+                    card_id=updated_card.id,
                     user_id=input_dto.user_id,
                 )
             except CardNotExistsError:
