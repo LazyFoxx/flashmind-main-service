@@ -112,7 +112,7 @@ class StudyCardListWithStatsResponse(BaseModel):
 class ReviewDueCardRequest(BaseModel):
     card_id: UUID
     rating: int = Field(
-        ..., gt=0, le=4, description=f"1 - снова, 2 - сложно, 3 - хорошо, 4 - легко"
+        ..., gt=1, le=4, description=f"1 - снова, 2 - сложно, 3 - хорошо, 4 - легко"
     )
 
     model_config = {
