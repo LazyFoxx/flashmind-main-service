@@ -15,5 +15,5 @@ class RedisSettings(BaseSettings):
 
     def get_url(self) -> str:
         password = f"{self.password.get_secret_value()}"
-        return f"redis://:{password}@{self.host}:{self.port}/{self.db}"
-        # return f"redis://{self.host}:{self.port}/{self.db}"
+        # return f"redis://:{password}@{self.host}:{self.port}/{self.db}"
+        return f"redis://{self.host}:{self.port}/{self.db}"
