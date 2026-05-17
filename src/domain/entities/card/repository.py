@@ -167,3 +167,20 @@ class AbstractCardRepository(ABC):
         Raises:
             ValueError: если deck_id и user_id оба None
         """
+        
+    @abstractmethod
+    async def get_total_due_cards_by_deck_ids(
+        self,
+        deck_ids: List[UUID],
+        due_before: datetime,
+    ) -> List[Tuple[UUID, int]]:
+        """
+        возвращает список с количеством карточек к повтору сегодня для каждой колоды:
+        [(deck_id, количество карточек)].
+
+        Аргументы:
+            deck_ids: Список ID колод (по умолчанию None)
+
+        Возвращает:
+            list: [(deck_id, total_cards)]
+        """

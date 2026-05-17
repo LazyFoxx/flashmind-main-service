@@ -32,8 +32,13 @@ class RabbitConnection:
             return
 
         # Подключаемся к RabbitMQ
-        self._connection = await aio_pika.connect_robust(self.settings.get_url())
-
+        try:
+            self._connection = await aio_pika.connect_robust(self.settings.get_url())
+            self.logger.info("Успешно подключились к RabbitMQ")
+        except Exception as e:
+            self.logger.error("Ошибка подключения к RabbitMQ", error=str(e))
+            raise
+        
         # Создаём канал
         self._channel = await self._connection.channel()
 

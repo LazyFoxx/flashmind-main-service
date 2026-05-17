@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, Text, func
+from sqlalchemy import ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -46,6 +46,23 @@ class DeckModel(Base):
         passive_deletes=True,
         lazy="selectin",
     )
+    
+    desired_retention: Mapped[float] = mapped_column(
+        Numeric(3, 2), nullable=False, default=0.90, server_default="0.90",
+        check_constraint="desired_retention BETWEEN 0.85 AND 0.95",
+    )
+
+    maximum_interval: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=36500, server_default="36500",
+        check_constraint="maximum_interval BETWEEN 30 AND 99999",
+    )
+    
+    color: Mapped[str] = mapped_column(
+        String(7),
+        nullable=False,
+        default="#4A90E2",  # Синий по умолчанию
+        server_default="'#4A90E2'",  # Для существующих записей
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
@@ -70,6 +87,9 @@ class DeckModel(Base):
             description=self.description or "",
             user_id=self.user_id,
             card_ids=[],
+            desired_retention=getattr(self, "desired_retention", 0.90),
+            maximum_interval=getattr(self, "maximum_interval", 36500),
+            color=self.color or "#4A90E2",
         )
 
     @classmethod
@@ -83,4 +103,7 @@ class DeckModel(Base):
             name=deck.name,
             description=deck.description,
             user_id=deck.user_id,
+            desired_retention=getattr(deck, "desired_retention", 0.90),
+            maximum_interval=getattr(deck, "maximum_interval", 36500),
+            color=deck.color or "#4A90E2",
         )

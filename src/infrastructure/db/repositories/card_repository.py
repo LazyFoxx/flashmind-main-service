@@ -180,3 +180,32 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         card_models = result.scalars().all()
 
         return [card_model.to_entity() for card_model in card_models]
+    
+
+    async def get_total_due_cards_by_deck_ids(
+        self,
+        deck_ids: List[UUID],
+        due_before: datetime,
+    ) -> List[Tuple[UUID, int]]:
+        """
+        Возвращает список кортежей (deck_id, total_due_cards) для указанных колод.
+        total_due_cards — это количество карт, у которых next_due <= due_before.
+        """
+
+        query = (
+            select(
+                CardModel.deck_id,
+                func.count(
+                    CardModel.id
+                 ).label("due_count"),
+             )
+             .where(CardModel.deck_id.in_(deck_ids))
+             .where(CardModel.next_due.isnot(None))
+             .where(CardModel.next_due <= due_before)
+             .group_by(CardModel.deck_id)
+         )
+
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+        
+        return [(row.deck_id, row.due_count) for row in rows]

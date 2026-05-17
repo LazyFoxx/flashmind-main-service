@@ -39,6 +39,7 @@ class ReviewDueCardsUseCase:
 
                 # получаем карточку из базы данных
                 card = await self.uow.cards.get_by_id(input_dto.card_id)
+                deck = await self.uow.decks.get_by_id(card.deck_id())
 
                 if card is None:
                     raise CardNotExistsError(card_id=input_dto.card_id)
@@ -58,7 +59,7 @@ class ReviewDueCardsUseCase:
                     raise ValueError
 
                 scheduler = Scheduler(
-                    desired_retention=0.95,  # Стремиться к 95% шанса вспоминания
+                    desired_retention=deck.desired_retention,  # Стремиться к 95% шанса вспоминания
                     learning_steps=(
                         timedelta(minutes=1),
                         timedelta(minutes=10),
@@ -66,7 +67,7 @@ class ReviewDueCardsUseCase:
                     relearning_steps=(
                         timedelta(minutes=10),
                     ),  # Интервалы после забывания
-                    maximum_interval=36500,  # Макс. ~100 лет
+                    maximum_interval=deck.maximum_interval,  # Макс. ~100 лет
                     enable_fuzzing=True,  # Добавлять случайный fuzz к интервалам, чтобы избежать скоплений
                 )
 
