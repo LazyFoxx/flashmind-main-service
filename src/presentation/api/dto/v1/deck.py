@@ -1,3 +1,4 @@
+from pydantic import Field
 from typing import List
 
 from pydantic import BaseModel
@@ -49,9 +50,44 @@ class DeckResponse(BaseModel):
 
 
 class DeckSettings(BaseModel):
-    desired_retention: float
-    maximum_interval: int
-    color: str
+    desired_retention: float = Field(
+         ...,
+        ge=0.85,
+        le=0.95,
+        description="Целевая удержание карт (от 0.0 до 1.0). 0.90 = 90% удержание.",
+        examples=[0.90, 0.95],
+     )
+    maximum_interval: int = Field(
+         ...,
+        ge=60,
+        le=36500,
+        description="Максимальный интервал повторения в днях. Не может превышать 36500 дней.",
+        examples=[365, 36500],
+     )
+    color: str = Field(
+         ...,
+        pattern=r"^#[0-9A-Fa-f]{6}$",
+        description="Цвет колоды в формате HEX. Например, #4A90E2.",
+        examples=["#4A90E2", "#FF5733"],
+     )
+
+    
+class DeckSettingsOutput(DeckSettings):
+    id: str
+    
+    model_config = {
+         "json_schema_extra": {
+             "examples": [
+                 {
+                     "id": "UUID",
+                     "desired_retention": 0.90,
+                     "maximum_interval": 36500,
+                     "color": "#4A90E2",
+                 }
+             ]
+         }
+     }
+
 
 # Получить список всех колод пользователя
 class DeckResponseTotalCards(BaseModel):

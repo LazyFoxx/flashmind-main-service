@@ -50,6 +50,7 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
                 description=deck.description,
             )
         )
+        await self.session.execute(stmt)
 
     async def delete(self, deck_id: UUID, user_id: UUID) -> None:
         await self.session.execute(
@@ -112,3 +113,17 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
             "in_learning": in_learning,
             "learned": learned,
         }
+    
+    async def update_settings(self, deck: Deck) -> None:
+        stmt = (
+            update(DeckModel)
+            .where(DeckModel.id == deck.id)
+            .where(DeckModel.user_id == deck.user_id)
+            .values(
+                desired_retention=deck.desired_retention,
+                maximum_interval=deck.maximum_interval,
+                color=deck.color,
+            )
+        )
+        await self.session.execute(stmt)
+

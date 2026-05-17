@@ -60,9 +60,9 @@ class DeckModel(Base):
     color: Mapped[str] = mapped_column(
         String(7),
         nullable=False,
-        default="#4A90E2",  # Синий по умолчанию
-        server_default="'#4A90E2'",  # Для существующих записей
-    )
+        default="#4A90E2",   # Синий по умолчанию
+        server_default="'#4A90E2'",   # Для существующих записей
+     )
 
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
@@ -87,8 +87,8 @@ class DeckModel(Base):
             description=self.description or "",
             user_id=self.user_id,
             card_ids=[],
-            desired_retention=getattr(self, "desired_retention", 0.90),
-            maximum_interval=getattr(self, "maximum_interval", 36500),
+            desired_retention=self.desired_retention or 0.90,
+            maximum_interval=self.maximum_interval or 36500,
             color=self.color or "#4A90E2",
         )
 
@@ -107,3 +107,4 @@ class DeckModel(Base):
             maximum_interval=getattr(deck, "maximum_interval", 36500),
             color=deck.color or "#4A90E2",
         )
+

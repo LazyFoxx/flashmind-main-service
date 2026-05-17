@@ -12,15 +12,19 @@ from src.application.use_cases import (
     GetUserDecksUseCase,
     UpdateDeckInput,
     UpdateDeckUseCase,
+    UpdateDeckSettingsInput,
+    UpdateDeckSettingsUseCase,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
     CreateDeckRequest,
+    DeckSettings,
     DeckResponse,
     DeckResponseTotalCards,
     ErrorMessageResponse,
     GetUserDecksResponse,
     UpdateDeckRequest,
+    DeckSettingsOutput,
 )
 
 router = APIRouter(prefix="/decks", tags=["decks"])
@@ -123,3 +127,38 @@ async def delete_deck(
     await use_case.execute(input_dto=dto)
 
     return None
+
+
+@router.put(
+     "{deck_id}/settings",
+    response_model=DeckSettingsOutput,
+    status_code=status.HTTP_200_OK,
+    summary="Обновить настройки колоды",
+    description=(
+         "Обновляет настройки колоды (desired_retention, maximum_interval, color)."
+     ),
+)
+@inject
+async def update_deck_settings(
+    deck_id: UUID,
+    payload: DeckSettings,
+    use_case: FromDishka[UpdateDeckSettingsUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> DeckSettingsOutput:
+    dto = UpdateDeckSettingsInput(
+        user_id=user_id,
+        deck_id=deck_id,
+        desired_retention=payload.desired_retention,
+        maximum_interval=payload.maximum_interval,
+        color=payload.color,
+    )
+    
+    settings = await use_case.execute(input_dto=dto)
+
+    return DeckSettingsOutput(
+        id=str(deck_id),
+        desired_retention=settings.desired_retention,
+                        maximum_interval=settings.maximum_interval,
+                        color=settings.color,
+      )
+

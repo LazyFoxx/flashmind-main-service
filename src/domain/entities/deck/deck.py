@@ -51,3 +51,20 @@ class Deck:
         Создает новый экземпляр Deck с обновленным полем due_cards_count.
         """
         return replace(self, due_cards_count=new_due_cards_count)
+    
+    def with_updated_settings(
+        self,
+        new_desired_retention: float,
+        new_maximum_interval: int,
+        new_color: str,
+     ) -> "Deck":
+        """
+        Создает новый экземпляр Deck с обновленными полями настроек.
+        """
+        return replace(
+            self,
+            desired_retention=new_desired_retention,
+            maximum_interval=new_maximum_interval,
+            color=new_color,
+         )
+

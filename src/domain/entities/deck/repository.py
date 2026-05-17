@@ -105,3 +105,17 @@ class AbstractDeckRepository(ABC):
             Словарь со статистикой.
 
         """
+    
+    @abstractmethod
+    async def update_settings(self, deck: Deck) -> None:
+        """Обновить настройки существующей колоды.
+
+        Обновляются поля desired_retention, maximum_interval, color
+
+        Args:
+            deck: Объект Deck
+
+        Raises:
+            NotFoundError: если колода не существует
+        """
+        ...

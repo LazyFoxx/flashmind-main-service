@@ -12,6 +12,8 @@ from .deck import (
     ErrorMessageResponse,
     GetUserDecksResponse,
     UpdateDeckRequest,
+    DeckSettings,
+    DeckSettingsOutput,
 )
 from .profile import UserProfileResponse
 from .study import (
@@ -40,4 +42,6 @@ __all__ = [
     "NewToStudyRequest",
     "StudyCardListWithStatsResponse",
     "ReviewDueCardRequest",
+    "DeckSettings",
+    "DeckSettingsOutput",
 ]
