@@ -7,7 +7,6 @@ from .decks.create_deck.use_case import CreateDeckInput, CreateDeckUseCase
 from .decks.delete_deck.use_case import DeleteDeckInput, DeleteDeckUseCase
 from .decks.get_user_decks.use_case import GetUserDecksUseCase
 from .decks.update_deck.use_case import UpdateDeckInput, UpdateDeckUseCase
-from .decks.update_deck_settings.use_case import UpdateDeckSettingsInput, UpdateDeckSettingsUseCase
 from .study.get_study_cards.use_case import GetStudyCardsInput, GetStudyCardsUseCase
 from .study.new_to_study.use_case import NewToStudyInput, NewToStudyUseCase
 from .study.review_due_card.use_case import ReviewDueCardInput, ReviewDueCardsUseCase
@@ -41,6 +40,4 @@ __all__ = [
     "GetStudyCardsUseCase",
     "ReviewDueCardInput",
     "ReviewDueCardsUseCase",
-    "UpdateDeckSettingsInput",
-    "UpdateDeckSettingsUseCase",
 ]

@@ -16,7 +16,6 @@ from src.application.use_cases import (
     UpdateCardUseCase,
     UpdateDeckUseCase,
     UpdateUserProfileUseCase,
-    UpdateDeckSettingsUseCase,
 )
 
 
@@ -28,7 +27,6 @@ class UseCaseProvider(Provider):
     create_deck = provide(CreateDeckUseCase, scope=Scope.REQUEST)
     get_user_decks = provide(GetUserDecksUseCase, scope=Scope.REQUEST)
     update_deck = provide(UpdateDeckUseCase, scope=Scope.REQUEST)
-    update_deck_settings = provide(UpdateDeckSettingsUseCase, scope=Scope.REQUEST)
     delete_deck = provide(DeleteDeckUseCase, scope=Scope.REQUEST)
 
     create_card = provide(CreateCardUseCase, scope=Scope.REQUEST)

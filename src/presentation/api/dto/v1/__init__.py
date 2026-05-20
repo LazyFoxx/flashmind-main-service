@@ -8,12 +8,10 @@ from .card import (
 from .deck import (
     CreateDeckRequest,
     DeckResponse,
-    DeckResponseTotalCards,
     ErrorMessageResponse,
-    GetUserDecksResponse,
+    UserDecksResponse,
     UpdateDeckRequest,
-    DeckSettings,
-    DeckSettingsOutput,
+    DeckResponseUpdate,
 )
 from .profile import UserProfileResponse
 from .study import (
@@ -28,7 +26,7 @@ __all__ = [
     "CreateDeckRequest",
     "DeckResponse",
     "ErrorMessageResponse",
-    "GetUserDecksResponse",
+    "UserDecksResponse",
     "UpdateDeckRequest",
     "UserProfileResponse",
     "CardResponse",
@@ -36,12 +34,10 @@ __all__ = [
     "UpdateCardRequest",
     "CardLightResponse",
     "CardListResponse",
-    "DeckResponseTotalCards",
     "StudyCardResponse",
     "StudyCardListResponse",
     "NewToStudyRequest",
     "StudyCardListWithStatsResponse",
     "ReviewDueCardRequest",
-    "DeckSettings",
-    "DeckSettingsOutput",
+    "DeckResponseUpdate",
 ]

@@ -23,10 +23,19 @@ class UpdateDeckUseCase:
             user_id=input_dto.user_id,
             name=input_dto.name,
             description=input_dto.description,
+            color=input_dto.color,
+            maximum_interval=input_dto.maximum_interval,
+            desired_retention=input_dto.desired_retention
         )
+        
 
         async with self.uow:
             try:
+                
+                deck = await self.uow.decks.get_by_id(input_dto.deck_id)
+                
+                if input_dto.user_id != deck.user_id:
+                    raise
 
                 await self.uow.decks.update(updated_deck)
                 await self.uow.commit()
@@ -44,4 +53,7 @@ class UpdateDeckUseCase:
             deck_id=str(updated_deck.id),
             name=updated_deck.name,
             description=updated_deck.description,
+            desired_retention=updated_deck.desired_retention,
+            maximum_interval=updated_deck.maximum_interval,
+            color=updated_deck.color,
         )

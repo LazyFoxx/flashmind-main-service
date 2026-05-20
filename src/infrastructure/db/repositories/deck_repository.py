@@ -48,6 +48,9 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
             .values(
                 name=deck.name,
                 description=deck.description,
+                desired_retention=deck.desired_retention,
+                maximum_interval=deck.maximum_interval,
+                color=deck.color,
             )
         )
         await self.session.execute(stmt)
@@ -114,16 +117,4 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
             "learned": learned,
         }
     
-    async def update_settings(self, deck: Deck) -> None:
-        stmt = (
-            update(DeckModel)
-            .where(DeckModel.id == deck.id)
-            .where(DeckModel.user_id == deck.user_id)
-            .values(
-                desired_retention=deck.desired_retention,
-                maximum_interval=deck.maximum_interval,
-                color=deck.color,
-            )
-        )
-        await self.session.execute(stmt)
 

@@ -12,19 +12,15 @@ from src.application.use_cases import (
     GetUserDecksUseCase,
     UpdateDeckInput,
     UpdateDeckUseCase,
-    UpdateDeckSettingsInput,
-    UpdateDeckSettingsUseCase,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
     CreateDeckRequest,
-    DeckSettings,
     DeckResponse,
-    DeckResponseTotalCards,
     ErrorMessageResponse,
-    GetUserDecksResponse,
+    UserDecksResponse,
     UpdateDeckRequest,
-    DeckSettingsOutput,
+    DeckResponseUpdate,
 )
 
 router = APIRouter(prefix="/decks", tags=["decks"])
@@ -56,12 +52,19 @@ async def create_deck(
     )
     deck = await use_case.execute(input_dto=dto)
 
-    return DeckResponse(id=deck.deck_id, name=deck.name, description=deck.description)
+    return DeckResponse(id=deck.deck_id,
+                        name=deck.name,
+                        description=deck.description,
+                        color=deck.color,
+                        total_cards=deck.total_cards,
+                        repeat_cards=deck.due_cards_count,
+                        desired_retention=deck.desired_retention,
+                        maximum_interval=deck.maximum_interval)
 
 
 @router.get(
     "",
-    response_model=GetUserDecksResponse,
+    response_model=UserDecksResponse,
     status_code=status.HTTP_200_OK,
     summary="Получить список колод пользователя",
     description=(
@@ -72,17 +75,17 @@ async def create_deck(
 async def get_user_decks(
     use_case: FromDishka[GetUserDecksUseCase],
     user_id: UUID = Depends(get_current_user_id),
-) -> GetUserDecksResponse:
+) -> UserDecksResponse:
     decks = await use_case.execute(user_id=user_id)
 
-    return GetUserDecksResponse(
-        decks=[DeckResponseTotalCards.from_entity(deck) for deck in decks.decks]
+    return UserDecksResponse(
+        decks=[DeckResponse.from_entity(deck) for deck in decks.decks]
     )
 
 
 @router.put(
     "{deck_id}",
-    response_model=DeckResponse,
+    response_model=UpdateDeckRequest,
     status_code=status.HTTP_200_OK,
     summary="Обновить поля колоды",
     description=(
@@ -95,16 +98,24 @@ async def update_deck(
     payload: UpdateDeckRequest,
     use_case: FromDishka[UpdateDeckUseCase],
     user_id: UUID = Depends(get_current_user_id),
-) -> DeckResponse:
+) -> DeckResponseUpdate:
     dto = UpdateDeckInput(
         user_id=user_id,
         deck_id=deck_id,
         name=payload.name,
         description=payload.description,
+        desired_retention=payload.desired_retention,
+        maximum_interval=payload.maximum_interval,
+        color=payload.color,
     )
     deck = await use_case.execute(input_dto=dto)
 
-    return DeckResponse(id=deck.deck_id, name=deck.name, description=deck.description)
+    return DeckResponseUpdate(id=deck.deck_id,
+                        name=deck.name,
+                        description=deck.description,
+                        desired_retention=deck.desired_retention,
+                        maximum_interval=deck.maximum_interval,
+                        color=deck.color)
 
 
 @router.delete(
@@ -127,38 +138,3 @@ async def delete_deck(
     await use_case.execute(input_dto=dto)
 
     return None
-
-
-@router.put(
-     "{deck_id}/settings",
-    response_model=DeckSettingsOutput,
-    status_code=status.HTTP_200_OK,
-    summary="Обновить настройки колоды",
-    description=(
-         "Обновляет настройки колоды (desired_retention, maximum_interval, color)."
-     ),
-)
-@inject
-async def update_deck_settings(
-    deck_id: UUID,
-    payload: DeckSettings,
-    use_case: FromDishka[UpdateDeckSettingsUseCase],
-    user_id: UUID = Depends(get_current_user_id),
-) -> DeckSettingsOutput:
-    dto = UpdateDeckSettingsInput(
-        user_id=user_id,
-        deck_id=deck_id,
-        desired_retention=payload.desired_retention,
-        maximum_interval=payload.maximum_interval,
-        color=payload.color,
-    )
-    
-    settings = await use_case.execute(input_dto=dto)
-
-    return DeckSettingsOutput(
-        id=str(deck_id),
-        desired_retention=settings.desired_retention,
-                        maximum_interval=settings.maximum_interval,
-                        color=settings.color,
-      )
-

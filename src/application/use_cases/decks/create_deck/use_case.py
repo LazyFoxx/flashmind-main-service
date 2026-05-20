@@ -63,4 +63,10 @@ class CreateDeckUseCase:
             deck_id=str(new_deck.id),
             name=new_deck.name,
             description=new_deck.description,
+            color=new_deck.color,
+            desired_retention=new_deck.desired_retention,
+            maximum_interval=new_deck.maximum_interval,
+            total_cards=0,
+            due_cards_count=0
+            
         )

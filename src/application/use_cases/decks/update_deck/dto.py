@@ -9,6 +9,9 @@ class UpdateDeckInput:
     deck_id: UUID
     name: str
     description: str
+    desired_retention: float
+    maximum_interval: int
+    color: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -16,3 +19,6 @@ class UpdateDeckOutput:
     deck_id: str
     name: str
     description: str
+    desired_retention: float
+    maximum_interval: int
+    color: str
