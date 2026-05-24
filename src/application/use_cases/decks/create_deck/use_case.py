@@ -23,6 +23,7 @@ class CreateDeckUseCase:
             user_id=input_dto.user_id,
             name=input_dto.name,
             description=input_dto.description,
+            color=input_dto.color,
         )
 
         async with self.uow:

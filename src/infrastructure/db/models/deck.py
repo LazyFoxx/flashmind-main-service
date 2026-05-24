@@ -49,12 +49,10 @@ class DeckModel(Base):
     
     desired_retention: Mapped[float] = mapped_column(
         Numeric(3, 2), nullable=False, default=0.90, server_default="0.90",
-        check_constraint="desired_retention BETWEEN 0.85 AND 0.95",
     )
 
     maximum_interval: Mapped[int] = mapped_column(
         Integer, nullable=False, default=36500, server_default="36500",
-        check_constraint="maximum_interval BETWEEN 30 AND 99999",
     )
     
     color: Mapped[str] = mapped_column(
@@ -76,28 +74,19 @@ class DeckModel(Base):
     )
 
     def to_entity(self) -> Deck:
-        """
-        Преобразует ORM-модель в чистую доменную сущность.
-        card_ids НЕ загружаются автоматически — их нужно подгружать отдельно,
-        если они действительно нужны в данном контексте.
-        """
         return Deck(
             id=self.id,
             name=self.name,
             description=self.description or "",
             user_id=self.user_id,
             card_ids=[],
-            desired_retention=self.desired_retention or 0.90,
+            desired_retention=float(self.desired_retention) if self.desired_retention is not None else 0.90,
             maximum_interval=self.maximum_interval or 36500,
             color=self.color or "#4A90E2",
         )
 
     @classmethod
     def from_domain(cls, deck: Deck) -> "DeckModel":
-        """
-        Создаёт ORM-модель из доменной сущности.
-        card_ids игнорируются — они хранятся в отдельной таблице cards.
-        """
         return DeckModel(
             id=deck.id,
             name=deck.name,
@@ -107,4 +96,3 @@ class DeckModel(Base):
             maximum_interval=getattr(deck, "maximum_interval", 36500),
             color=deck.color or "#4A90E2",
         )
-

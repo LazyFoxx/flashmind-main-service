@@ -103,6 +103,7 @@ async def update_cards_state(
         card_id=payload.card_id,
         rating=payload.rating,
         user_id=user_id,
+        review_duration=payload.review_duration
     )
 
     card = await use_case.execute(input_dto=dto)

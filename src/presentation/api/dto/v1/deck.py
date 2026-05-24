@@ -185,6 +185,13 @@ class UpdateDeckRequest(BaseModel):
 class CreateDeckRequest(BaseModel):
     name: str
     description: str
+    color: str = Field(
+         ...,
+        pattern=r"^#[0-9A-Fa-f]{6}$",
+        description="Цвет колоды в формате HEX. Например, #4A90E2.",
+        examples=["#4A90E2", "#FF5733"],
+     )
+    
 
     model_config = {
         "json_schema_extra": {
@@ -192,6 +199,7 @@ class CreateDeckRequest(BaseModel):
                 {
                     "name": "Английский 3000",
                     "description": "Тут собраны 3000 самых популярных слов в английском языке",
+                    "color": "#4A90E2",
                 }
             ]
         }

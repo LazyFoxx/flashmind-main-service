@@ -1,3 +1,4 @@
+# src/infrastructure/db/models/card.py
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
@@ -13,6 +14,7 @@ from src.infrastructure.db.base import Base
 
 if TYPE_CHECKING:
     from src.infrastructure.db.models import DeckModel
+    from src.infrastructure.db.models.review_log import ReviewLogModel
 
 
 class CardModel(Base):
@@ -87,10 +89,8 @@ class CardModel(Base):
         lazy="raise",
     )
 
+
     def to_entity(self) -> Card:
-        """
-        Преобразует ORM-модель в доменную сущность Card.
-        """
         from fsrs import Card as FSRS_Card
 
         if not self.in_learning:

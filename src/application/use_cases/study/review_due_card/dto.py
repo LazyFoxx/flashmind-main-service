@@ -10,3 +10,4 @@ class ReviewDueCardInput:
     user_id: UUID
     card_id: UUID
     rating: int
+    review_duration: int

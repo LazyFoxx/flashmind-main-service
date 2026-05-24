@@ -8,6 +8,7 @@ class CreateDeckInput:
     user_id: UUID
     name: str
     description: str
+    color: str
 
 
 @dataclass(frozen=True, slots=True)

@@ -48,7 +48,7 @@ async def create_deck(
     user_id: UUID = Depends(get_current_user_id),
 ) -> DeckResponse:
     dto = CreateDeckInput(
-        user_id=user_id, name=payload.name, description=payload.description
+        user_id=user_id, name=payload.name, description=payload.description, color=payload.color
     )
     deck = await use_case.execute(input_dto=dto)
 
