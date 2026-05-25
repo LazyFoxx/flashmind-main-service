@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List
+from typing import Dict, List, Set
 from uuid import UUID
 
-from sqlalchemy import select, func, extract
+from sqlalchemy import select, func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from src.application.interfaces import AbstractReviewLogRepository, ReviewLogDto
@@ -69,3 +69,76 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
                 daily_counts[date_str] = row.count
 
         return daily_counts
+
+    async def get_total_reviews_count(self, user_id: UUID) -> int:
+        """Получить общее количество повторений карточек пользователя за все время."""
+        stmt = (
+            select(func.count(ReviewLogModel.id))
+              .where(ReviewLogModel.user_id == user_id)
+          )
+        
+        result = await self.session.execute(stmt)
+        total = result.scalar_one()
+        
+        return total or 0
+
+    async def get_current_streak_days(self, user_id: UUID) -> int:
+        """Получить текущую серию дней подряд с повторениями (streak).
+
+        Returns:
+            Текущее количество дней подряд с повторениями.
+         """
+        now = datetime.now(timezone.utc)
+        today = now.date()   # <-- Исправлено: получаем date, а не datetime
+
+        # Получаем все уникальные даты с повторениями за последние 365 дней
+        one_year_ago = today - timedelta(days=365)
+
+        stmt = (
+            select(func.date(ReviewLogModel.review_datetime).distinct())
+               .where(
+                ReviewLogModel.user_id == user_id,
+                    func.date(ReviewLogModel.review_datetime) >= one_year_ago,
+               )
+               .order_by(func.date(ReviewLogModel.review_datetime).desc())
+           )
+
+        result = await self.session.execute(stmt)
+        dates = [row[0] for row in result.all()]
+        streak = 0
+        
+        if not dates:
+            return streak
+
+        # Проверяем, есть ли сегодня повторение
+        if dates[0] == today:
+             # Сегодня есть повтор — начинаем считать от сегодня
+            expected_date = today
+
+            for date in dates:
+                if date == expected_date:
+                    streak += 1
+                    expected_date -= timedelta(days=1)
+                else:
+                    break
+
+            return streak
+
+        # Сегодня нет повтора — проверяем вчера
+        yesterday = today - timedelta(days=1)
+        if dates[0] == yesterday:
+             # Вчера был повтор — начинаем считать от вчера
+            expected_date = yesterday
+
+            for date in dates:
+                if date == expected_date:
+                    streak += 1
+                    expected_date -= timedelta(days=1)
+                else:
+                    break
+
+            return streak
+
+        # Ни сегодня, ни вчера — streak = 0
+        return 0
+

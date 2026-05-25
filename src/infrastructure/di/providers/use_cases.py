@@ -16,6 +16,7 @@ from src.application.use_cases import (
     UpdateCardUseCase,
     UpdateDeckUseCase,
     UpdateUserProfileUseCase,
+    DailyReviewStatUseCase,
 )
 
 
@@ -38,3 +39,5 @@ class UseCaseProvider(Provider):
     new_to_study = provide(NewToStudyUseCase, scope=Scope.REQUEST)
     get_study_cards = provide(GetStudyCardsUseCase, scope=Scope.REQUEST)
     review_due_card = provide(ReviewDueCardsUseCase, scope=Scope.REQUEST)
+    
+    daily_rev_stats = provide(DailyReviewStatUseCase, scope=Scope.REQUEST)

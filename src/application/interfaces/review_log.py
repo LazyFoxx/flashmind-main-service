@@ -50,5 +50,29 @@ class AbstractReviewLogRepository(ABC):
         Returns:
             Словарь {date_str: count}, где date_str в формате 'YYYY-MM-DD'
             Все дни за указанный период присутствуют, даже если count=0
-        """
+         """
         ...
+
+    @abstractmethod
+    async def get_total_reviews_count(self, user_id: UUID) -> int:
+         """Получить общее количество повторений карточек пользователя за все время.
+
+        Args:
+            user_id: UUID пользователя
+            
+        Returns:
+            Общее количество повторений
+         """
+         ...
+
+    @abstractmethod
+    async def get_current_streak_days(self, user_id: UUID) -> int:
+         """Получить текущую серию дней подряд с повторениями (streak).
+         
+        Args:
+            user_id: UUID пользователя
+
+        Returns:
+            Текущее количество дней подряд с повторениями.
+         """
+         ...

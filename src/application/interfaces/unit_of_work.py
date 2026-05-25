@@ -7,6 +7,7 @@ from src.domain.entities import (
     AbstractDeckRepository,
     AbstractUserRepository,
 )
+from src.application.interfaces.review_log import AbstractReviewLogRepository
 
 
 class AbstractUnitOfWork(ABC):
@@ -15,6 +16,7 @@ class AbstractUnitOfWork(ABC):
     users: AbstractUserRepository
     decks: AbstractDeckRepository
     cards: AbstractCardRepository
+    review_logs: AbstractReviewLogRepository
 
     async def __aenter__(self) -> "AbstractUnitOfWork":
         return self

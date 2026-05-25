@@ -4,7 +4,7 @@ from uuid import UUID
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
-from src.application.use_cases import GetUserProfileUseCase, UpdateUserProfileUseCase
+from src.application.use_cases import GetUserProfileUseCase, UpdateUserProfileUseCase, DailyReviewStatUseCase, DailyReviewStatInput
 from src.application.use_cases.users.get_user_profile.dto import GetProfileUserInput
 from src.application.use_cases.users.update_user_profile.dto import (
     UpdateProfileUserInput,
@@ -21,22 +21,32 @@ router = APIRouter(prefix="/users", tags=["users"])
     "/profile",
     response_model=UserProfileResponse,
     status_code=status.HTTP_200_OK,
-    summary="Получить профиль пользователя",
-    description=("Возвращает имя, фамилию, ссылку на аватар и т д."),
+    summary="Получить профиль пользователя со статистикой",
+    description=("Возвращает имя, фамилию, ссылку на аватар и статистику повторений"),
 )
 @inject
 async def get_user_profile(
-    use_case: FromDishka[GetUserProfileUseCase],
+    profile_use_case: FromDishka[GetUserProfileUseCase],
+    stats_use_case: FromDishka[DailyReviewStatUseCase],
     user_id: UUID = Depends(get_current_user_id),
 ) -> UserProfileResponse:
-    dto = GetProfileUserInput(user_id=user_id)
-    user_profile = await use_case.execute(input_dto=dto)
+     # 1. Вызываем Use Case для профиля
+    profile_input = GetProfileUserInput(user_id=user_id)
+    user_profile = await profile_use_case.execute(input_dto=profile_input)
+    
+     # 2. Вызываем Use Case для статистики
+    stats_input = DailyReviewStatInput(user_id=user_id, days=28)
+    stats = await stats_use_case.execute(input_dto=stats_input)
 
+     # 3. Объединяем результаты
     return UserProfileResponse(
         first_name=user_profile.first_name,
         last_name=user_profile.last_name,
         avatar_url=user_profile.avatar_url,
-        bio=user_profile.bio,
+        bio=user_profile.bio or "",
+        total_reviews=stats.total_reviews,
+        review_series=stats.review_series,
+        daily_review_counts=stats.daily_review_counts,
     )
 
 
@@ -74,3 +84,7 @@ async def update_user_profile(
         avatar_url=user_profile.avatar_url,
         bio=user_profile.bio,
     )
+
+
+
+

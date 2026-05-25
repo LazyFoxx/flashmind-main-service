@@ -13,6 +13,7 @@ from .study.review_due_card.use_case import ReviewDueCardInput, ReviewDueCardsUs
 from .users.create_user_profile.use_case import CreateUserProfileUseCase
 from .users.get_user_profile.use_case import GetUserProfileUseCase
 from .users.update_user_profile.use_case import UpdateUserProfileUseCase
+from .stats.daily_review_stat.use_case import DailyReviewStatInput, DailyReviewStatUseCase
 
 __all__ = [
     "GetUserProfileUseCase",
@@ -40,4 +41,6 @@ __all__ = [
     "GetStudyCardsUseCase",
     "ReviewDueCardInput",
     "ReviewDueCardsUseCase",
+    "DailyReviewStatInput",
+    "DailyReviewStatUseCase"
 ]
