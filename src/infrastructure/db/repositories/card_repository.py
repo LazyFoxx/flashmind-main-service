@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional, Tuple, Union
 from uuid import UUID
 
+
 from sqlalchemy import delete, desc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -72,15 +73,23 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
     async def get_all_light_by_user_and_deck(
         self,
         user_id: UUID,
+        desk: bool = True,
         deck_id: Optional[UUID] = None,
         offset: Optional[int] = None,  # None = все
         limit: Optional[int] = None,  # None = все
-    ) -> List[tuple[UUID, UUID, str]]:
+        created_at: Optional[bool] = None,
+        difficulty: Optional[bool] = None,
+        stability: Optional[bool] = None,
+        
+
+    ) -> List[tuple[UUID, UUID, str, Optional[float], Optional[float]]]:
 
         query = select(
             CardModel.id,
             CardModel.deck_id,
             CardModel.front,
+            CardModel.difficulty,
+            CardModel.stability,
         )
 
         # Если есть deck_id, фильтруем по нему
@@ -98,6 +107,27 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                 )  # Присоединим UserProfileModel, чтобы фильтровать по user_id
                 .where(DeckModel.user_id == user_id)
             )
+            
+        
+        # сортировка
+        if created_at:
+            if desk:
+                query = query.order_by(desc(CardModel.created_at))
+            else:
+                query = query.order_by(CardModel.created_at)
+        elif difficulty:
+            if desk:
+                query = query.order_by(desc(CardModel.difficulty))
+            else:
+                query = query.order_by(CardModel.difficulty)
+        elif stability:
+            if desk:
+                query = query.order_by(desc(CardModel.stability))
+            else:
+                query = query.order_by(CardModel.stability)
+        else:
+            query = query.order_by(desc(CardModel.created_at))
+                
 
         if limit is not None:
             query = query.offset(offset).limit(limit)
@@ -106,13 +136,13 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         rows = result.fetchall()
 
         # Преобразуем результат в список кортежей
-        cards = [(row[0], row[1], row[2]) for row in rows]
+        cards = [(row.id, row.deck_id, row.front, row.difficulty, row.stability) for row in rows]
         return cards
 
     async def get_total_cards_by_deck_id(self, deck_id: UUID) -> int:
         query = select(func.count(CardModel.id)).where(CardModel.deck_id == deck_id)
 
-        result = await self.session.execute(query)
+        result = await self.session.execute(query) 
         return result.scalar_one() or 0
 
     async def get_total_cards_by_deck_ids(

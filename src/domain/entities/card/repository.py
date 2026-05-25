@@ -78,10 +78,16 @@ class AbstractCardRepository(ABC):
     async def get_all_light_by_user_and_deck(
         self,
         user_id: UUID,
+        desk: True,
         deck_id: Optional[UUID] = None,
         offset: Optional[int] = None,  # None = все
         limit: Optional[int] = None,  # None = все
-    ) -> List[tuple[UUID, UUID, str]]:
+        created_at: Optional[bool] = None,
+        difficulty: Optional[bool] = None,
+        stability: Optional[bool] = None,
+        
+
+    ) -> List[tuple[UUID, UUID, str, float, float]]:
         """
         Выводит список всех карточек пользователя без обратной стороны.
         Если передан параметр фильтрации deck_id - то выводит карточки по колоде пользователя.

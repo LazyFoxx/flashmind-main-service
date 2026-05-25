@@ -67,6 +67,8 @@ class CardLightResponse(BaseModel):
     id: str
     deck_id: str
     front: str
+    difficulty: Optional[float] = 0
+    stability: Optional[float] = 0
 
     model_config = {
         "json_schema_extra": {
@@ -75,6 +77,8 @@ class CardLightResponse(BaseModel):
                     "id": "123e4567-e89b-12d3-a456-426614174000",
                     "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                     "front": "Любимый Настин напиток",
+                    "difficulty": "3.32344",
+                    "stability": "1,23434",
                 }
             ]
         }
@@ -96,11 +100,15 @@ class CardListResponse(BaseModel):
                             "id": "123e4567-e89b-12d3-a456-426614174000",
                             "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                             "front": "Любовь",
+                            "difficulty": "3.32344",
+                            "stability": "1,23434",
                         },
                         {
                             "id": "123e4567-e89b-12d3-a456-426614174002",
                             "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                             "front": "Смех",
+                            "difficulty": "null",
+                            "stability": "null",
                         },
                     ],
                     "total": 100,
@@ -110,3 +118,4 @@ class CardListResponse(BaseModel):
             ]
         }
     }
+

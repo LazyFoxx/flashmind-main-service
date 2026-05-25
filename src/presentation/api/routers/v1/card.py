@@ -165,14 +165,30 @@ async def get_cards(
     per_page: Optional[int] = Query(
         None, ge=1, le=500, description="Карточек на странице (None = все)"
     ),
+    sort_by: Optional[str] = Query(
+        None,
+        description="Поле для сортировки: 'created_at', 'difficulty', 'stability'",
+    ),
+    sort_order: Optional[str] = Query(
+        None,
+        description="Направление сортировки: 'asc' или 'desc'",
+    ),
+    
+    
 ) -> CardListResponse:
-    dto = GetCardsInput(user_id=user_id, deck_id=deck_id, page=page, per_page=per_page)
+    dto = GetCardsInput(user_id=user_id,
+                        deck_id=deck_id,
+                        page=page,
+                        per_page=per_page,
+                        sort_by=sort_by,
+                        sort_order=sort_order
+                        )
 
     result = await use_case.execute(dto)
 
     return CardListResponse(
         cards=[
-            CardLightResponse(id=str(card[0]), deck_id=str(card[1]), front=str(card[2]))
+            CardLightResponse(id=str(card[0]), deck_id=str(card[1]), front=str(card[2]), difficulty=card[3], stability=card[4])
             for card in result.cards
         ],
         total=result.total,
