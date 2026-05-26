@@ -86,7 +86,7 @@ class ReviewDueCardsUseCase:
 
                  # Вычисляем интервал как разницу в днях между следующей датой и текущей
                  # Это точнее, чем брать готовое поле interval, так как учитывает fuzz и точное время
-                interval_days = (next_review_dt - review_dt).days
+                interval_days = next_review_dt.day - review_dt.day
 
                 log_dto = ReviewLogDto(
                     id=uuid4(),
