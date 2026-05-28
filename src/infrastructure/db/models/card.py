@@ -99,6 +99,8 @@ class CardModel(Base):
                 deck_id=self.deck_id,
                 front=self.front,
                 back=self.back,
+                difficulty=self.difficulty,
+                stability=self.stability,
                 _fsrs_card=None,
                 in_learning=False,
             )
@@ -108,6 +110,8 @@ class CardModel(Base):
             deck_id=self.deck_id,
             front=self.front,
             back=self.back,
+            difficulty=self.difficulty,
+            stability=self.stability,
             _fsrs_card=FSRS_Card.from_json(self.fsrs_state),
             in_learning=True,
         )

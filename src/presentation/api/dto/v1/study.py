@@ -21,6 +21,8 @@ class StudyCardResponse(BaseModel):
     deck_id: str
     front: str
     back: str
+    difficulty: Optional[float] = 0
+    stability: Optional[float] = 0
 
     model_config = {
         "json_schema_extra": {
@@ -30,6 +32,8 @@ class StudyCardResponse(BaseModel):
                     "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                     "front": "Любимый Настин напиток",
                     "back": "Тот что с сарахозаменителем",
+                    "difficulty": "3.32344",
+                    "stability": "1,23434",
                 }
             ]
         }
@@ -42,6 +46,8 @@ class StudyCardResponse(BaseModel):
             deck_id=str(card.deck_id),
             front=card.front,
             back=card.back,
+            difficulty=card.difficulty,
+            stability = card.stability,
         )
 
 
@@ -59,12 +65,16 @@ class StudyCardListResponse(BaseModel):
                             "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                             "front": "Любовь",
                             "back": "Это просто",
+                            "difficulty": "3.32344",
+                            "stability": "1,23434",
                         },
                         {
                             "id": "123e4567-e89b-12d3-a456-426614174002",
                             "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                             "front": "Смех",
                             "back": "Ахахахаа ору",
+                            "difficulty": "3.32344",
+                            "stability": "1,23434",
                         },
                     ],
                     "total": 100,
@@ -91,12 +101,16 @@ class StudyCardListWithStatsResponse(BaseModel):
                             "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                             "front": "Любовь",
                             "back": "Это просто",
+                            "difficulty": "3.32344",
+                            "stability": "1,23434",
                         },
                         {
                             "id": "123e4567-e89b-12d3-a456-426614174002",
                             "deck_id": "123e4567-e89b-12d3-a456-426614174001",
                             "front": "Смех",
                             "back": "Ахахахаа ору",
+                            "difficulty": "3.32344",
+                            "stability": "1,23434",
                         },
                     ],
                     "total": 100,

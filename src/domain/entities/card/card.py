@@ -17,6 +17,8 @@ class Card:
     deck_id: UUID
     front: str
     back: str
+    difficulty: Optional[float] = None
+    stability: Optional[float] = None
     in_learning: bool = False
     _fsrs_card: Optional[FSRS_Card] = None
 
