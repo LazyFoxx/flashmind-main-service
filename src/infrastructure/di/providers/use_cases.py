@@ -17,6 +17,8 @@ from src.application.use_cases import (
     UpdateDeckUseCase,
     UpdateUserProfileUseCase,
     DailyReviewStatUseCase,
+    SyncCardsToCloudUseCase,
+    EnableSharingUseCase
 )
 
 
@@ -41,3 +43,6 @@ class UseCaseProvider(Provider):
     review_due_card = provide(ReviewDueCardsUseCase, scope=Scope.REQUEST)
     
     daily_rev_stats = provide(DailyReviewStatUseCase, scope=Scope.REQUEST)
+    
+    enable_sharing = provide(EnableSharingUseCase, scope=Scope.REQUEST)
+    sync_cards_to_cloud = provide(SyncCardsToCloudUseCase, scope=Scope.REQUEST)

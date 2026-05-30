@@ -88,6 +88,21 @@ class CardModel(Base):
         back_populates="cards",
         lazy="raise",
     )
+    
+    card_template_id: Mapped[Optional[UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("cloud_card_templates.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default="false",
+        nullable=False,
+        index=True,
+    )
 
 
     def to_entity(self) -> Card:
@@ -101,6 +116,8 @@ class CardModel(Base):
                 back=self.back,
                 difficulty=self.difficulty,
                 stability=self.stability,
+                is_deleted=self.is_deleted,
+                card_template_id=self.card_template_id,
                 _fsrs_card=None,
                 in_learning=False,
             )
@@ -112,6 +129,8 @@ class CardModel(Base):
             back=self.back,
             difficulty=self.difficulty,
             stability=self.stability,
+            is_deleted=self.is_deleted,
+            card_template_id=self.card_template_id,
             _fsrs_card=FSRS_Card.from_json(self.fsrs_state),
             in_learning=True,
         )
@@ -129,6 +148,8 @@ class CardModel(Base):
                 next_due=None,
                 difficulty=None,
                 stability=None,
+                is_deleted=False,
+                card_template_id=card.card_template_id,
             )
 
         # in_learning = True → берем параметры
@@ -143,4 +164,6 @@ class CardModel(Base):
             next_due=fsrs_card.due,
             difficulty=fsrs_card.difficulty,
             stability=fsrs_card.stability,
+            is_deleted=False,
+            card_template_id=card.card_template_id,
         )

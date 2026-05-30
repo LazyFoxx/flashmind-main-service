@@ -22,6 +22,10 @@ from .study import (
     StudyCardResponse,
 )
 
+from .cloud_deck import (
+    EnableSharingRequest, EnableSharingResponse, SyncStats
+)
+
 __all__ = [
     "CreateDeckRequest",
     "DeckResponse",
@@ -40,4 +44,7 @@ __all__ = [
     "StudyCardListWithStatsResponse",
     "ReviewDueCardRequest",
     "DeckResponseUpdate",
+    "EnableSharingRequest",
+    "EnableSharingResponse",
+    "SyncStats",
 ]

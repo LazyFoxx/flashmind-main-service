@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID, uuid4
@@ -21,6 +21,9 @@ class Card:
     stability: Optional[float] = None
     in_learning: bool = False
     _fsrs_card: Optional[FSRS_Card] = None
+    
+    card_template_id: Optional[UUID] = None   # Ссылка на шаблон из облака (nullable)
+    is_deleted: bool = False                  # Мягкое удаление
 
     def _copy(self, **kwargs: Any) -> "Card":
         """Создаёт копию текущей карточки с возможностью изменения некоторых параметров."""
@@ -69,3 +72,7 @@ class Card:
 
         due_time: datetime = self._fsrs_card.due
         return due_time <= now
+    
+    def set_card_template_id(self, card_template_id: UUID) -> "Card":
+        """устанавливает card template id."""
+        return replace(self, card_template_id=card_template_id)

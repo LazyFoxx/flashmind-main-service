@@ -51,6 +51,11 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
                 desired_retention=deck.desired_retention,
                 maximum_interval=deck.maximum_interval,
                 color=deck.color,
+                is_cloud_deck=deck.is_cloud_deck,
+                cloud_type=deck.cloud_type,
+                is_approved=deck.is_approved,
+                author_id=deck.author_id,
+                cloud_deck_id=deck.cloud_deck_id,
             )
         )
         await self.session.execute(stmt)

@@ -48,11 +48,12 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                     next_due=None,
                     difficulty=None,
                     stability=None,
+                    card_template_id=card.card_template_id,
+                    
                 )
             )
-            return None
-
-        stmt = (
+        else: 
+            stmt = (
             update(CardModel)
             .where(CardModel.id == card.id)
             .values(
@@ -63,6 +64,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                 difficulty=card._fsrs_card.difficulty,
                 stability=card._fsrs_card.stability,
                 in_learning=card.in_learning,
+                card_template_id=card.card_template_id,
             )
         )
         await self.session.execute(stmt)

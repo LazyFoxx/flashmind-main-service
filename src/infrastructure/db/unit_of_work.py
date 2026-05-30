@@ -8,7 +8,9 @@ from src.infrastructure.db.repositories import (
     SQlAlchemyCardRepository,
     SQlAlchemyDeckRepository,
     SQlAlchemyUserRepository,
-    SQLAlchemyReviewLogRepository
+    SQLAlchemyReviewLogRepository,
+    SQlAlchemyCloudDeckRepository,
+    SQlAlchemyCloudCardTemplateRepository,
 )
 
 
@@ -22,6 +24,8 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.cards = SQlAlchemyCardRepository(self.session)
         self.decks = SQlAlchemyDeckRepository(self.session)
         self.review_logs = SQLAlchemyReviewLogRepository(self.session)
+        self.cloud_decks = SQlAlchemyCloudDeckRepository(self.session)
+        self.cloud_cards = SQlAlchemyCloudCardTemplateRepository(self.session)
         return self
 
     async def __aexit__(

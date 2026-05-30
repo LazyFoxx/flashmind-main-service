@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -72,6 +72,48 @@ class DeckModel(Base):
         onupdate=func.now(),
         nullable=False,
     )
+    
+    # --- Cloud Decks Fields ---
+    
+     # Ссылка на оригинальную облачную колоду (если это синхронизированная колода)
+    cloud_deck_id: Mapped[Optional[UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("cloud_decks.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+     )
+
+    # Флаг: является ли эта колода "облачной" (импортированной или синхронизируемой)
+    is_cloud_deck: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default="false",
+     )
+    
+    # Тип колоды: 'PUBLIC' или 'PRIVATE' (заполняется только для is_cloud_deck=True)
+    cloud_type: Mapped[Optional[str]] = mapped_column(
+        String(10),
+        nullable=True,
+        index=True,
+      )
+
+    # Для публичных колод: статус одобрения админом
+    is_approved: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default="false",
+     )
+
+    # ID автора облачной колоды (кто её создал/публикует)
+    author_id: Mapped[Optional[UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("user_profiles.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+     )
+
 
     def to_entity(self) -> Deck:
         return Deck(
@@ -83,6 +125,12 @@ class DeckModel(Base):
             desired_retention=float(self.desired_retention) if self.desired_retention is not None else 0.90,
             maximum_interval=self.maximum_interval or 36500,
             color=self.color or "#4A90E2",
+            # Cloud fields
+            cloud_deck_id=self.cloud_deck_id,
+            is_cloud_deck=self.is_cloud_deck,
+            cloud_type=self.cloud_type,
+            is_approved=self.is_approved,
+            author_id=self.author_id,
         )
 
     @classmethod
@@ -95,4 +143,10 @@ class DeckModel(Base):
             desired_retention=getattr(deck, "desired_retention", 0.90),
             maximum_interval=getattr(deck, "maximum_interval", 36500),
             color=deck.color or "#4A90E2",
+            # Cloud fields
+            cloud_deck_id=getattr(deck, "cloud_deck_id", None),
+            is_cloud_deck=getattr(deck, "is_cloud_deck", False),
+            cloud_type=getattr(deck, "cloud_type", None),
+            is_approved=getattr(deck, "is_approved", False),
+            author_id=getattr(deck, "author_id", None),
         )

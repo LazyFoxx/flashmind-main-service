@@ -8,7 +8,7 @@ from src.domain.entities.card.card import Card
 @dataclass(slots=True, frozen=True)
 class Deck:
     """
-    Доменная сущность колоды.
+    Колода пользователя. Может быть локальной или привязанной к облаку."
     """
 
     id: UUID
@@ -21,6 +21,12 @@ class Deck:
     color: str = "#4A90E2"
     total_cards: int = 0
     due_cards_count: int = 0
+    
+    cloud_deck_id: Optional[UUID] = None    # Ссылка на облачную колоду (nullable)
+    is_cloud_deck: bool = False             # Это облачная колода?
+    cloud_type: Optional[str] = None        # 'PUBLIC' | 'PRIVATE' (только для cloud)
+    is_approved: bool = False               # Одобрена админом (только для cloud)
+    author_id: Optional[UUID] = None
 
     def add_card(self, card: Card) -> "Deck":
         """Бизнес-метод: добавить карту, верни новую Deck."""
@@ -66,5 +72,24 @@ class Deck:
             desired_retention=new_desired_retention,
             maximum_interval=new_maximum_interval,
             color=new_color,
+         )
+    
+    def to_cloud(
+        self,
+        cloud_deck_id: UUID,
+        cloud_type: str,
+        is_approved: bool,
+        author_id: UUID
+     ) -> "Deck":
+        """
+        привязывает колоду к облачной колоде.
+        """
+        return replace(
+            self,
+            cloud_deck_id=cloud_deck_id,
+            is_cloud_deck=True,
+            cloud_type=cloud_type,
+            is_approved=is_approved,
+            author_id=author_id,
          )
 

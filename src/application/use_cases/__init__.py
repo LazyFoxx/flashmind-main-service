@@ -14,6 +14,8 @@ from .users.create_user_profile.use_case import CreateUserProfileUseCase
 from .users.get_user_profile.use_case import GetUserProfileUseCase
 from .users.update_user_profile.use_case import UpdateUserProfileUseCase
 from .stats.daily_review_stat.use_case import DailyReviewStatInput, DailyReviewStatUseCase
+from .cloud_decks.enable_sharing.use_case import EnableSharingInput, EnableSharingUseCase
+from .cloud_decks.sync_cards_to_cloud.use_case import SyncCardsToCloudInput, SyncCardsToCloudUseCase
 
 __all__ = [
     "GetUserProfileUseCase",
@@ -42,5 +44,9 @@ __all__ = [
     "ReviewDueCardInput",
     "ReviewDueCardsUseCase",
     "DailyReviewStatInput",
-    "DailyReviewStatUseCase"
+    "DailyReviewStatUseCase",
+    "EnableSharingInput",
+    "EnableSharingUseCase",
+    "SyncCardsToCloudInput",
+    "SyncCardsToCloudUseCase",
 ]
