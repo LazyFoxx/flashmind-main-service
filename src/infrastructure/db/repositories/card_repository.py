@@ -32,7 +32,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         card_model = result.scalar_one_or_none()
         return card_model.to_entity() if card_model else None
 
-    async def add(self, card: Card, deck_id: UUID) -> None:
+    async def add(self, card: Card) -> None:
         card_model = CardModel.from_domain(card)
         self.session.add(card_model)
 

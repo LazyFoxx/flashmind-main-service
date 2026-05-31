@@ -19,7 +19,7 @@ class DeckResponse(BaseModel):
          ...,
         ge=0.85,
         le=0.95,
-        description="Целевая удержание карт (от 0.0 до 1.0). 0.90 = 90% удержание.",
+        description="Целевая удержание карт (от 0.85 до 0.95). 0.90 = 90% удержание.",
         examples=[0.90, 0.95],
      )
     maximum_interval: int = Field(

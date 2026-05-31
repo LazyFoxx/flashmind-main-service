@@ -46,3 +46,14 @@ class InvalidTokenError(ApplicationError):
 class UserNotFoundError(ApplicationError):
     def __init__(self, user_id: str):
         self.user_id = user_id
+        
+class UserNotFoundError(ApplicationError):
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+
+
+class DeckImportFromOwnAuthorError(ApplicationError):
+    """Пользователь пытается импортировать свою же колоду"""
+    def __init__(self, deck_id: UUID, user_id: UUID):
+        self.deck_id = deck_id
+        self.user_id = user_id

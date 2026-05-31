@@ -21,6 +21,21 @@ class AbstractDeckRepository(ABC):
             Объект Deck, если найден, иначе None
         """
         ...
+    
+    @abstractmethod
+    async def get_by_cloud_deck_id(
+        self, cloud_deck_id: UUID, user_id: UUID,
+    ) -> Optional[Deck]:
+        """Получить колоду по её уникальному идентификатору.
+
+        Args:
+            deck_id: UUID колоды
+
+        Returns:
+            Объект Deck, если найден, иначе None
+        """
+        ...
+
 
     @abstractmethod
     async def get_by_name(

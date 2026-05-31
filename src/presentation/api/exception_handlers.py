@@ -7,6 +7,7 @@ from src.application.exceptions import (
     CardNotExistsError,
     CardNotInLearningError,
     DeckAlreadyExistsError,
+    DeckImportFromOwnAuthorError,
     DeckNotExistsError,
     InvalidTokenError,
     UserNotFoundError,
@@ -109,12 +110,30 @@ async def card_not_in_learning(
     )
 
 
+async def deck_import_from_own_author(
+    request: Request, exc: DeckImportFromOwnAuthorError
+) -> JSONResponse:
+    logger.warning(
+         "Пользователь пытается импортировать свою же колоду",
+        deck_id=str(exc.deck_id),
+        user_id=str(exc.user_id),
+     )
+    return JSONResponse(
+        status_code=400,
+        content={
+             "message": "Нельзя импортировать свою же колоду",
+         },
+     )
+
+
 def setup_exception_handlers(app: FastAPI) -> None:
     """Единая регистрация всех обработчиков ошибок."""
-    app.add_exception_handler(InvalidTokenError, invalid_token)  # type: ignore[arg-type]
-    app.add_exception_handler(DeckAlreadyExistsError, deck_exist)  # type: ignore[arg-type]
-    app.add_exception_handler(CardAlreadyExistsError, card_exist)  # type: ignore[arg-type]
-    app.add_exception_handler(DeckNotExistsError, deck_not_exist)  # type: ignore[arg-type]
-    app.add_exception_handler(CardNotExistsError, card_not_exist)  # type: ignore[arg-type]
-    app.add_exception_handler(UserNotFoundError, user_not_found)  # type: ignore[arg-type]
-    app.add_exception_handler(CardNotInLearningError, card_not_in_learning)  # type: ignore[arg-type]
+    app.add_exception_handler(InvalidTokenError, invalid_token)    # type: ignore[arg-type]
+    app.add_exception_handler(DeckAlreadyExistsError, deck_exist)    # type: ignore[arg-type]
+    app.add_exception_handler(CardAlreadyExistsError, card_exist)    # type: ignore[arg-type]
+    app.add_exception_handler(DeckNotExistsError, deck_not_exist)    # type: ignore[arg-type]
+    app.add_exception_handler(CardNotExistsError, card_not_exist)    # type: ignore[arg-type]
+    app.add_exception_handler(UserNotFoundError, user_not_found)    # type: ignore[arg-type]
+    app.add_exception_handler(CardNotInLearningError, card_not_in_learning)    # type: ignore[arg-type]
+    app.add_exception_handler(DeckImportFromOwnAuthorError, deck_import_from_own_author)    # type: ignore[arg-type]
+

@@ -16,6 +16,7 @@ from .users.update_user_profile.use_case import UpdateUserProfileUseCase
 from .stats.daily_review_stat.use_case import DailyReviewStatInput, DailyReviewStatUseCase
 from .cloud_decks.enable_sharing.use_case import EnableSharingInput, EnableSharingUseCase
 from .cloud_decks.sync_cards_to_cloud.use_case import SyncCardsToCloudInput, SyncCardsToCloudUseCase
+from .cloud_decks.import_deck.use_case import ImportDeckInput, ImportDeckUseCase
 
 __all__ = [
     "GetUserProfileUseCase",
@@ -31,22 +32,14 @@ __all__ = [
     "CreateCardInput",
     "CreateCardUseCase",
     "GetCardUseCase",
-    "UpdateCardInput",
-    "UpdateCardUseCase",
-    "DeleteCardInput",
-    "DeleteCardUseCase",
-    "GetCardsInput",
-    "GetCardsUseCase",
-    "NewToStudyInput",
-    "NewToStudyUseCase",
-    "GetStudyCardsInput",
-    "GetStudyCardsUseCase",
-    "ReviewDueCardInput",
-    "ReviewDueCardsUseCase",
-    "DailyReviewStatInput",
-    "DailyReviewStatUseCase",
-    "EnableSharingInput",
-    "EnableSharingUseCase",
-    "SyncCardsToCloudInput",
-    "SyncCardsToCloudUseCase",
+    "UpdateCardInput", "UpdateCardUseCase",
+    "DeleteCardInput", "DeleteCardUseCase",
+    "GetCardsInput", "GetCardsUseCase",
+    "NewToStudyInput", "NewToStudyUseCase",
+    "GetStudyCardsInput", "GetStudyCardsUseCase",
+    "ReviewDueCardInput", "ReviewDueCardsUseCase",
+    "DailyReviewStatInput", "DailyReviewStatUseCase",
+    "EnableSharingInput", "EnableSharingUseCase",
+    "SyncCardsToCloudInput", "SyncCardsToCloudUseCase",
+    "ImportDeckInput", "ImportDeckUseCase",
 ]

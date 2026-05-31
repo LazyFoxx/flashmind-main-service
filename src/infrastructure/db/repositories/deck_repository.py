@@ -23,6 +23,15 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
         result = await self.session.execute(stmt)
         deck_model = result.scalar_one_or_none()
         return deck_model.to_entity() if deck_model else None
+    
+    async def get_by_cloud_deck_id(
+        self, cloud_deck_id: UUID,  user_id: UUID,
+    ) -> Optional[Deck]:
+        stmt = select(DeckModel).where(DeckModel.cloud_deck_id == cloud_deck_id, DeckModel.user_id == user_id)
+        result = await self.session.execute(stmt)
+        deck_model = result.scalar_one_or_none()
+        return deck_model.to_entity() if deck_model else None
+
 
     async def get_by_name(
         self, name: str, user_id: Optional[UUID] = None

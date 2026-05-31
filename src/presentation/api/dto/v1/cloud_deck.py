@@ -5,7 +5,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-
 class DeckVisibility(str, Enum):
     """Тип видимости колоды"""
     PRIVATE = "PRIVATE"
@@ -104,5 +103,47 @@ class EnableSharingResponse(BaseModel):
                      }
                  }
              ]
+        }
+    }
+
+
+class ImportDeckResponse(BaseModel):
+    """
+    Ответ после успешного импорта облачной колоды.
+    """
+    deck_id: str = Field(
+         ...,
+        description="UUID локальной колоды"
+    )
+    added: int = Field(
+        default=0,
+        description="Количество добавленных карточек"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                 {
+                     "deck_id": "123e4567-e89b-12d3-a456-426614174000",
+                     "added": 10
+                 }
+             ]
+        }
+    }
+
+class ImportDeckRequest(BaseModel):
+    """Запрос на импорт облачной колоды."""
+    cloud_uuid: UUID = Field(
+        ...,
+        description="UUID облачной колоды для импорта"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "cloud_uuid": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            ]
         }
     }

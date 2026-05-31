@@ -18,7 +18,8 @@ from src.application.use_cases import (
     UpdateUserProfileUseCase,
     DailyReviewStatUseCase,
     SyncCardsToCloudUseCase,
-    EnableSharingUseCase
+    EnableSharingUseCase,
+    ImportDeckUseCase,
 )
 
 
@@ -46,3 +47,4 @@ class UseCaseProvider(Provider):
     
     enable_sharing = provide(EnableSharingUseCase, scope=Scope.REQUEST)
     sync_cards_to_cloud = provide(SyncCardsToCloudUseCase, scope=Scope.REQUEST)
+    import_deck = provide(ImportDeckUseCase, scope=Scope.REQUEST)
