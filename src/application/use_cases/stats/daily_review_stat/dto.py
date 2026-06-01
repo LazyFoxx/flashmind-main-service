@@ -13,4 +13,5 @@ class DailyReviewStatInput:
 class DailyReviewStatOutput:
     total_reviews: int
     review_series: int
+    max_review_series: int
     daily_review_counts: Dict[str, int]

@@ -11,6 +11,7 @@ from src.infrastructure.db.repositories import (
     SQLAlchemyReviewLogRepository,
     SQlAlchemyCloudDeckRepository,
     SQlAlchemyCloudCardTemplateRepository,
+    SQLAlchemyUserStatsRepository,
 )
 
 
@@ -26,6 +27,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.review_logs = SQLAlchemyReviewLogRepository(self.session)
         self.cloud_decks = SQlAlchemyCloudDeckRepository(self.session)
         self.cloud_cards = SQlAlchemyCloudCardTemplateRepository(self.session)
+        self.user_stats = SQLAlchemyUserStatsRepository(self.session)
         return self
 
     async def __aexit__(

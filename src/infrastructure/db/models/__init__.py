@@ -4,6 +4,7 @@ from .user_profile import UserProfileModel
 from .review_log import ReviewLogModel
 from .cloud_deck import CloudDeckModel
 from .cloud_card import CloudCardTemplateModel
+from .user_stats import UserStatsModel
 
 __all__ = ["UserProfileModel",
            "CardModel",
@@ -11,4 +12,5 @@ __all__ = ["UserProfileModel",
            "ReviewLogModel",
            "CloudDeckModel",
            "CloudCardTemplateModel",
+           "UserStatsModel",
            ]

@@ -3,6 +3,7 @@ from .cache.storage_cache import AbstractS3Cache
 from .cloud_storage import AbstractCloudStorage
 from .unit_of_work import AbstractUnitOfWork
 from .review_log import AbstractReviewLogRepository, ReviewLogDto
+from .user_stats import UserStatsDto, AbstractUserStatsRepository
 
 __all__ = [
     "AbstractUnitOfWork",
@@ -11,4 +12,6 @@ __all__ = [
     "AbstractS3Cache",
     "AbstractReviewLogRepository",
     "ReviewLogDto",
+    "UserStatsDto",
+    "AbstractUserStatsRepository",
 ]

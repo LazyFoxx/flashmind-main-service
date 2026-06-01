@@ -47,6 +47,7 @@ async def get_user_profile(
         total_reviews=stats.total_reviews,
         review_series=stats.review_series,
         daily_review_counts=stats.daily_review_counts,
+        max_review_series=stats.max_review_series,
     )
 
 

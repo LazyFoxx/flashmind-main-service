@@ -7,8 +7,10 @@ from src.application.interfaces import (
     AbstractUnitOfWork,
 )
 
-from .dto import DailyReviewStatInput, DailyReviewStatOutput
+from datetime import datetime
 
+from .dto import DailyReviewStatInput, DailyReviewStatOutput
+from src.application.interfaces.user_stats import UserStatsDto
 
 class DailyReviewStatUseCase:
     """
@@ -29,6 +31,7 @@ class DailyReviewStatUseCase:
         self.logger = structlog.get_logger(__name__)
         self.storage = storage
 
+
     async def execute(self, input_dto: DailyReviewStatInput) -> DailyReviewStatOutput:
 
         async with self.uow:
@@ -40,7 +43,8 @@ class DailyReviewStatUseCase:
                     user_id=input_dto.user_id,
                 )
                 raise UserNotFoundError(user_id=str(input_dto.user_id))
-
+              
+            
              # Получаем статистику повторений
             stats: Dict[str, int] = await self.uow.review_logs.get_daily_review_counts(
                 user_id=input_dto.user_id,
@@ -56,17 +60,21 @@ class DailyReviewStatUseCase:
             review_series = await self.uow.review_logs.get_current_streak_days(
                 user_id=input_dto.user_id
               )
+            
+            # получаем статистику пользователя (создаем если нет)
+            user_stats = await self.uow.user_stats.get_by_user_id(user_id=input_dto.user_id)
+            if not user_stats:
+              user_stats = UserStatsDto(user_id=input_dto.user_id, max_days_streak=review_series, current_days_streak=review_series)
+            
+            
+            if user_stats.max_days_streak < review_series:
+              user_stats.max_days_streak = review_series
+              await self.uow.user_stats.update(stats=user_stats)
 
-            self.logger.info(
-                  "Получена статистика повторений",
-                user_id=str(input_dto.user_id),
-                total_reviews=total_reviews,
-                review_series=review_series,
-                days_requested=input_dto.days,
-              )
 
         return DailyReviewStatOutput(
             total_reviews=total_reviews,
             review_series=review_series,
             daily_review_counts=stats,
+            max_review_series=user_stats.max_days_streak,
           )

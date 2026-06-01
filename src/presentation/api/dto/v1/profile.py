@@ -9,6 +9,7 @@ class UserProfileResponse(BaseModel):
     bio: str
     total_reviews: int = 0
     review_series: int = 0
+    max_review_series: int = 0
     daily_review_counts: Dict[str, int] = {}
 
     model_config = {
@@ -21,6 +22,7 @@ class UserProfileResponse(BaseModel):
                     "bio": "Имею самую лучшую и любящую девушку на свете",
                     "total_reviews": 150,
                     "review_series": 7,
+                    "max_review_series": 13,
                     "daily_review_counts": {
                         "2024-01-01": 5,
                         "2024-01-02": 3,
