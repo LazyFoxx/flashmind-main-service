@@ -48,7 +48,7 @@ class SQLAlchemyUserStatsRepository(AbstractUserStatsRepository):
               # Запись есть — обновляем через явный UPDATE
             stmt = (
             update(UserStatsModel)
-              .where(UserStatsModel.user_id == user_id)
+              .where(UserStatsModel.user_id == stats.user_id)
               .values(
                 max_days_streak=stats.max_days_streak,
                 current_days_streak=stats.current_days_streak,
