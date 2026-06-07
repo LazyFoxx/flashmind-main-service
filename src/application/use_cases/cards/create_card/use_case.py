@@ -47,7 +47,7 @@ class CreateCardUseCase:
                     )
 
                 # добавляем новою карточку
-                await self.uow.cards.add(card=new_card, deck_id=input_dto.deck_id)
+                await self.uow.cards.add(card=new_card)
                 await self.uow.commit()
                 self.logger.info(
                     "Карточка создана и добавлена в БД",
