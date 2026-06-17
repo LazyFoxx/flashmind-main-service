@@ -17,7 +17,7 @@ class Deck:
     user_id: UUID
     card_ids: List[UUID] = field(default_factory=list)
     desired_retention: float = 0.90
-    maximum_interval: int = 36500
+    maximum_interval: int = 365
     color: str = "#4A90E2"
     total_cards: int = 0
     due_cards_count: int = 0

@@ -24,7 +24,7 @@ class DeckResponse(BaseModel):
      )
     maximum_interval: int = Field(
          ...,
-        ge=60,
+        ge=30,
         le=36500,
         description="Максимальный интервал повторения в днях. Не может превышать 36500 дней.",
         examples=[365, 36500],

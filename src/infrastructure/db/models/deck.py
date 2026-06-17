@@ -52,7 +52,7 @@ class DeckModel(Base):
     )
 
     maximum_interval: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=36500, server_default="36500",
+        Integer, nullable=False, default=365, server_default="365",
     )
     
     color: Mapped[str] = mapped_column(
@@ -123,7 +123,7 @@ class DeckModel(Base):
             user_id=self.user_id,
             card_ids=[],
             desired_retention=float(self.desired_retention) if self.desired_retention is not None else 0.90,
-            maximum_interval=self.maximum_interval or 36500,
+            maximum_interval=self.maximum_interval or 365,
             color=self.color or "#4A90E2",
             # Cloud fields
             cloud_deck_id=self.cloud_deck_id,
@@ -141,7 +141,7 @@ class DeckModel(Base):
             description=deck.description,
             user_id=deck.user_id,
             desired_retention=getattr(deck, "desired_retention", 0.90),
-            maximum_interval=getattr(deck, "maximum_interval", 36500),
+            maximum_interval=getattr(deck, "maximum_interval", 365),
             color=deck.color or "#4A90E2",
             # Cloud fields
             cloud_deck_id=getattr(deck, "cloud_deck_id", None),
