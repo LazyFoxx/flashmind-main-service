@@ -33,12 +33,21 @@ class ReviewDueCardsUseCase:
 
     async def execute(self, input_dto: ReviewDueCardInput) -> Card | None:
         """Логика повторения просроченной карточки"""
+        
+        
         async with self.uow:
             try:
                 # 1. Получаем карточку из базы данных
                 previous_card = await self.uow.cards.get_by_id(input_dto.card_id)
                 if previous_card is None:
                     raise CardNotExistsError(card_id=input_dto.card_id)
+                
+                # 6. Проверяем нужно ли сегодня повторять карточку
+                now = datetime.now(timezone.utc)
+                cutoff = await self._get_study_cutoff(now)
+
+                if not previous_card.is_due(cutoff):
+                    return None
                 
                 # Получаем колоду для параметров scheduler
                 deck = await self.uow.decks.get_by_id(previous_card.deck_id)
@@ -78,15 +87,14 @@ class ReviewDueCardsUseCase:
                 new_card, _ = previous_card.review(scheduler=scheduler, rating=fsrs_rating)
                 
                  # 5. Сохраняем лог
-                 # Вычисляем дату повторения (используем либо время из запроса, либо текущее UTC)
                 review_dt = datetime.now(timezone.utc)
                 
                  # Получаем следующую дату повторения из обновленной карточки
                 next_review_dt = new_card._fsrs_card.due
 
-                 # Вычисляем интервал как разницу в днях между следующей датой и текущей
-                 # Это точнее, чем брать готовое поле interval, так как учитывает fuzz и точное время
-                interval_days = next_review_dt.day - review_dt.day
+                # Вычисляем интервал как разницу в днях между следующей датой и текущей
+                # interval_days = next_review_dt.day - review_dt.day
+                interval_days = (next_review_dt - review_dt).days
 
                 log_dto = ReviewLogDto(
                     id=uuid4(),
@@ -104,17 +112,14 @@ class ReviewDueCardsUseCase:
                     new_difficulty=new_card._fsrs_card.difficulty,
                 )
 
-                # Сохраняем лог через репозиторий
-                await self.uow.review_logs.save(log_dto)
+                await self.uow.review_logs.save(log_dto)                
+                await self.uow.user_stats.autoincr_review(user_id=input_dto.user_id)
 
                 # Обновляем карточку в БД
                 await self.uow.cards.update(new_card)
                 await self.uow.commit()
 
-                # 6. Определяем, есть ли еще карточки на сегодня
-                now = datetime.now(timezone.utc)
-                cutoff = await self._get_study_cutoff(now)
-
+                # 6. Определяем, возвращать ли карточку на повтор сейчас
                 if new_card.is_due(cutoff):
                     return new_card
                 else:

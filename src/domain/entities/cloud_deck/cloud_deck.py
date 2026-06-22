@@ -11,6 +11,7 @@ class CloudDeck:
     name: str
     description: str
     type: str                # 'PUBLIC' или 'PRIVATE'
+    downloaded: int = 0
     is_approved: bool = False    # Одобрена ли администратором (для PUBLIC)
     approved_at: Optional[datetime] = None
 

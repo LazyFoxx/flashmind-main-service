@@ -14,8 +14,9 @@ class UserStatsDto:
     user_id: UUID
     max_days_streak: int
     current_days_streak: int
+    total_reviews: int
     update_at: Optional[datetime] = None
-
+    
 
 
 class AbstractUserStatsRepository:
@@ -33,7 +34,19 @@ class AbstractUserStatsRepository:
         ...
     
     @abstractmethod
-    async def update(self, user_id: UUID, stats: UserStatsDto) -> None:
+    async def add(self, stats: UserStatsDto) -> None:
+        """Добавляет статистику пользователя.
+        Args:
+            stats: UserStatsDto
+            
+        Returns:
+            None
+         """
+        ...
+    
+    
+    @abstractmethod
+    async def update(self, stats: UserStatsDto) -> None:
         """Обновляет статистику пользователя.
         Args:
             stats: UserStatsDto
@@ -42,4 +55,15 @@ class AbstractUserStatsRepository:
             None
          """
         ...
+    
+    async def autoincr_review(self, user_id: UUID) -> None:
+        """Добавляет повтор к total reviews.
+        Args: 
+            user_id UUID
+        
+        Returns:
+            None
+        """
+        ...
+
 

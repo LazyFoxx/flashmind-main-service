@@ -64,7 +64,7 @@ async def card_exist(request: Request, exc: CardAlreadyExistsError) -> JSONRespo
     return JSONResponse(
         status_code=409,
         content={
-            "message": f"Карточка с таким front уже существует в этой колоде",
+            "message": f"Карточка с таким определением уже существует в этой колоде",
         },
     )
 

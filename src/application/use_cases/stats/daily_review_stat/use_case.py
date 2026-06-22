@@ -51,11 +51,6 @@ class DailyReviewStatUseCase:
                 days=input_dto.days,
               )
 
-              # Получаем общее количество повторений
-            total_reviews = await self.uow.review_logs.get_total_reviews_count(
-                user_id=input_dto.user_id
-              )
-
               # Получаем текущую серию дней подряд (streak)
             review_series = await self.uow.review_logs.get_current_streak_days(
                 user_id=input_dto.user_id
@@ -64,17 +59,32 @@ class DailyReviewStatUseCase:
             # получаем статистику пользователя (создаем если нет)
             user_stats = await self.uow.user_stats.get_by_user_id(user_id=input_dto.user_id)
             if not user_stats:
-              user_stats = UserStatsDto(user_id=input_dto.user_id, max_days_streak=review_series, current_days_streak=review_series)
-            
-            
+              total_reviews = await self.uow.review_logs.get_total_reviews_count(
+                user_id=input_dto.user_id
+              )
+              
+              user_stats = UserStatsDto(
+                  user_id=input_dto.user_id,
+                  max_days_streak=review_series,
+                  current_days_streak=review_series,
+                  total_reviews=total_reviews
+          )
+
+              await self.uow.user_stats.add(user_stats)
+              print(f"DEBUG: user_stats добавлен: {user_stats}")
+
+             # Проверяем, нужно ли обновить max_days_streak
             if user_stats.max_days_streak < review_series:
-              user_stats.max_days_streak = review_series
-              await self.uow.user_stats.update(stats=user_stats)
+                user_stats.max_days_streak = review_series
+                await self.uow.user_stats.update(stats=user_stats)
+
+            await self.uow.commit()
 
 
         return DailyReviewStatOutput(
-            total_reviews=total_reviews,
+            total_reviews=user_stats.total_reviews,
             review_series=review_series,
             daily_review_counts=stats,
             max_review_series=user_stats.max_days_streak,
-          )
+            )
+

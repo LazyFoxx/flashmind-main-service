@@ -24,3 +24,19 @@ class SQlAlchemyCloudDeckRepository(AbstractCloudDeckRepository):
     async def add(self, deck: CloudDeck) -> None:
         deck_model = CloudDeckModel.from_domain(deck)
         self.session.add(deck_model)
+
+
+    async def autoincr_downloaded(self, deck_id: UUID) -> None:
+        """Добавляет скачивание к downloaded."""
+
+        
+        stmt = (
+        update(CloudDeckModel)
+            .where(CloudDeckModel.id == deck_id)
+            .values(
+                total_reviews=func.coalesce(CloudDeckModel.downloaded, 0) + 1,
+            )
+        )
+        await self.session.execute(stmt)
+        
+        return None

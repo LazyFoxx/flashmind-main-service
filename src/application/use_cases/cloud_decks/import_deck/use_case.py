@@ -65,6 +65,9 @@ class ImportDeckUseCase:
                     author_id=cloud_deck.author_id,
                 )
                 await self.uow.decks.add(local_deck)
+                
+                await self.uow.cloud_decks.autoincr_downloaded(deck_id=input_dto.cloud_uuid)
+                
                 await self.uow.commit()
 
             

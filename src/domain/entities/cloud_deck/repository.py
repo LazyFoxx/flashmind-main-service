@@ -35,3 +35,15 @@ class AbstractCloudDeckRepository(ABC):
             IntegrityError: если имя колоды уже занято для пользователя
         """
         ...
+    
+    @abstractmethod
+    async def autoincr_downloaded(self, deck_id: UUID) -> None:
+        """Добавляет скачивание к downloaded.
+
+        Args:
+            deck_id: UUID колоды
+
+        Returns:
+            None
+        """
+        ...

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -69,6 +69,14 @@ class CloudDeckModel(Base):
         onupdate=func.now(),
         nullable=False,
     )
+    
+    downloaded: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        server_default="0",
+        comment="Количество скачиваний колоды другими пользователями",
+    )
 
     # Relationships
     card_templates: Mapped[list["CloudCardTemplateModel"]] = relationship(
@@ -87,6 +95,7 @@ class CloudDeckModel(Base):
             type=self.type,
             is_approved=self.is_approved,
             approved_at=self.approved_at,
+            downloaded=self.downloaded,
         )
 
     @classmethod
@@ -99,4 +108,5 @@ class CloudDeckModel(Base):
             type=deck.type,
             is_approved=deck.is_approved,
             approved_at=deck.approved_at,
+            downloaded=deck.downloaded,
         )
