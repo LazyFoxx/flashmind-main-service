@@ -9,6 +9,7 @@ from src.application.use_cases import (
     EnableSharingUseCase,
     ImportDeckInput,
     ImportDeckUseCase,
+    GetUserProfileUseCase,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
@@ -17,7 +18,7 @@ from src.presentation.api.dto.v1 import (
     SyncStats,
     ImportDeckResponse,
     ImportDeckRequest,
-    # CloudDeckResponse,
+    CloudDeckResponse
 )
 
 router = APIRouter(prefix="/cloud_decks", tags=["cloud_decks"])
@@ -97,34 +98,33 @@ async def import_deck(
         added=result.added,
     )
 
-# @router.get(
-#     "/{deck_id}",
-#     response_model=CloudDeckResponse,
-#     status_code=status.HTTP_200_OK,
-#     summary="",
-#     description=(
-#         ""
-#     ),
-# )
-# @inject
-# async def get_cloud_deck(
-#     payload: ImportDeckRequest,
-#     use_case: FromDishka[_],
-#     user_id: UUID = Depends(get_current_user_id),
-# ) -> ImportDeckResponse:
-#     """
-#     Импортирует облачную колоду к себе.
-#     - Находит облачную колоду по cloud_uuid
-#     - Создает локальную копию с карточками
-#     - Не перезаписывает существующие карточки
-#     """
-#     dto = ImportDeckInput(
-#         user_id=user_id,
-#         cloud_uuid=payload.cloud_uuid,
-#     )
-#     result = await use_case.execute(input_dto=dto)
+@router.get(
+    "/{deck_id}",
+    response_model=CloudDeckResponse,
+    status_code=status.HTTP_200_OK,
+    summary="",
+    description=(
+        ""
+    ),
+)
+@inject
+async def get_cloud_deck(
+    payload: ImportDeckRequest,
+    use_case: FromDishka[_],
+    author_use_case: FromDishka[GetUserProfileUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> CloudDeckResponse:
+    """
     
-#     return ImportDeckResponse(
-#         deck_id=str(result.deck_id),
-#         added=result.added,
-#     )
+    """
+
+    author = await author_use_case.execute(user_id=author_id)
+    
+    
+    dto = ImportDeckInput(
+        user_id=user_id,
+        cloud_uuid=payload.cloud_uuid,
+    )
+    result = await use_case.execute(input_dto=dto)
+    
+    return CloudDeckResponse.from_entity(deck, author, cards)

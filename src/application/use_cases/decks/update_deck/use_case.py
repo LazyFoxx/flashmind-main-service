@@ -52,6 +52,9 @@ class UpdateDeckUseCase:
                 
                 
                 deck = await self.uow.decks.get_by_id(input_dto.deck_id)
+
+                total_cards = list_deck_id_and_total_cards[0][1] if list_deck_id_and_total_cards else 0
+                due_cards_count = list_deck_id_and_due_cards[0][1] if list_deck_id_and_due_cards else 0
                 
                 updated_deck = Deck(
                     id=input_dto.deck_id,
@@ -61,10 +64,10 @@ class UpdateDeckUseCase:
                     color=input_dto.color,
                     maximum_interval=input_dto.maximum_interval,
                     desired_retention=input_dto.desired_retention,
-                    total_cards=list_deck_id_and_total_cards[0][1],
-                    due_cards_count=list_deck_id_and_due_cards[0][1],
-                )
-                
+                    total_cards=total_cards,
+                    due_cards_count=due_cards_count,
+                 )
+
                 if input_dto.user_id != deck.user_id:
                     raise Exception("Доступ запрещен")
 

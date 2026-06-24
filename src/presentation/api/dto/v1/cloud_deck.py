@@ -1,6 +1,6 @@
 # src/presentation/api/dto/v1/cloud_deck.py
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -149,124 +149,312 @@ class ImportDeckRequest(BaseModel):
     }
     
     
-# class AuthorProfile(BaseModel):
-#     """Профиль автора облачной колоды."""
-#     user_id: str = Field(
-#          ...,
-#         description="UUID автора колоды",
-#         examples=["123e4567-e89b-12d3-a456-426614174000"],
-#      )
-#     first_name: str = Field(
-#          ...,
-#         description="Имя автора",
-#         examples=["John"],
-#      )
-#     last_name: str = Field(
-#          ...,
-#         description="Фамилия автора",
-#         examples=["Doe"],
-#      )
-#     avatar_key: str = Field(
-#          ...,
-#         description="Ключ аватара (URL или путь к файлу)",
-#         examples=["avatars/john_doe.jpg"],
-#      )
-#     bio: Optional[str] = Field(
-#         None,
-#         description="Биография автора",
-#         examples=["Автор колоды по изучению английского языка"],
-#      )
+class AuthorProfile(BaseModel):
+    """Профиль автора облачной колоды."""
+    user_id: str = Field(
+         ...,
+        description="UUID автора колоды",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+     )
+    first_name: str = Field(
+         ...,
+        description="Имя автора",
+        examples=["John"],
+     )
+    last_name: str = Field(
+         ...,
+        description="Фамилия автора",
+        examples=["Doe"],
+     )
+    avatar_key: str = Field(
+         ...,
+        description="Ключ аватара (URL или путь к файлу)",
+        examples=["avatars/john_doe.jpg"],
+     )
+    bio: Optional[str] = Field(
+        None,
+        description="Биография автора",
+        examples=["Автор колоды по изучению английского языка"],
+     )
 
 
-# class CloudDeckResponse(BaseModel):
-#      """
-#      Полный ответ с информацией об облачной колоде, включая все карточки и профиль автора.
-#      """
-#     id: str = Field(
-#          ...,
-#         description="UUID облачной колоды",
-#         examples=["123e4567-e89b-12d3-a456-426614174000"],
-#      )
-#     name: str = Field(
-#          ...,
-#         description="Название колоды",
-#         examples=["Английский 3000"],
-#      )
-#     description: str = Field(
-#          ...,
-#         description="Описание колоды",
-#         examples=["3000 самых популярных слов в английском языке"],
-#      )
-#     total_cards: int = Field(
-#          ...,
-#         description="Общее количество карточек в колоде",
-#         examples=[3000],
-#      )
-#     visibility: DeckVisibility = Field(
-#          ...,
-#         description="Тип видимости колоды: PUBLIC или PRIVATE",
-#         examples=[DeckVisibility.PUBLIC],
-#      )
-#     is_approved: bool = Field(
-#          ...,
-#         description="Одобрена ли колода администратором",
-#         examples=[True],
-#      )
-#     created_at: Optional[str] = Field(
-#         None,
-#         description="Дата создания колоды (ISO 8601)",
-#         examples=["2024-01-01T00:00:00Z"],
-#      )
-#     updated_at: Optional[str] = Field(
-#         None,
-#         description="Дата последнего обновления колоды (ISO 8601)",
-#         examples=["2024-01-15T12:00:00Z"],
-#      )
+
+class CloudCardResponse(BaseModel):
+    id: str
+    front: str
+    back: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "deck_id": "123e4567-e89b-12d3-a456-426614174001",
+                    "front": "Любимый Настин напиток",
+                }
+            ]
+        }
+    }
+
+
+class CloudDeckResponse(BaseModel):
+    """
+    Полный ответ с информацией об облачной колоде, включая все карточки и профиль автора.
+    """
+    id: str = Field(
+         ...,
+        description="UUID облачной колоды",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+     )
+    name: str = Field(
+         ...,
+        description="Название колоды",
+        examples=["Английский 3000"],
+     )
+    description: str = Field(
+         ...,
+        description="Описание колоды",
+        examples=["3000 самых популярных слов в английском языке"],
+     )
+    total_cards: int = Field(
+         ...,
+        description="Общее количество карточек в колоде",
+        examples=[3000],
+     )
+    last_synced_at: Optional[str] = Field(
+        None,
+        description="Дата последнего обновления колоды (ISO 8601)",
+        examples=["2024-01-15T12:00:00Z"],
+     )
     
-#     author: AuthorProfile = Field(
-#          ...,
-#         description="Профиль автора колоды",
-#      )
+    downloaded: int = Field(
+         ...,
+        description="Общее количество карточек в колоде",
+        examples=[3000],
+     )
     
-#     cards: List[CardResponse] = Field(
-#         default_factory=list,
-#         description="Список всех карточек колоды",
-#      )
+    author: AuthorProfile = Field(
+         ...,
+        description="Профиль автора колоды",
+     )
+    
+    cards: List[CloudCardResponse] = Field(
+        default_factory=list,
+        description="Список всех карточек колоды",
+     )
 
-#     model_config = {
-#          "json_schema_extra": {
-#              "examples": [
-#                  {
-#                      "id": "123e4567-e89b-12d3-a456-426614174000",
-#                      "name": "Английский 3000",
-#                      "description": "3000 самых популярных слов в английском языке",
-#                      "total_cards": 3000,
-#                      "visibility": "PUBLIC",
-#                      "is_approved": True,
-#                      "created_at": "2024-01-01T00:00:00Z",
-#                      "updated_at": "2024-01-15T12:00:00Z",
-#                      "author": {
-#                          "user_id": "123e4567-e89b-12d3-a456-426614174000",
-#                          "first_name": "John",
-#                          "last_name": "Doe",
-#                          "avatar_key": "avatars/john_doe.jpg",
-#                          "bio": "Автор колоды по изучению английского языка",
-#                      },
-#                      "cards": [
-#                          {
-#                              "id": "123e4567-e89b-12d3-a456-426614174001",
-#                              "deck_id": "123e4567-e89b-12d3-a456-426614174000",
-#                              "front": "Hello",
-#                              "back": "Привет",
-#                          },
-#                          {
-#                              "id": "123e4567-e89b-12d3-a456-426614174002",
-#                              "deck_id": "123e4567-e89b-12d3-a456-426614174000",
-#                              "front": "Goodbye",
-#                              "back": "До свидания",
-#                          },
-#                      ],
-#                  }
-#              ]
-#          }
-#      }
+    model_config = {
+         "json_schema_extra": {
+             "examples": [
+                 {
+                     "id": "123e4567-e89b-12d3-a456-426614174000",
+                     "name": "Английский 3000",
+                     "description": "3000 самых популярных слов в английском языке",
+                     "total_cards": 3000,
+                     "last_synced_at": "2024-01-15T12:00:00Z",
+                     "downloaded": 0,
+                     "author": {
+                         "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                         "first_name": "John",
+                         "last_name": "Doe",
+                         "avatar_key": "avatars/john_doe.jpg",
+                         "bio": "Автор колоды по изучению английского языка",
+                     },
+                     "cards": [
+                         {
+                             "id": "123e4567-e89b-12d3-a456-426614174001",
+                             "front": "Hello",
+                         },
+                         {
+                             "id": "123e4567-e89b-12d3-a456-426614174002",
+                             "front": "Goodbye",
+                         },
+                     ],
+                 }
+             ]
+         }
+     }
+    
+
+
+
+class AuthorProfile(BaseModel):
+    """Профиль автора облачной колоды."""
+    user_id: str = Field(
+          ...,
+        description="UUID автора колоды",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+      )
+    first_name: str = Field(
+          ...,
+        description="Имя автора",
+        examples=["John"],
+      )
+    last_name: str = Field(
+          ...,
+        description="Фамилия автора",
+        examples=["Doe"],
+      )
+    avatar_key: str = Field(
+          ...,
+        description="Ключ аватара (URL или путь к файлу)",
+        examples=["avatars/john_doe.jpg"],
+      )
+    bio: Optional[str] = Field(
+        None,
+        description="Биография автора",
+        examples=["Автор колоды по изучению английского языка"],
+      )
+
+    @classmethod
+    def from_user(cls, user) -> "AuthorProfile":
+        """Создать AuthorProfile из сущности User.
+        
+        Args:
+            user: сущность domain.entities.user.user.User
+            
+        Returns:
+            AuthorProfile с данными пользователя
+        """
+        return cls(
+            user_id=str(user.id),
+            first_name=user.first_name,
+            last_name=user.last_name,
+            avatar_key=user.avatar_key,
+            bio=user.bio,
+        )
+
+
+class CloudCardResponse(BaseModel):
+    id: str
+    front: str
+    back: str
+
+    @classmethod
+    def from_entity(cls, card) -> "CloudCardResponse":
+        """Создать CloudCardResponse из сущности CloudCardTemplate.
+        
+        Args:
+            card: сущность domain.entities.cloud_card.cloud_card.CloudCardTemplate
+            
+        Returns:
+            CloudCardResponse с данными карточки
+        """
+        return cls(
+            id=str(card.id),
+            front=card.front,
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                     "id": "123e4567-e89b-12d3-a456-426614174000",
+                     "front": "Любимый Настин напиток",
+                 }
+             ]
+        }
+     }
+
+
+class CloudDeckResponse(BaseModel):
+    """
+    Полный ответ с информацией об облачной колоде, включая все карточки и профиль автора.
+    """
+    id: str = Field(
+          ...,
+        description="UUID облачной колоды",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+      )
+    name: str = Field(
+          ...,
+        description="Название колоды",
+        examples=["Английский 3000"],
+      )
+    description: str = Field(
+          ...,
+        description="Описание колоды",
+        examples=["3000 самых популярных слов в английском языке"],
+      )
+    total_cards: int = Field(
+          ...,
+        description="Общее количество карточек в колоде",
+        examples=[3000],
+      )
+    last_synced_at: Optional[str] = Field(
+        None,
+        description="Дата последнего обновления колоды (ISO 8601)",
+        examples=["2024-01-15T12:00:00Z"],
+      )
+    
+    downloaded: int = Field(
+          ...,
+        description="Количество загруженных карточек",
+        examples=[3000],
+      )
+    
+    author: AuthorProfile = Field(
+          ...,
+        description="Профиль автора колоды",
+      )
+    
+    cards: List[CloudCardResponse] = Field(
+        default_factory=list,
+        description="Список всех карточек колоды",
+      )
+
+    @classmethod
+    def from_entity(cls, deck, author, cards=None) -> "CloudDeckResponse":
+        """Создать CloudDeckResponse из сущности CloudDeck.
+        
+        Args:
+            deck: сущность domain.entities.cloud_deck.cloud_deck.CloudDeck
+            author: сущность domain.entities.user.user.User (автор колоды)
+            cards: список сущностей CloudCardTemplate (опционально)
+            
+        Returns:
+            CloudDeckResponse с данными колоды
+        """
+
+        return cls(
+            id=str(deck.id),
+            name=deck.name,
+            description=deck.description,
+            total_cards=len(cards) if cards else deck.downloaded,
+            last_synced_at=deck.last_synced_at.isoformat() if deck.last_synced_at else None,
+            downloaded=deck.downloaded,
+            author=AuthorProfile.from_user(author),
+            cards=[CloudCardResponse.from_entity(card) for card in cards],
+        )
+
+    model_config = {
+          "json_schema_extra": {
+              "examples": [
+                  {
+                      "id": "123e4567-e89b-12d3-a456-426614174000",
+                      "name": "Английский 3000",
+                      "description": "3000 самых популярных слов в английском языке",
+                      "total_cards": 3000,
+                      "last_synced_at": "2024-01-15T12:00:00Z",
+                      "downloaded": 0,
+                      "author": {
+                          "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                          "first_name": "John",
+                          "last_name": "Doe",
+                          "avatar_key": "avatars/john_doe.jpg",
+                          "bio": "Автор колоды по изучению английского языка",
+                      },
+                      "cards": [
+                          {
+                              "id": "123e4567-e89b-12d3-a456-426614174001",
+                              "front": "Hello",
+                          },
+                          {
+                              "id": "123e4567-e89b-12d3-a456-426614174002",
+                              "front": "Goodbye",
+                          },
+                      ],
+                  }
+              ]
+          }
+      }
