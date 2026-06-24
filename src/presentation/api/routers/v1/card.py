@@ -30,7 +30,7 @@ router = APIRouter(prefix="/cards", tags=["cards"])
 
 
 @router.get(
-    "{card_id}",
+    "/{card_id}",
     response_model=CardResponse,
     status_code=status.HTTP_200_OK,
     summary="Получить карточку по ее id",
@@ -90,7 +90,7 @@ async def create_card(
 
 
 @router.put(
-    "{card_id}",
+    "/{card_id}",
     response_model=CardResponse,
     status_code=status.HTTP_200_OK,
     summary="Обновить поля карточки",
@@ -125,7 +125,7 @@ async def update_card(
 
 
 @router.delete(
-    "{card_id}",
+    "/{card_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить карточку",
     description=("Удаляет карточку по id, иденпотентно"),
