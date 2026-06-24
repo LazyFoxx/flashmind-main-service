@@ -35,6 +35,8 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
     async def add(self, card: Card) -> None:
         card_model = CardModel.from_domain(card)
         self.session.add(card_model)
+        
+        await self._update_deck_updated_at(card.deck_id)
 
     async def update(self, card: Card) -> None:
         if card._fsrs_card is None:
@@ -52,6 +54,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                     
                 )
             )
+            await self._update_deck_updated_at(card.deck_id)
         else: 
             stmt = (
             update(CardModel)
@@ -70,7 +73,14 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         await self.session.execute(stmt)
 
     async def delete(self, card_id: UUID) -> None:
-        await self.session.execute(delete(CardModel).where(CardModel.id == card_id))
+
+        card = await self.get_by_id(card_id)
+        if card:
+            await self.session.execute(delete(CardModel).where(CardModel.id == card_id))
+            # Обновляем updated_at у колоды
+            await self._update_deck_updated_at(card.deck_id)
+        else:
+             raise ValueError(f"Card with id {card_id} not found")
 
     async def get_all_light_by_user_and_deck(
         self,
@@ -241,3 +251,12 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         rows = result.fetchall()
         
         return [(row.deck_id, row.due_count) for row in rows]
+    
+    async def _update_deck_updated_at(self, deck_id: UUID) -> None:
+        """Обновляет updated_at у указанной колоды."""
+        stmt = (
+            update(DeckModel)
+              .where(DeckModel.id == deck_id)
+              .values(updated_at=func.now())
+          )
+        await self.session.execute(stmt)

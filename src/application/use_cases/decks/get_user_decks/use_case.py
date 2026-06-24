@@ -60,7 +60,14 @@ class GetUserDecksUseCase:
                 updated_deck = deck.with_updated_total_cards(new_total_cards=total_cards)
                 updated_deck = updated_deck.with_updated_due_cards_count(new_due_cards_count=due_cards_count)
                 
+                cloud_updated_at = await self.uow.cloud_decks.get_last_synced_at(cloud_deck_id=updated_deck.cloud_deck_id)
+                
+                if cloud_updated_at:
+                    updated_deck = updated_deck.with_needs_sync(cloud_updated_at=cloud_updated_at)
+                
                 decks_with_total_cards.append(updated_deck)
+                
+                
             
         self.logger.debug(f"Найдено {len(decks)} колоды", user_id=user_id)
 

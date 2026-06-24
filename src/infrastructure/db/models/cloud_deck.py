@@ -70,6 +70,11 @@ class CloudDeckModel(Base):
         nullable=False,
     )
     
+    last_synced_at: Mapped[Optional[datetime]] = mapped_column(
+        server_default=func.now(),
+        nullable=True,
+      )
+    
     downloaded: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
@@ -77,6 +82,7 @@ class CloudDeckModel(Base):
         server_default="0",
         comment="Количество скачиваний колоды другими пользователями",
     )
+    
 
     # Relationships
     card_templates: Mapped[list["CloudCardTemplateModel"]] = relationship(
@@ -96,6 +102,7 @@ class CloudDeckModel(Base):
             is_approved=self.is_approved,
             approved_at=self.approved_at,
             downloaded=self.downloaded,
+            last_synced_at=self.last_synced_at,
         )
 
     @classmethod
@@ -109,4 +116,5 @@ class CloudDeckModel(Base):
             is_approved=deck.is_approved,
             approved_at=deck.approved_at,
             downloaded=deck.downloaded,
+            last_synced_at=getattr(deck, "last_synced_at", None),
         )

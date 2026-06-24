@@ -14,6 +14,7 @@ class CloudDeck:
     downloaded: int = 0
     is_approved: bool = False    # Одобрена ли администратором (для PUBLIC)
     approved_at: Optional[datetime] = None
+    last_synced_at: Optional[datetime] = None 
 
     def approve(self) -> "CloudDeck":
         """Одобрить колоду (вызывает админ)."""

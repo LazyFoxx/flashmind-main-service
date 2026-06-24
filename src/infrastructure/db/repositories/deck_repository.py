@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
@@ -131,4 +132,15 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
             "learned": learned,
         }
     
-
+    async def update_last_synced_at(self, deck_id: UUID) -> None:
+        stmt = (
+            update(DeckModel)
+            .where(DeckModel.id == deck_id)
+            .values(last_synced_at=func.now())
+        )
+        await self.session.execute(stmt)
+        
+    async def get_last_synced_at(self, deck_id: UUID) -> Optional[datetime]:
+        stmt = select(DeckModel.last_synced_at).where(DeckModel.id == deck_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()

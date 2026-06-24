@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Optional
 from uuid import UUID
 
+from src.domain.entities.deck.deck import Deck
+
 
 @dataclass(frozen=True, slots=True)
 class UpdateDeckInput:
@@ -16,9 +18,4 @@ class UpdateDeckInput:
 
 @dataclass(frozen=True, slots=True)
 class UpdateDeckOutput:
-    deck_id: str
-    name: str
-    description: str
-    desired_retention: float
-    maximum_interval: int
-    color: str
+    deck: Deck

@@ -147,3 +147,126 @@ class ImportDeckRequest(BaseModel):
             ]
         }
     }
+    
+    
+# class AuthorProfile(BaseModel):
+#     """Профиль автора облачной колоды."""
+#     user_id: str = Field(
+#          ...,
+#         description="UUID автора колоды",
+#         examples=["123e4567-e89b-12d3-a456-426614174000"],
+#      )
+#     first_name: str = Field(
+#          ...,
+#         description="Имя автора",
+#         examples=["John"],
+#      )
+#     last_name: str = Field(
+#          ...,
+#         description="Фамилия автора",
+#         examples=["Doe"],
+#      )
+#     avatar_key: str = Field(
+#          ...,
+#         description="Ключ аватара (URL или путь к файлу)",
+#         examples=["avatars/john_doe.jpg"],
+#      )
+#     bio: Optional[str] = Field(
+#         None,
+#         description="Биография автора",
+#         examples=["Автор колоды по изучению английского языка"],
+#      )
+
+
+# class CloudDeckResponse(BaseModel):
+#      """
+#      Полный ответ с информацией об облачной колоде, включая все карточки и профиль автора.
+#      """
+#     id: str = Field(
+#          ...,
+#         description="UUID облачной колоды",
+#         examples=["123e4567-e89b-12d3-a456-426614174000"],
+#      )
+#     name: str = Field(
+#          ...,
+#         description="Название колоды",
+#         examples=["Английский 3000"],
+#      )
+#     description: str = Field(
+#          ...,
+#         description="Описание колоды",
+#         examples=["3000 самых популярных слов в английском языке"],
+#      )
+#     total_cards: int = Field(
+#          ...,
+#         description="Общее количество карточек в колоде",
+#         examples=[3000],
+#      )
+#     visibility: DeckVisibility = Field(
+#          ...,
+#         description="Тип видимости колоды: PUBLIC или PRIVATE",
+#         examples=[DeckVisibility.PUBLIC],
+#      )
+#     is_approved: bool = Field(
+#          ...,
+#         description="Одобрена ли колода администратором",
+#         examples=[True],
+#      )
+#     created_at: Optional[str] = Field(
+#         None,
+#         description="Дата создания колоды (ISO 8601)",
+#         examples=["2024-01-01T00:00:00Z"],
+#      )
+#     updated_at: Optional[str] = Field(
+#         None,
+#         description="Дата последнего обновления колоды (ISO 8601)",
+#         examples=["2024-01-15T12:00:00Z"],
+#      )
+    
+#     author: AuthorProfile = Field(
+#          ...,
+#         description="Профиль автора колоды",
+#      )
+    
+#     cards: List[CardResponse] = Field(
+#         default_factory=list,
+#         description="Список всех карточек колоды",
+#      )
+
+#     model_config = {
+#          "json_schema_extra": {
+#              "examples": [
+#                  {
+#                      "id": "123e4567-e89b-12d3-a456-426614174000",
+#                      "name": "Английский 3000",
+#                      "description": "3000 самых популярных слов в английском языке",
+#                      "total_cards": 3000,
+#                      "visibility": "PUBLIC",
+#                      "is_approved": True,
+#                      "created_at": "2024-01-01T00:00:00Z",
+#                      "updated_at": "2024-01-15T12:00:00Z",
+#                      "author": {
+#                          "user_id": "123e4567-e89b-12d3-a456-426614174000",
+#                          "first_name": "John",
+#                          "last_name": "Doe",
+#                          "avatar_key": "avatars/john_doe.jpg",
+#                          "bio": "Автор колоды по изучению английского языка",
+#                      },
+#                      "cards": [
+#                          {
+#                              "id": "123e4567-e89b-12d3-a456-426614174001",
+#                              "deck_id": "123e4567-e89b-12d3-a456-426614174000",
+#                              "front": "Hello",
+#                              "back": "Привет",
+#                          },
+#                          {
+#                              "id": "123e4567-e89b-12d3-a456-426614174002",
+#                              "deck_id": "123e4567-e89b-12d3-a456-426614174000",
+#                              "front": "Goodbye",
+#                              "back": "До свидания",
+#                          },
+#                      ],
+#                  }
+#              ]
+#          }
+#      }

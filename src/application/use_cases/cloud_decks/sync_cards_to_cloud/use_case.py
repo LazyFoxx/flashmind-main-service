@@ -84,6 +84,8 @@ class SyncCardsToCloudUseCase:
                     await self.uow.cloud_cards.delete(template.id)
                     deleted_count += 1
 
+            await self.uow.cloud_decks.update_last_synced_at(cloud_deck_id=cloud_deck_id)
+            
             await self.uow.commit()
             return SyncCardsToCloudOutput(added=added_count, updated=updated_count, deleted=deleted_count)
 
@@ -122,5 +124,7 @@ class SyncCardsToCloudUseCase:
                     await self.uow.cards.add(new_card, )
                     added_count += 1
 
+            await self.uow.decks.update_last_synced_at(deck_id=deck_id)
+            
             await self.uow.commit()
             return SyncCardsToCloudOutput(added=added_count, updated=0, deleted=0)

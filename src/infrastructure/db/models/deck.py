@@ -91,7 +91,13 @@ class DeckModel(Base):
         server_default="false",
      )
     
-    # Тип колоды: 'PUBLIC' или 'PRIVATE' (заполняется только для is_cloud_deck=True)
+      # Время последней синхронизации с облаком
+    last_synced_at: Mapped[Optional[datetime]] = mapped_column(
+        server_default=func.now(),
+        nullable=True,
+      )
+
+      # Тип колоды: 'PUBLIC' или 'PRIVATE' (заполняется только для is_cloud_deck=True)
     cloud_type: Mapped[Optional[str]] = mapped_column(
         String(10),
         nullable=True,
@@ -125,13 +131,15 @@ class DeckModel(Base):
             desired_retention=float(self.desired_retention) if self.desired_retention is not None else 0.92,
             maximum_interval=self.maximum_interval or 365,
             color=self.color or "#4A90E2",
+            updated_at=self.updated_at,
             # Cloud fields
             cloud_deck_id=self.cloud_deck_id,
             is_cloud_deck=self.is_cloud_deck,
             cloud_type=self.cloud_type,
             is_approved=self.is_approved,
             author_id=self.author_id,
-        )
+            last_synced_at=self.last_synced_at,
+         )
 
     @classmethod
     def from_domain(cls, deck: Deck) -> "DeckModel":
@@ -149,4 +157,6 @@ class DeckModel(Base):
             cloud_type=getattr(deck, "cloud_type", None),
             is_approved=getattr(deck, "is_approved", False),
             author_id=getattr(deck, "author_id", None),
-        )
+            last_synced_at=getattr(deck, "last_synced_at", None),
+         )
+

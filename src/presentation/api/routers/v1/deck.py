@@ -20,7 +20,6 @@ from src.presentation.api.dto.v1 import (
     ErrorMessageResponse,
     UserDecksResponse,
     UpdateDeckRequest,
-    DeckResponseUpdate,
 )
 
 router = APIRouter(prefix="/decks", tags=["decks"])
@@ -52,14 +51,7 @@ async def create_deck(
     )
     deck = await use_case.execute(input_dto=dto)
 
-    return DeckResponse(id=deck.deck_id,
-                        name=deck.name,
-                        description=deck.description,
-                        color=deck.color,
-                        total_cards=deck.total_cards,
-                        repeat_cards=deck.due_cards_count,
-                        desired_retention=deck.desired_retention,
-                        maximum_interval=deck.maximum_interval)
+    return DeckResponse.from_entity(deck=deck.deck, user_id=user_id)
 
 
 @router.get(
@@ -79,13 +71,13 @@ async def get_user_decks(
     decks = await use_case.execute(user_id=user_id)
 
     return UserDecksResponse(
-        decks=[DeckResponse.from_entity(deck) for deck in decks.decks]
+        decks=[DeckResponse.from_entity(deck, user_id=user_id) for deck in decks.decks]
     )
 
 
 @router.put(
-    "{deck_id}",
-    response_model=UpdateDeckRequest,
+    "/{deck_id}",
+    response_model=DeckResponse,
     status_code=status.HTTP_200_OK,
     summary="Обновить поля колоды",
     description=(
@@ -98,7 +90,7 @@ async def update_deck(
     payload: UpdateDeckRequest,
     use_case: FromDishka[UpdateDeckUseCase],
     user_id: UUID = Depends(get_current_user_id),
-) -> DeckResponseUpdate:
+) -> DeckResponse:
     dto = UpdateDeckInput(
         user_id=user_id,
         deck_id=deck_id,
@@ -110,16 +102,11 @@ async def update_deck(
     )
     deck = await use_case.execute(input_dto=dto)
 
-    return DeckResponseUpdate(id=deck.deck_id,
-                        name=deck.name,
-                        description=deck.description,
-                        desired_retention=deck.desired_retention,
-                        maximum_interval=deck.maximum_interval,
-                        color=deck.color)
+    return DeckResponse.from_entity(deck=deck.deck, user_id=user_id)
 
 
 @router.delete(
-    "{deck_id}",
+    "/{deck_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить колоду",
     description=("Удаляет колоду и все связанные с ней карточки"),

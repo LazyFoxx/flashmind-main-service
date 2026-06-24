@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, replace
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
@@ -15,6 +16,7 @@ class Deck:
     name: str
     description: str
     user_id: UUID
+    updated_at: Optional[datetime] = None
     card_ids: List[UUID] = field(default_factory=list)
     desired_retention: float = 0.92
     maximum_interval: int = 365
@@ -27,6 +29,8 @@ class Deck:
     cloud_type: Optional[str] = None        # 'PUBLIC' | 'PRIVATE' (только для cloud)
     is_approved: bool = False               # Одобрена админом (только для cloud)
     author_id: Optional[UUID] = None
+    last_synced_at: Optional[datetime] = None  # Время последней синхронизации с облаком
+    needs_sync: bool = False                  # Требуется ли синхронизация
 
     def add_card(self, card: Card) -> "Deck":
         """Бизнес-метод: добавить карту, верни новую Deck."""
@@ -73,6 +77,41 @@ class Deck:
             maximum_interval=new_maximum_interval,
             color=new_color,
          )
+    
+    def with_needs_sync(self, cloud_updated_at: Optional[datetime]) -> "Deck":
+        """
+        Определяет необходимость синхронизации колоды на основе времени обновления
+        облачной версии и локальной копии.
+        
+        Args:
+            cloud_updated_at: Время последнего обновления облачной колоды
+            
+        Returns:
+            Новый экземпляр Deck с корректным флагом needs_sync
+        """
+        if not self.is_cloud_deck:
+             # Не облачная колода — синхронизация не нужна
+            return replace(self, needs_sync=False)
+        
+        if self.user_id == self.author_id:
+             # Это автор колоды
+             # Если локальная версия новее — синхронизация нужна
+             # Если облачная устарела — нужна синхронизация (переопределить облачные изменения)
+            if cloud_updated_at < self.updated_at:
+                 # Облако старше — нужна синхронизация
+                return replace(self, needs_sync=True)
+            else:
+                 # Облачная версия новее — синхронизация не нужна
+                return replace(self, needs_sync=False)
+        
+         # Это пользователь колоды (не автор)
+         # Если облако новее чем последняя синхронизация — нужна синхронизация
+        if cloud_updated_at > self.last_synced_at:
+             # Облако обновилось после последней синхронизации — нужна синхронизация
+            return replace(self, needs_sync=True)
+        else:
+             # Облако не обновлялось — синхронизация не нужна
+            return replace(self, needs_sync=False)
     
     def to_cloud(
         self,

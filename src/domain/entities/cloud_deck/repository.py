@@ -47,3 +47,26 @@ class AbstractCloudDeckRepository(ABC):
             None
         """
         ...
+    
+    @abstractmethod
+    async def update_last_synced_at(self, cloud_deck_id: UUID) -> None:
+        """
+        Устанавливает текущее время в поле last_synced_at для указанной колоды.
+        
+        Args:
+            deck_id: UUID колоды
+        """
+        ...
+    
+    @abstractmethod
+    async def get_last_synced_at(self, cloud_deck_id: UUID) -> Optional[datetime]:
+        """
+        Получает время последней синхронизации для указанной колоды.
+        
+        Args:
+            deck_id: UUID колоды
+            
+        Returns:
+            datetime или None
+        """
+        ...

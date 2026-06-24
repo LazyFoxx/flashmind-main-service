@@ -1,5 +1,6 @@
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,3 +41,16 @@ class SQlAlchemyCloudDeckRepository(AbstractCloudDeckRepository):
         await self.session.execute(stmt)
         
         return None
+
+    async def update_last_synced_at(self, cloud_deck_id: UUID) -> None:
+        stmt = (
+            update(CloudDeckModel)
+            .where(CloudDeckModel.id == cloud_deck_id)
+            .values(last_synced_at=func.now())
+        )
+        await self.session.execute(stmt)
+        
+    async def get_last_synced_at(self, cloud_deck_id: UUID) -> Optional[datetime]:
+        stmt = select(CloudDeckModel.last_synced_at).where(CloudDeckModel.id == cloud_deck_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
