@@ -98,33 +98,33 @@ async def import_deck(
         added=result.added,
     )
 
-@router.get(
-    "/{deck_id}",
-    response_model=CloudDeckResponse,
-    status_code=status.HTTP_200_OK,
-    summary="",
-    description=(
-        ""
-    ),
-)
-@inject
-async def get_cloud_deck(
-    payload: ImportDeckRequest,
-    use_case: FromDishka[_],
-    author_use_case: FromDishka[GetUserProfileUseCase],
-    user_id: UUID = Depends(get_current_user_id),
-) -> CloudDeckResponse:
-    """
+# @router.get(
+#     "/{deck_id}",
+#     response_model=CloudDeckResponse,
+#     status_code=status.HTTP_200_OK,
+#     summary="",
+#     description=(
+#         ""
+#     ),
+# )
+# @inject
+# async def get_cloud_deck(
+#     payload: ImportDeckRequest,
+#     use_case: FromDishka[_],
+#     author_use_case: FromDishka[GetUserProfileUseCase],
+#     user_id: UUID = Depends(get_current_user_id),
+# ) -> CloudDeckResponse:
+#     """
     
-    """
+#     """
 
-    author = await author_use_case.execute(user_id=author_id)
+#     author = await author_use_case.execute(user_id=author_id)
     
     
-    dto = ImportDeckInput(
-        user_id=user_id,
-        cloud_uuid=payload.cloud_uuid,
-    )
-    result = await use_case.execute(input_dto=dto)
+#     dto = ImportDeckInput(
+#         user_id=user_id,
+#         cloud_uuid=payload.cloud_uuid,
+#     )
+#     result = await use_case.execute(input_dto=dto)
     
-    return CloudDeckResponse.from_entity(deck, author, cards)
+#     return CloudDeckResponse.from_entity(deck, author, cards)
