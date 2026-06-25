@@ -50,7 +50,7 @@ async def deck_not_exist(request: Request, exc: DeckNotExistsError) -> JSONRespo
     return JSONResponse(
         status_code=404,
         content={
-            "message": f"У пользователя нет такой колоды",
+            "message": f"Колода не найдена",
         },
     )
 

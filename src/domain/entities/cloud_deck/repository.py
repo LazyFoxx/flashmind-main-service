@@ -9,7 +9,7 @@ from .cloud_deck import CloudDeck
 class AbstractCloudDeckRepository(ABC):
     @abstractmethod
     async def get_by_id(
-        self, deck_id: UUID, user_id: Optional[UUID] = None
+        self, deck_id: UUID,
     ) -> Optional[CloudDeck]:
         """Получить облачную колоду по её уникальному идентификатору..
 
@@ -18,6 +18,20 @@ class AbstractCloudDeckRepository(ABC):
 
         Returns:
             Объект CloudDeck, если найден, иначе None
+        """
+        ...
+    
+    @abstractmethod
+    async def get_public_decks(
+        self, is_approved: bool = True,
+    ) -> Optional[List[CloudDeck]]:
+        """Получить список публичных колод одобренных или нет..
+
+        Args:
+            is_approved: True - одобренные колоды False - не одобренные
+
+        Returns:
+            List[CloudDeck]
         """
         ...
 

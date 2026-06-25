@@ -17,6 +17,18 @@ class AbstractCloudCardTemplateRepository(ABC):
 
         """
         ...
+    
+    @abstractmethod
+    async def get_by_id(self, card_id: UUID) -> Optional[CloudCardTemplate]:
+        """Получить карточку по её уникальному идентификатору.
+
+        Args:
+            card_id: UUID карточки
+
+        Returns:
+            Объект CloudCardTemplate, если найден, иначе None
+        """
+        ...
 
     @abstractmethod
     async def delete(self, card_id: UUID) -> None:
@@ -49,5 +61,16 @@ class AbstractCloudCardTemplateRepository(ABC):
 
         Returns:
             List[CloudCardTemplate]
+        """
+        ...
+    
+    async def get_total_cards_count(self, cloud_deck_id: UUID) -> int:
+        """Возвращает общее количество карточек в колоде.
+
+        Args:
+            cloud_deck_id: UUID колоды
+
+        Returns:
+            int
         """
         ...

@@ -23,7 +23,7 @@ from .study import (
 
 from .cloud_deck import (
     EnableSharingRequest, EnableSharingResponse, SyncStats, ImportDeckRequest, ImportDeckResponse,
-    CloudDeckResponse
+    CloudDeckResponse, CloudTemplateCardResponse, PublicDecksResponse, PublicDeckPreviewResponse
 )
 
 __all__ = [
@@ -49,4 +49,7 @@ __all__ = [
     "ImportDeckRequest",
     "ImportDeckResponse",
     "CloudDeckResponse",
+    "CloudTemplateCardResponse",
+    "PublicDecksResponse",
+    "PublicDeckPreviewResponse"
 ]

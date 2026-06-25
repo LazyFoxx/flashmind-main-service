@@ -4,6 +4,7 @@ from .cloud_storage import AbstractCloudStorage
 from .unit_of_work import AbstractUnitOfWork
 from .review_log import AbstractReviewLogRepository, ReviewLogDto
 from .user_stats import UserStatsDto, AbstractUserStatsRepository
+from .cache.cache_service import AbstractCacheService
 
 __all__ = [
     "AbstractUnitOfWork",
@@ -14,4 +15,5 @@ __all__ = [
     "ReviewLogDto",
     "UserStatsDto",
     "AbstractUserStatsRepository",
+    "AbstractCacheService",
 ]

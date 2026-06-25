@@ -295,9 +295,9 @@ class AuthorProfile(BaseModel):
         description="Фамилия автора",
         examples=["Doe"],
       )
-    avatar_key: str = Field(
+    avatar_url: str = Field(
           ...,
-        description="Ключ аватара (URL или путь к файлу)",
+        description="ссылка на аватар",
         examples=["avatars/john_doe.jpg"],
       )
     bio: Optional[str] = Field(
@@ -317,10 +317,10 @@ class AuthorProfile(BaseModel):
             AuthorProfile с данными пользователя
         """
         return cls(
-            user_id=str(user.id),
+            user_id=str(user.user_id),
             first_name=user.first_name,
             last_name=user.last_name,
-            avatar_key=user.avatar_key,
+            avatar_url=user.avatar_url,
             bio=user.bio,
         )
 
@@ -328,7 +328,6 @@ class AuthorProfile(BaseModel):
 class CloudCardResponse(BaseModel):
     id: str
     front: str
-    back: str
 
     @classmethod
     def from_entity(cls, card) -> "CloudCardResponse":
@@ -404,7 +403,7 @@ class CloudDeckResponse(BaseModel):
       )
 
     @classmethod
-    def from_entity(cls, deck, author, cards=None) -> "CloudDeckResponse":
+    def from_entity(cls, deck, author, cards) -> "CloudDeckResponse":
         """Создать CloudDeckResponse из сущности CloudDeck.
         
         Args:
@@ -458,3 +457,127 @@ class CloudDeckResponse(BaseModel):
               ]
           }
       }
+    
+    
+class CloudTemplateCardResponse(BaseModel):
+    id: str
+    front: str
+    back: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "front": "Любимый Настин напиток",
+                    "back": "Тот что с сарахозаменителем",
+                }
+            ]
+        }
+    }
+
+class PublicDeckPreviewResponse(BaseModel):
+    """Превью публичной облачной колоды."""
+    
+    id: str = Field(
+        ...,
+        description="UUID облачной колоды",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+    )
+    name: str = Field(
+        ...,
+        description="Название колоды",
+        examples=["Английский 3000"],
+    )
+    total_cards: int = Field(
+        ...,
+        description="Общее количество карточек в колоде",
+        examples=[3000],
+    )
+    downloaded: int = Field(
+        default=0,
+        description="Количество загруженных карточек",
+        examples=[0],
+    )
+    last_synced_at: Optional[str] = Field(
+        None,
+        description="Дата последнего обновления колоды (ISO 8601)",
+        examples=["2024-01-15T12:00:00Z"],
+    )
+    author: AuthorProfile = Field(
+        ...,
+        description="Профиль автора колоды",
+    )
+    
+    @classmethod
+    def from_entity(cls, deck) -> "PublicDeckPreviewResponse":
+        """Создать PublicDeckPreviewResponse из  preview_deck."""
+        return cls(
+            id=str(deck.id),
+            name=deck.name,
+            description=deck.description,
+            total_cards=deck.total_cards,
+            downloaded=deck.downloaded,
+            last_synced_at=str(deck.last_synced_at),
+            author=AuthorProfile(user_id=deck.author_id,
+                                 first_name=deck.author_first_name,
+                                 last_name=deck.author_last_name,
+                                 avatar_url=deck.author_avatar_url),
+        )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "name": "Английский 3000",
+                    "total_cards": 3000,
+                    "downloaded": 0,
+                    "last_synced_at": "2024-01-15T12:00:00Z",
+                    "author": {
+                        "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "avatar_url": "avatars/john_doe.jpg",
+                    },
+                }
+            ]
+        }
+    }
+    
+
+
+class PublicDecksResponse(BaseModel):
+    """
+    Список публичных колод.
+    """
+    
+    decks: List[PublicDeckPreviewResponse] = Field(
+        default_factory=list,
+        description="Список публичных облачных колод",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "decks": [
+                        {
+                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                            "name": "Английский 3000",
+                            "description": "3000 самых популярных слов",
+                            "total_cards": 3000,
+                            "downloaded": 0,
+                            "last_synced_at": "2024-01-15T12:00:00Z",
+                            "author": {
+                                "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                                "first_name": "John",
+                                "last_name": "Doe",
+                                "avatar_url": "avatars/john_doe.jpg",
+                            },
+                        },
+                    ],
+                }
+            ]
+        }
+    }

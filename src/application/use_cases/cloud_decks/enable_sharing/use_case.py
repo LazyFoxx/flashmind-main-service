@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 import structlog
 
 from src.application.exceptions import DeckNotExistsError, UserNotFoundError
-from src.application.interfaces import AbstractUnitOfWork
+from src.application.interfaces import AbstractUnitOfWork, AbstractCacheService
 from src.domain.entities import Deck, CloudDeck
 
 from .dto import EnableSharingInput, EnableSharingOutput
@@ -11,10 +11,13 @@ from src.application.use_cases.cloud_decks.sync_cards_to_cloud.use_case import S
 
 
 class EnableSharingUseCase:
-    def __init__(self, uow: AbstractUnitOfWork, sync_cards_use_case: SyncCardsToCloudUseCase):
+    def __init__(self, uow: AbstractUnitOfWork,
+                 sync_cards_use_case: SyncCardsToCloudUseCase,
+                 cache: AbstractCacheService,):
         self.uow = uow
         self.sync_cards_use_case = sync_cards_use_case
         self.logger = structlog.get_logger(__name__)
+        self.cache = cache
 
     async def execute(self, input_dto: EnableSharingInput) -> EnableSharingOutput:
 
@@ -47,15 +50,18 @@ class EnableSharingUseCase:
                 cloud_deck = CloudDeck(
                     name=deck.name,
                     description=deck.description,
-                    
                     id=cloud_uuid,
                     author_id=input_dto.user_id,
                     type=input_dto.type,
-                    is_approved=True if input_dto.type == "PRIVATE" else False,
+                    # is_approved=True if input_dto.type == "PRIVATE" else False,
+                    is_approved=True,
                     approved_at=None,
                 )
 
                 await self.uow.cloud_decks.add(cloud_deck)
+                
+                # при добавлении новой публичной ОДОБРЕННОЙ колоды сбрасываем кеш
+                await self.cache.invalidate(key="public_decks_approved:all")
 
                 # Обновляем локальную колоду: связываем её с облаком
                 deck = deck.to_cloud(cloud_deck_id=cloud_uuid,

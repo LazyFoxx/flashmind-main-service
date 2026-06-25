@@ -3,7 +3,7 @@ from .config import ConfigProvider
 from .db import DbProvider
 from .rabbit import RabbitProvider
 from .redis import RedisProvider
-from .storage import StorageProvider
+from .cache import StorageProvider
 from .use_cases import UseCaseProvider
 
 __all__ = [

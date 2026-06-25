@@ -21,6 +21,20 @@ class SQlAlchemyCloudDeckRepository(AbstractCloudDeckRepository):
         result = await self.session.execute(stmt)
         deck_model = result.scalar_one_or_none()
         return deck_model.to_entity() if deck_model else None
+    
+    async def get_public_decks(
+        self, is_approved: bool = True,
+    ) -> Optional[List[CloudDeck]]:
+        stmt = select(CloudDeckModel).where(
+            CloudDeckModel.type == "PUBLIC",
+            CloudDeckModel.is_approved == is_approved
+        )
+
+        result = await self.session.execute(stmt)
+        deck_models = result.scalars().all()
+        
+        return [deck_model.to_entity() for deck_model in deck_models]
+
 
     async def add(self, deck: CloudDeck) -> None:
         deck_model = CloudDeckModel.from_domain(deck)
@@ -54,3 +68,4 @@ class SQlAlchemyCloudDeckRepository(AbstractCloudDeckRepository):
         stmt = select(CloudDeckModel.last_synced_at).where(CloudDeckModel.id == cloud_deck_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+

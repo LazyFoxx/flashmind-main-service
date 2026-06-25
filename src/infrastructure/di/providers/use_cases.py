@@ -20,6 +20,10 @@ from src.application.use_cases import (
     SyncCardsToCloudUseCase,
     EnableSharingUseCase,
     ImportDeckUseCase,
+    GetCloudDeckUseCase,
+    GetCloudCardsUseCase,
+    GetCloudCardUseCase,
+    GetPublicDecksUseCase,
 )
 
 
@@ -48,3 +52,7 @@ class UseCaseProvider(Provider):
     enable_sharing = provide(EnableSharingUseCase, scope=Scope.REQUEST)
     sync_cards_to_cloud = provide(SyncCardsToCloudUseCase, scope=Scope.REQUEST)
     import_deck = provide(ImportDeckUseCase, scope=Scope.REQUEST)
+    get_cloud_deck = provide(GetCloudDeckUseCase, scope=Scope.REQUEST)
+    get_cloud_cards = provide(GetCloudCardsUseCase, scope=Scope.REQUEST)
+    get_cloud_card = provide(GetCloudCardUseCase, scope=Scope.REQUEST)
+    get_public_decks = provide(GetPublicDecksUseCase, scope=Scope.REQUEST)

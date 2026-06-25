@@ -35,6 +35,7 @@ class GetUserProfileUseCase:
             )
 
         return GetProfileUserOutput(
+            user_id=input_dto.user_id,
             first_name=user.first_name,
             last_name=user.last_name,
             avatar_url=avatar_url,

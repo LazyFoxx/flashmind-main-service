@@ -10,6 +10,13 @@ from src.application.use_cases import (
     ImportDeckInput,
     ImportDeckUseCase,
     GetUserProfileUseCase,
+    GetProfileUserInput,
+    GetCloudDeckUseCase,
+    GetCloudDeckInput,
+    GetCloudCardsUseCase,
+    GetCloudCardsInput,
+    GetCloudCardUseCase,
+    GetPublicDecksUseCase,
 )
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
@@ -18,7 +25,10 @@ from src.presentation.api.dto.v1 import (
     SyncStats,
     ImportDeckResponse,
     ImportDeckRequest,
-    CloudDeckResponse
+    CloudDeckResponse,
+    CloudTemplateCardResponse,
+    PublicDecksResponse,
+    PublicDeckPreviewResponse,
 )
 
 router = APIRouter(prefix="/cloud_decks", tags=["cloud_decks"])
@@ -98,33 +108,78 @@ async def import_deck(
         added=result.added,
     )
 
-# @router.get(
-#     "/{deck_id}",
-#     response_model=CloudDeckResponse,
-#     status_code=status.HTTP_200_OK,
-#     summary="",
-#     description=(
-#         ""
-#     ),
-# )
-# @inject
-# async def get_cloud_deck(
-#     payload: ImportDeckRequest,
-#     use_case: FromDishka[_],
-#     author_use_case: FromDishka[GetUserProfileUseCase],
-#     user_id: UUID = Depends(get_current_user_id),
-# ) -> CloudDeckResponse:
-#     """
+@router.get(
+    "/{deck_id}",
+    response_model=CloudDeckResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Превью облачной колоды",
+    description=(
+        ""
+    ),
+)
+@inject
+async def get_cloud_deck(
+    deck_id: UUID,
+    cloud_deck_use_case: FromDishka[GetCloudDeckUseCase],
+    author_use_case: FromDishka[GetUserProfileUseCase],
+    get_cards_user_case: FromDishka[GetCloudCardsUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> CloudDeckResponse:
+    """
     
-#     """
+    """
+    
+    dto_deck = GetCloudDeckInput(deck_id=deck_id, user_id=user_id)
+    deck = await cloud_deck_use_case.execute(input_dto=dto_deck)
+    
+    dto_author = GetProfileUserInput(user_id=deck.deck.author_id)
+    author = await author_use_case.execute(input_dto=dto_author)
+    
+    dto_cards = GetCloudCardsInput(user_id=user_id, deck_id=deck.deck.id)
+    cards = await get_cards_user_case.execute(input_dto=dto_cards)
+    
+    return CloudDeckResponse.from_entity(deck=deck.deck, author=author, cards=cards.cards)
 
-#     author = await author_use_case.execute(user_id=author_id)
+@router.get(
+    "/cards/{card_id}",
+    response_model=CloudTemplateCardResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Получить шаблон карточки по ее id",
+    description=("возвращает карточку со всеми основными полями"),
+
+)
+@inject
+async def get_card(
+    card_id: UUID,
+    use_case: FromDishka[GetCloudCardUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> CloudTemplateCardResponse:
+
+    card = await use_case.execute(card_id=card_id)
+
+    return CloudTemplateCardResponse(
+        id=card.card_id, front=card.front, back=card.back
+    )
+
+
+
+@router.get(
+    "",
+    response_model=PublicDecksResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Список публичных колод одобренных колод",
+    description=(
+        ""
+    ),
+)
+@inject
+async def get_public_decks(
+    use_case: FromDishka[GetPublicDecksUseCase],
+    user_id: UUID = Depends(get_current_user_id),
+) -> PublicDecksResponse:
+    """
     
-    
-#     dto = ImportDeckInput(
-#         user_id=user_id,
-#         cloud_uuid=payload.cloud_uuid,
-#     )
-#     result = await use_case.execute(input_dto=dto)
-    
-#     return CloudDeckResponse.from_entity(deck, author, cards)
+    """
+    public_decks = await use_case.execute()
+
+    return PublicDecksResponse(decks=[PublicDeckPreviewResponse.from_entity(deck) for deck in public_decks.decks])

@@ -42,9 +42,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     lifespan=lifespan,
-    version="1.0.4",
+    version="1.1.0",
     # title="",
-    description="Обновил все эндпоинты Deck и изменил схему json ответов, так же добавлены / в update and delete",
+    description="Добавлены все необходимые эндпоинты для облачных колод",
 )
 
 

@@ -17,6 +17,12 @@ class SQlAlchemyCloudCardTemplateRepository(AbstractCloudCardTemplateRepository)
     async def add(self, card: CloudCardTemplate) -> None:
         card_model = CloudCardTemplateModel.from_domain(card)
         self.session.add(card_model)
+    
+    async def get_by_id(self, card_id: UUID) -> Optional[CloudCardTemplate]:
+        stmt = select(CloudCardTemplateModel).where(CloudCardTemplateModel.id == card_id)
+        result = await self.session.execute(stmt)
+        card_model = result.scalar_one_or_none()
+        return card_model.to_entity() if card_model else None
 
     async def update(self, card: CloudCardTemplate) -> None:
 
@@ -48,3 +54,13 @@ class SQlAlchemyCloudCardTemplateRepository(AbstractCloudCardTemplateRepository)
 
         return [card_model.to_entity() for card_model in card_models]
         ...
+    
+    async def get_total_cards_count(self, cloud_deck_id: UUID) -> int:
+        stmt = select(func.count(CloudCardTemplateModel.id)).where(
+            CloudCardTemplateModel.cloud_deck_id == cloud_deck_id
+        )
+        
+        result = await self.session.execute(stmt)
+        count = result.scalar()
+        
+        return count if count else 0
