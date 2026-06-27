@@ -64,11 +64,11 @@ class DailyReviewStatUseCase:
               )
               
               user_stats = UserStatsDto(
-                  user_id=input_dto.user_id,
-                  max_days_streak=review_series,
-                  current_days_streak=review_series,
-                  total_reviews=total_reviews
-          )
+                user_id=input_dto.user_id,
+                max_days_streak=review_series,
+                current_days_streak=review_series,
+                total_reviews=total_reviews
+                )
 
               await self.uow.user_stats.add(user_stats)
               print(f"DEBUG: user_stats добавлен: {user_stats}")

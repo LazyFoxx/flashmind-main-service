@@ -166,7 +166,7 @@ class AuthorProfile(BaseModel):
         description="Фамилия автора",
         examples=["Doe"],
      )
-    avatar_key: str = Field(
+    avatar_url: str = Field(
          ...,
         description="Ключ аватара (URL или путь к файлу)",
         examples=["avatars/john_doe.jpg"],
@@ -257,7 +257,7 @@ class CloudDeckResponse(BaseModel):
                          "user_id": "123e4567-e89b-12d3-a456-426614174000",
                          "first_name": "John",
                          "last_name": "Doe",
-                         "avatar_key": "avatars/john_doe.jpg",
+                         "avatar_url": "avatars/john_doe.jpg",
                          "bio": "Автор колоды по изучению английского языка",
                      },
                      "cards": [
@@ -440,7 +440,7 @@ class CloudDeckResponse(BaseModel):
                           "user_id": "123e4567-e89b-12d3-a456-426614174000",
                           "first_name": "John",
                           "last_name": "Doe",
-                          "avatar_key": "avatars/john_doe.jpg",
+                          "avatar_url": "avatars/john_doe.jpg",
                           "bio": "Автор колоды по изучению английского языка",
                       },
                       "cards": [

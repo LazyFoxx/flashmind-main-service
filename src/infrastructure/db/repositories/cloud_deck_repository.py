@@ -49,7 +49,7 @@ class SQlAlchemyCloudDeckRepository(AbstractCloudDeckRepository):
         update(CloudDeckModel)
             .where(CloudDeckModel.id == deck_id)
             .values(
-                total_reviews=func.coalesce(CloudDeckModel.downloaded, 0) + 1,
+                downloaded=func.coalesce(CloudDeckModel.downloaded, 0) + 1,
             )
         )
         await self.session.execute(stmt)
@@ -68,4 +68,5 @@ class SQlAlchemyCloudDeckRepository(AbstractCloudDeckRepository):
         stmt = select(CloudDeckModel.last_synced_at).where(CloudDeckModel.id == cloud_deck_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
 
