@@ -11,10 +11,18 @@ from src.application.exceptions import (
     DeckNotExistsError,
     InvalidTokenError,
     UserNotFoundError,
+    UserIsNotAuthor,
 )
 
 logger = structlog.get_logger()
 
+async def user_is_not_author(request: Request, exc: UserIsNotAuthor) -> JSONResponse:
+    return JSONResponse(
+        status_code=409,
+        content={
+            "message": f"{exc.message}",
+        },
+    )
 
 async def invalid_token(request: Request, exc: InvalidTokenError) -> JSONResponse:
     logger.warning("Неверный токен", error=str(exc))
@@ -136,4 +144,5 @@ def setup_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(UserNotFoundError, user_not_found)    # type: ignore[arg-type]
     app.add_exception_handler(CardNotInLearningError, card_not_in_learning)    # type: ignore[arg-type]
     app.add_exception_handler(DeckImportFromOwnAuthorError, deck_import_from_own_author)    # type: ignore[arg-type]
+    app.add_exception_handler(UserIsNotAuthor, user_is_not_author)    # type: ignore[arg-type]
 

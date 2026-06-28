@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 
 import structlog
 
-from src.application.exceptions import DeckNotExistsError, UserNotFoundError
+from src.application.exceptions import DeckNotExistsError, UserNotFoundError, UserIsNotAuthor
 from src.application.interfaces import AbstractUnitOfWork, AbstractCacheService
 from src.domain.entities import Deck, CloudDeck
 
@@ -22,6 +22,7 @@ class EnableSharingUseCase:
     async def execute(self, input_dto: EnableSharingInput) -> EnableSharingOutput:
 
         async with self.uow:
+            
             # 1. Находим локальную колоду
             deck = await self.uow.decks.get_by_id(deck_id=input_dto.deck_id)
             
@@ -41,6 +42,11 @@ class EnableSharingUseCase:
                 if not cloud_deck:
                     self.logger.warning("Облачная колода не найдена", deck_id=input_dto.deck_id)
                     raise DeckNotExistsError(deck_id=deck.cloud_deck_id, user_id=input_dto.user_id)
+                
+                # проверяем что это автор колоды
+                if cloud_deck.author_id != input_dto.user_id:
+                    self.logger.warning("Пользователь облачной колоды не может share колоду")
+                    raise UserIsNotAuthor(user_id=input_dto.user_id, message="Вы используете колоду другого автора")
                 
                 if cloud_deck.type != input_dto.type:
                     cloud_deck = cloud_deck.change_type(type=input_dto.type)

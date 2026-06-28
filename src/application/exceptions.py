@@ -27,6 +27,11 @@ class DeckNotExistsError(Exception):
         self.deck_id = deck_id
         self.user_id = user_id
 
+class UserIsNotAuthor(Exception):
+    def __init__(self, user_id: UUID, message: str):
+        self.user_id = user_id
+        self.message = message
+
 
 class CardAlreadyExistsError(Exception):
     def __init__(self, front: str, deck_id: UUID):
