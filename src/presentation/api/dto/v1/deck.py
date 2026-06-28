@@ -214,7 +214,7 @@ class DeckResponse(BaseModel):
                 is_cloud_deck=deck.is_cloud_deck,
                 cloud_type=deck.cloud_type,
                 is_approved=deck.is_approved,
-                is_author=True if user_id == deck.author_id else False,
+                is_author=True if user_id == deck.author_id or deck.is_cloud_deck == False else False,
                 needs_sync=deck.needs_sync,
             )
         )
