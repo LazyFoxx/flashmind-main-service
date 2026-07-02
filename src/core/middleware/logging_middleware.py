@@ -24,25 +24,20 @@ SENSITIVE_FIELDS = {
 
 def sanitize_headers(headers: Dict[str, str]) -> Dict[str, str]:
     """Маскирует/убирает headers. Укажи, что убрать/маскировать."""
-    sanitized = headers.copy()  # Не мутировать оригинал
-
+    sanitized = {}
+    
+    # Оставляем только важные headers
+    keep_keys = ["content-type", "accept", "x-forwarded-for", "x-request-id"]
+    
+    for key in keep_keys:
+        if key in headers:
+            sanitized[key] = headers[key]
+    
     # Маскируем sensitive
-    mask_keys = ["authorization", "cookie", "x-auth-token"]
+    mask_keys = ["authorization"]
     for key in mask_keys:
         if key in sanitized:
             sanitized[key] = "******"
-
-    # Убираем шумные/ненужные
-    remove_keys = [
-        "user-agent",
-        "accept-encoding",
-        "accept-language",
-        "referer",
-        "connection",
-        "content-length",
-    ]
-    for key in remove_keys:
-        sanitized.pop(key, None)
 
     return sanitized
 
