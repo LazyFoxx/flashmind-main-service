@@ -14,27 +14,27 @@ from src.presentation.api.dto.v1 import (
 router = APIRouter(prefix="/stats", tags=["stats"])
 
 
-@router.get(
-    "/",
-    response_model=StudyStatsResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Получить статистику по всем колодам или опционально по конкретной колоде пользователя.",
-    description=(""),
-)
-@inject
-async def get_study_stats(
-    use_case: FromDishka[DailyReviewStatUseCase],
-    user_id: UUID = Depends(get_current_user_id),
-    deck_id: Optional[UUID] = Query(
-        None,
-        description="фильтр по id колод, если не указан то выводит статистику по всем колодам пользователя",
-    ),
-) -> StudyStatsResponse:
-     # 1. Вызываем Use Case для профиля
-    input_dto = GetProfileUserInput(user_id=user_id, deck_id=deck_id)
-    study_stats = await use_case.execute(input_dto=input_dto)
+# @router.get(
+#     "/",
+#     response_model=StudyStatsResponse,
+#     status_code=status.HTTP_200_OK,
+#     summary="Получить статистику по всем колодам или опционально по конкретной колоде пользователя.",
+#     description=(""),
+# )
+# @inject
+# async def get_study_stats(
+#     use_case: FromDishka[DailyReviewStatUseCase],
+#     user_id: UUID = Depends(get_current_user_id),
+#     deck_id: Optional[UUID] = Query(
+#         None,
+#         description="фильтр по id колод, если не указан то выводит статистику по всем колодам пользователя",
+#     ),
+# ) -> StudyStatsResponse:
+#      # 1. Вызываем Use Case для профиля
+#     input_dto = GetProfileUserInput(user_id=user_id, deck_id=deck_id)
+#     study_stats = await use_case.execute(input_dto=input_dto)
 
-     # 3. Объединяем результаты
-    return StudyStatsResponse(
+#      # 3. Объединяем результаты
+#     return StudyStatsResponse(
 
-    )
+#     )
