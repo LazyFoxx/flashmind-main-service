@@ -10,7 +10,7 @@ from .decks.update_deck.use_case import UpdateDeckInput, UpdateDeckUseCase
 from .study.get_study_cards.use_case import GetStudyCardsInput, GetStudyCardsUseCase
 from .study.new_to_study.use_case import NewToStudyInput, NewToStudyUseCase
 from .study.review_due_card.use_case import ReviewDueCardInput, ReviewDueCardsUseCase
-from .users.create_user_profile.use_case import CreateUserProfileUseCase
+from .users.create_user_profile.use_case import CreateUserProfileUseCase, CreateUserProfileInput
 from .users.get_user_profile.use_case import GetUserProfileUseCase, GetProfileUserInput
 from .users.update_user_profile.use_case import UpdateUserProfileUseCase
 from .stats.daily_review_stat.use_case import DailyReviewStatInput, DailyReviewStatUseCase
@@ -24,7 +24,7 @@ from .cloud_decks.get_public_decks.use_case import GetPublicDecksUseCase, Public
 
 __all__ = [
     "GetUserProfileUseCase", "GetProfileUserInput",
-    "CreateUserProfileUseCase",
+    "CreateUserProfileUseCase", "CreateUserProfileInput"
     "UpdateUserProfileUseCase",
     "CreateDeckUseCase",
     "CreateDeckInput",

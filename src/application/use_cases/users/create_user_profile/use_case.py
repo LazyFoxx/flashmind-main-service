@@ -7,27 +7,28 @@ from src.application.interfaces import (
     AbstractUnitOfWork,
 )
 from src.domain.entities.user.user import User
-
+from .dto import CreateUserProfileInput
 
 class CreateUserProfileUseCase:
     def __init__(self, uow: AbstractUnitOfWork, storage: AbstractCloudStorage):
         self.uow = uow
         self.logger = structlog.get_logger(__name__)
         self.storage = storage
+    
 
-    async def execute(self, user_id: UUID) -> None:
+    async def execute(self, input_dto: CreateUserProfileInput) -> None:
         new_user = User(
-            id=user_id,
-            first_name="",
+            id=input_dto.user_id,
+            first_name=input_dto.name if input_dto.name else "",
             last_name="",
-            avatar_key="",
+            avatar_key=input_dto.avatar_url if input_dto.avatar_url else "",
             bio="",
         )
 
         async with self.uow:
             try:
                 # проверяем наличие пользователя в БД
-                existing_user = await self.uow.users.get_by_id(user_id)
+                existing_user = await self.uow.users.get_by_id(new_user.id)
                 if existing_user:
                     # Если уже существует - обновляем.
                     self.logger.error(

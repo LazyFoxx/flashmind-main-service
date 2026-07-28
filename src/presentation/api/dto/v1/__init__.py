@@ -26,6 +26,8 @@ from .cloud_deck import (
     CloudDeckResponse, CloudTemplateCardResponse, PublicDecksResponse, PublicDeckPreviewResponse
 )
 
+from .stats import StudyStatsResponse
+
 __all__ = [
     "CreateDeckRequest",
     "DeckResponse",
@@ -51,5 +53,6 @@ __all__ = [
     "CloudDeckResponse",
     "CloudTemplateCardResponse",
     "PublicDecksResponse",
-    "PublicDeckPreviewResponse"
+    "PublicDeckPreviewResponse",
+    "StudyStatsResponse"
 ]

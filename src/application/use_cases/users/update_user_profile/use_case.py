@@ -16,6 +16,14 @@ class UpdateUserProfileUseCase:
         self.uow = uow
         self.logger = structlog.get_logger(__name__)
         self.storage = storage
+    
+    def _is_full_url(path_or_key: str) -> bool:
+        """
+        Проверяет, является ли строка полной ссылкой (URL) или относительным ключом.
+        """
+        if not path_or_key:
+            return False
+        return path_or_key.startswith(("http://", "https://"))
 
     async def execute(
         self, input_dto: UpdateProfileUserInput
@@ -49,11 +57,12 @@ class UpdateUserProfileUseCase:
                         category="avatar",
                         file=input_dto.avatar_file,
                     )
-                    old_key = existing_user.avatar_key
-                    if old_key:
-                        await self.storage.delete_object(
-                            object_key=old_key, user_id=existing_user.id
-                        )
+                    if not self._is_full_url(existing_user.avatar_key):
+                        old_key = existing_user.avatar_key
+                        if old_key:
+                            await self.storage.delete_object(
+                                object_key=old_key, user_id=existing_user.id
+                            )
                     updates["avatar_key"] = new_avatar_key
 
                 updated_user = dataclasses.replace(existing_user, **updates)  # type: ignore

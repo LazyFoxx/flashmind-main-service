@@ -6,7 +6,7 @@ from aio_pika import IncomingMessage
 from dishka import AsyncContainer, DependencyKey
 
 from src.application.use_cases.users.create_user_profile.use_case import (
-    CreateUserProfileUseCase,
+    CreateUserProfileUseCase, CreateUserProfileInput
 )
 
 from .connection import RabbitConnection
@@ -73,6 +73,12 @@ async def process_user_registered(
             user_id = payload.get(
                 "user_id"
             )  # Предполагаем, что в payload есть {"user_id": 123}
+            name = payload.get(
+                "name"
+            )
+            avatar_url = payload.get(
+                "avatar_url"
+            )
 
             if not user_id:
                 raise ValueError("No user_id in payload")
@@ -80,9 +86,11 @@ async def process_user_registered(
             logger.info(
                 "Получено сообщение с user_id", user_id=user_id, payload=payload
             )
-
+            input_dto = CreateUserProfileInput(user_id=user_id,
+                                               name=name,
+                                               avatar_url=avatar_url)
             # Вызываем Use Case для обработки
-            await use_case.execute(user_id)
+            await use_case.execute(input_dto=input_dto)
 
             await message.ack()  # Явный ack после успеха
 

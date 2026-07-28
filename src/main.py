@@ -13,7 +13,7 @@ from src.infrastructure.di.container import get_container
 from src.infrastructure.di.providers.rabbit import USER_REGISTERED
 from src.infrastructure.rabbit import RabbitConsumer
 from src.presentation.api.exception_handlers import setup_exception_handlers
-from src.presentation.api.routers.root import api_router
+from src.presentation.api.routers.root import  api_router_v1
 
 container = get_container()
 
@@ -62,4 +62,4 @@ setup_dishka(container, app=app)
 setup_exception_handlers(app)
 
 
-app.include_router(api_router)
+app.include_router(api_router_v1)

@@ -97,20 +97,6 @@ services:
     networks:
       - backend
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: unless-stopped
-    ports:
-      - "5051:80"
-    env_file:
-      - .env
-    volumes:
-      - fastapi_main_service_pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - backend
-
 volumes:
   fastapi_main_service_postgres_data:
   fastapi_main_service_redis_data:
