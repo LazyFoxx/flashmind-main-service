@@ -17,7 +17,7 @@ class UpdateUserProfileUseCase:
         self.logger = structlog.get_logger(__name__)
         self.storage = storage
     
-    def _is_full_url(path_or_key: str) -> bool:
+    def _is_full_url(self, path_or_key: str) -> bool:
         """
         Проверяет, является ли строка полной ссылкой (URL) или относительным ключом.
         """
