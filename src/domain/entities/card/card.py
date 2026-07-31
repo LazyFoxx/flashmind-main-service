@@ -32,6 +32,8 @@ class Card:
             deck_id=self.deck_id,
             front=self.front,
             back=self.back,
+            card_template_id=self.card_template_id,
+            is_deleted=self.is_deleted,
             in_learning=kwargs.get("in_learning", self.in_learning),
             _fsrs_card=kwargs.get("_fsrs_card", self._fsrs_card),
         )
