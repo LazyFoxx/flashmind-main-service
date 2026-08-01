@@ -45,7 +45,7 @@ class EnableSharingUseCase:
                 
                 # проверяем что это автор колоды
                 if cloud_deck.author_id != input_dto.user_id:
-                    self.logger.warning("Польз ователь облачной колоды не может share колоду")
+                    self.logger.warning("Пользователь облачной колоды не может share колоду")
                     raise UserIsNotAuthor(user_id=input_dto.user_id, message="Вы используете колоду другого автора")
                 
                 if cloud_deck.type != input_dto.type:

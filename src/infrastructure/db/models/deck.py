@@ -91,13 +91,13 @@ class DeckModel(Base):
         server_default="false",
      )
     
-      # Время последней синхронизации с облаком
+    # Время последней синхронизации с облаком
     last_synced_at: Mapped[Optional[datetime]] = mapped_column(
         server_default=func.now(),
         nullable=True,
       )
 
-      # Тип колоды: 'PUBLIC' или 'PRIVATE' (заполняется только для is_cloud_deck=True)
+    # Тип колоды: 'PUBLIC' или 'PRIVATE' (заполняется только для is_cloud_deck=True)
     cloud_type: Mapped[Optional[str]] = mapped_column(
         String(10),
         nullable=True,

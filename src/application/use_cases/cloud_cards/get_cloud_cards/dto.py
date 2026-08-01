@@ -11,6 +11,5 @@ class GetCloudCardsOutput:
 
 @dataclass(frozen=True, slots=True)
 class GetCloudCardsInput:
-    user_id: UUID
     deck_id: UUID
 

@@ -12,4 +12,3 @@ class GetCloudDeckOutput:
 @dataclass(frozen=True, slots=True)
 class GetCloudDeckInput:
     deck_id: UUID
-    user_id: UUID

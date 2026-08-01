@@ -122,21 +122,21 @@ async def get_cloud_deck(
     deck_id: UUID,
     cloud_deck_use_case: FromDishka[GetCloudDeckUseCase],
     author_use_case: FromDishka[GetUserProfileUseCase],
-    get_cards_user_case: FromDishka[GetCloudCardsUseCase],
-    user_id: UUID = Depends(get_current_user_id),
+    get_cards_use_case: FromDishka[GetCloudCardsUseCase],
+    # user_id: UUID = Depends(get_current_user_id),
 ) -> CloudDeckResponse:
     """
     
     """
     
-    dto_deck = GetCloudDeckInput(deck_id=deck_id, user_id=user_id)
+    dto_deck = GetCloudDeckInput(deck_id=deck_id)
     deck = await cloud_deck_use_case.execute(input_dto=dto_deck)
     
     dto_author = GetProfileUserInput(user_id=deck.deck.author_id)
     author = await author_use_case.execute(input_dto=dto_author)
     
-    dto_cards = GetCloudCardsInput(user_id=user_id, deck_id=deck.deck.id)
-    cards = await get_cards_user_case.execute(input_dto=dto_cards)
+    dto_cards = GetCloudCardsInput(deck_id=deck.deck.id)
+    cards = await get_cards_use_case.execute(input_dto=dto_cards)
     
     return CloudDeckResponse.from_entity(deck=deck.deck, author=author, cards=cards.cards)
 
@@ -152,7 +152,7 @@ async def get_cloud_deck(
 async def get_card(
     card_id: UUID,
     use_case: FromDishka[GetCloudCardUseCase],
-    user_id: UUID = Depends(get_current_user_id),
+    # user_id: UUID = Depends(get_current_user_id),
 ) -> CloudTemplateCardResponse:
 
     card = await use_case.execute(card_id=card_id)
@@ -175,7 +175,7 @@ async def get_card(
 @inject
 async def get_public_decks(
     use_case: FromDishka[GetPublicDecksUseCase],
-    user_id: UUID = Depends(get_current_user_id),
+    # user_id: UUID = Depends(get_current_user_id),
 ) -> PublicDecksResponse:
     """
     
@@ -183,3 +183,32 @@ async def get_public_decks(
     public_decks = await use_case.execute()
 
     return PublicDecksResponse(decks=[PublicDeckPreviewResponse.from_entity(deck) for deck in public_decks.decks])
+
+
+# @router.delete(
+#     "/{deck_id}",
+#     status_code=status.HTTP_204_NO_CONTENT,
+#     summary="Удаление колоды из облака",
+#     description=(
+#         "Удаляет облачную колоду и отвязывает все пользовательские колоды "
+#     ),
+# )
+# @inject
+# async def delete_cloud_deck(
+#     deck_id: UUID,
+#     use_case: FromDishka[ImportDeckUseCase],
+#     user_id: UUID = Depends(get_current_user_id),
+# ) -> None:
+#     """
+#     Удаляет облачную колоду 
+#     - Находит облачную колоду по cloud_uuid
+#     - Удаляет ее физически с сервера и карточки связанные с ней
+#     - Удаляет все связи других пользователей колоды и делает их локальными
+#     """
+#     # dto = ImportDeckInput(
+#     #     user_id=user_id,
+#     #     cloud_uuid=payload.cloud_uuid,
+#     # )
+#     # result = await use_case.execute(input_dto=dto)
+    
+#     return None
