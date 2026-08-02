@@ -45,7 +45,7 @@ class ImportDeckUseCase:
                 raise DeckImportFromOwnAuthorError(
                     deck_id=input_dto.cloud_uuid,
                     user_id=input_dto.user_id
-            )
+                )
 
             # Проверяем, есть ли уже импорт этой облачной колоды
             local_deck = await self.uow.decks.get_by_cloud_deck_id(cloud_deck_id=input_dto.cloud_uuid,
@@ -80,4 +80,5 @@ class ImportDeckUseCase:
             return ImportDeckOutput(
                 deck_id=local_deck.id,
                 added=result.added,
+                updated=result.updated,
             )

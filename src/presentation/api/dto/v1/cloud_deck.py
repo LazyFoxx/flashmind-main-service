@@ -119,13 +119,19 @@ class ImportDeckResponse(BaseModel):
         default=0,
         description="Количество добавленных карточек"
     )
+    
+    updated: int = Field(
+            default=0,
+            description="Количество обновленных карточек"
+        )
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                  {
                      "deck_id": "123e4567-e89b-12d3-a456-426614174000",
-                     "added": 10
+                     "added": 10,
+                     "updated": 7,
                  }
              ]
         }
@@ -581,3 +587,48 @@ class PublicDecksResponse(BaseModel):
             ]
         }
     }
+
+
+class TakeOwnershipRequest(BaseModel):
+    deck_id: UUID = Field(
+        ...,
+        description="UUID локальной колоды которую нужно отвязать от облака"
+    )
+
+
+class TakeOwnershipResponse(BaseModel):
+    cloud_uuid: str = Field(
+        ...,
+        description="UUID новой облачной колоды где пользователь становится автором"
+    )
+    old_cloud_uuid: str = Field(
+        ...,
+        description="UUID старой облачной колоды от которой отвязались"
+    )
+    
+    status: str = Field(
+            ...,
+            description="Статус: ACTIVE (приватная) или PENDING_APPROVAL (на модерации)"
+        )
+    type: str = Field(
+        ...,
+        description="Текущий тип видимости"
+    )
+    
+    # Статистика синхронизации карточек
+    sync_stats: SyncStats = Field(
+        default_factory=SyncStats,
+        description="Статистика синхронизации карточек (добавлено, обновлено, удалено)"
+    )
+    
+
+class CanTakeOwnershipResponse(BaseModel):
+    description_changed: bool = Field(
+           ...,
+        description="Изменил ли пользователь описание колоды"
+       )
+
+    cards_needed_count: int = Field(
+           ...,
+        description="Сколько еще карточек нужно добавить чтобы достичь 20%"
+       )

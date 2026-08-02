@@ -84,3 +84,21 @@ class AbstractCloudDeckRepository(ABC):
             datetime или None
         """
         ...
+    
+    @abstractmethod
+    async def delete(self, cloud_deck_id: UUID) -> None:
+        """Удалить колоду и все её карточки (каскадное удаление).
+
+        Args:
+            deck_id: UUID колоды
+        """
+        ...
+    
+    @abstractmethod
+    async def update(self, cloud_deck: CloudDeck) -> None:
+        """Обновить существующую облачную колоду.
+        
+        Args:
+            cloud_deck: Объект CloudDeck с обновлёнными данными
+        """
+        ...

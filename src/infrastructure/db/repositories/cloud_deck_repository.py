@@ -70,3 +70,23 @@ class SQlAlchemyCloudDeckRepository(AbstractCloudDeckRepository):
         return result.scalar_one_or_none()
 
 
+    async def delete(self, cloud_deck_id: UUID) -> None:
+        await self.session.execute(
+            delete(CloudDeckModel)
+            .where(CloudDeckModel.id == cloud_deck_id)
+        )
+
+    async def update(self, cloud_deck: CloudDeck) -> None:
+        stmt = (
+            update(CloudDeckModel)
+            .where(CloudDeckModel.id == cloud_deck.id)
+            .values(
+                author_id=cloud_deck.author_id,
+                name=cloud_deck.name,
+                description=cloud_deck.description,
+                type=cloud_deck.type,
+                is_approved=cloud_deck.is_approved,
+                previous_authors=cloud_deck.previous_authors,
+            )
+        )
+        await self.session.execute(stmt)

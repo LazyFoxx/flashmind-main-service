@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 
 from src.domain.entities.card.card import Card
@@ -31,6 +31,10 @@ class Deck:
     author_id: Optional[UUID] = None
     last_synced_at: Optional[datetime] = None  # Время последней синхронизации с облаком
     needs_sync: bool = False                  # Требуется ли синхронизация
+    
+    def _copy(self, **kwargs: Any) -> "Deck":
+        """Создаёт копию текущей колоды с возможностью изменения указанных параметров."""
+        return replace(self, **kwargs)
 
     def add_card(self, card: Card) -> "Deck":
         """Бизнес-метод: добавить карту, верни новую Deck."""
@@ -131,4 +135,19 @@ class Deck:
             is_approved=is_approved,
             author_id=author_id,
          )
+    
+    def to_local(
+            self,
+         ) -> "Deck":
+            """
+            Отвязывает колоду от облака.
+            """
+            return replace(
+                self,
+                cloud_deck_id=None,
+                is_cloud_deck=False,
+                cloud_type=None,
+                is_approved=False,
+                author_id=None,
+             )
 

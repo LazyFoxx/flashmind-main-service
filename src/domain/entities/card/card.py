@@ -24,19 +24,22 @@ class Card:
     
     card_template_id: Optional[UUID] = None   # Ссылка на шаблон из облака (nullable)
     is_deleted: bool = False                  # Мягкое удаление
+    is_updated: bool = False
 
     def _copy(self, **kwargs: Any) -> "Card":
         """Создаёт копию текущей карточки с возможностью изменения некоторых параметров."""
         return Card(
             id=self.id,
             deck_id=self.deck_id,
-            front=self.front,
-            back=self.back,
+            front=kwargs.get("front", self.front),
+            back=kwargs.get("back", self.back),
             card_template_id=self.card_template_id,
             is_deleted=self.is_deleted,
+            is_updated=self.is_updated,
             in_learning=kwargs.get("in_learning", self.in_learning),
             _fsrs_card=kwargs.get("_fsrs_card", self._fsrs_card),
         )
+    
 
     def change_learning(self, in_learning: bool) -> "Card":
         """Бизнес-метод: переводит карточку в состояние обучения и назначает ей параметры FSRS или сбрасывает в None"""
@@ -78,3 +81,7 @@ class Card:
     def set_card_template_id(self, card_template_id: UUID) -> "Card":
         """устанавливает card template id."""
         return replace(self, card_template_id=card_template_id)
+    
+    def set_is_updated_true(self) -> "Card":
+        """устанавливает is_updated = True."""
+        return replace(self, is_updated=True)

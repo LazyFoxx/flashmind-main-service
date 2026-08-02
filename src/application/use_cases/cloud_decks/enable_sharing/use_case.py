@@ -28,7 +28,7 @@ class EnableSharingUseCase:
             
             if not deck:
                 self.logger.info("Колода не найдена", deck_id=input_dto.deck_id)
-                raise DeckNotExistsError(deck_id=input_dto.deck_id)
+                raise DeckNotExistsError(deck_id=input_dto.deck_id, user_id=input_dto.user_id)
             
             if deck.user_id != input_dto.user_id:
                 self.logger.warning("Колода не принадлежит данному пользователю", 
@@ -36,7 +36,7 @@ class EnableSharingUseCase:
                 raise UserNotFoundError(user_id=input_dto.user_id)
             
             # 2. логика создания или обновления
-            if deck.is_cloud_deck:
+            if deck.is_cloud_deck and not input_dto.new_author:
                 # Уже в облаке
                 cloud_deck = await self.uow.cloud_decks.get_by_id(deck_id=deck.cloud_deck_id)
                 if not cloud_deck:
@@ -51,7 +51,7 @@ class EnableSharingUseCase:
                 if cloud_deck.type != input_dto.type:
                     cloud_deck = cloud_deck.change_type(type=input_dto.type)
             else:
-                # Новое добавление
+                # Новое добавление облачной колоды
                 cloud_uuid = uuid4()
                 cloud_deck = CloudDeck(
                     name=deck.name,
@@ -69,6 +69,8 @@ class EnableSharingUseCase:
                 # при добавлении новой публичной ОДОБРЕННОЙ колоды сбрасываем кеш
                 await self.cache.invalidate(key="public_decks_approved:all")
 
+                # Сбрасываем прошлую связь если есть
+                deck = deck.to_local()
                 # Обновляем локальную колоду: связываем её с облаком
                 deck = deck.to_cloud(cloud_deck_id=cloud_uuid,
                                      cloud_type=cloud_deck.type,

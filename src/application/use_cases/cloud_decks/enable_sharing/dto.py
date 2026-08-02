@@ -14,6 +14,7 @@ class EnableSharingInput:
     user_id: UUID
     deck_id: UUID
     type: SharingType
+    new_author: bool = False
 
 
 @dataclass(frozen=True, slots=True)

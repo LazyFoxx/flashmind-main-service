@@ -33,6 +33,9 @@ class UpdateCardUseCase:
                 updates["back"] = input_dto.back
 
                 updated_card = dataclasses.replace(existing_card, **updates)  # type: ignore
+                
+                if updated_card.card_template_id:
+                    updated_card = updated_card.set_is_updated_true()
 
                 # добавляем новою карточку
                 await self.uow.cards.update(updated_card)

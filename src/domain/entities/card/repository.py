@@ -36,7 +36,7 @@ class AbstractCardRepository(ABC):
         ...
 
     @abstractmethod
-    async def add(self, card: Card, deck_id: UUID) -> None:
+    async def add(self, card: Card) -> None:
         """Добавить новую карточку в хранилище и привязать к колоде.
 
         Карточка должна быть новой (без ID или с временным).
@@ -44,7 +44,6 @@ class AbstractCardRepository(ABC):
 
         Args:
             card: Объект Card с валидными данными
-            deck_id: UUID колоды, к которой привязать
 
         Raises:
             IntegrityError: если фронт/бэк пустой или колода не существует
@@ -132,25 +131,30 @@ class AbstractCardRepository(ABC):
 
     @abstractmethod
     async def get_by_deck_id(
-        self,
-        deck_id: UUID,
-        in_learning: Optional[bool] = None,
-        limit: Optional[int] = None,
-    ) -> List[Card]:
-        """Получить список Card по id Deck.
+    self,
+    deck_id: UUID,
+    in_learning: Optional[bool] = None,
+    limit: Optional[int] = None,
+    include_deleted: bool = False,    # ← ДОБАВЛЕН
+) -> List[Card]:
+     """Получить список Card по id Deck.
 
-        Args:
-            deck_id: UUID конкретной колоды
-            in_learning:
-                - True  → только карточки в обучении (in_learning=True)
-                - False → только новые (in_learning=False)
-                - None  → все карточки
-            limit: Максимальное количество возвращаемых карточек (None = без ограничения)
+     Args:
+         deck_id: UUID конкретной колоды
+         in_learning:
+              - True   → только карточки в обучении (in_learning=True)
+              - False → только новые (in_learning=False)
+              - None   → все карточки
+         limit: Максимальное количество возвращаемых карточек (None = без ограничения)
+         include_deleted:
+              - True   → включать удалённые карточки
+              - False  → только не удалённые (по умолчанию)
 
-        Returns:
-            List[Card]  # domain entities
-        """
-        ...
+     Returns:
+         List[Card]   # domain entities
+      """
+     ...
+
 
     @abstractmethod
     async def get_due_cards(
@@ -190,3 +194,13 @@ class AbstractCardRepository(ABC):
         Возвращает:
             list: [(deck_id, total_cards)]
         """
+    
+    @abstractmethod
+    async def delete_orphan_deleted_cards(self) -> int:
+        """Удалить все карточки, где is_deleted=True И card_template_id=None.
+        
+        Returns:
+            Количество удалённых карточек.
+        """
+        ...
+

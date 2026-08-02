@@ -12,3 +12,4 @@ class ImportDeckInput:
 class ImportDeckOutput:
     deck_id: UUID
     added: int
+    updated: int

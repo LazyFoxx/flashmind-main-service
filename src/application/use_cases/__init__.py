@@ -21,6 +21,9 @@ from .cloud_decks.get_cloud_deck.use_case import GetCloudDeckInput, GetCloudDeck
 from .cloud_cards.get_cloud_cards.use_case import GetCloudCardsUseCase, GetCloudCardsInput
 from .cloud_cards.get_cloud_card.use_case import GetCloudCardUseCase
 from .cloud_decks.get_public_decks.use_case import GetPublicDecksUseCase, PublicDecksListOutput
+from .cloud_decks.delete_cloud_deck.use_case import DeleteCloudDeckUseCase, DeleteCloudDeckInput
+from .cloud_decks.can_take_ownership.use_case import CanTakeOwnershipUseCase, CanTakeOwnershipInput
+from .cloud_decks.take_ownership.use_case import TakeOwnershipUseCase, TakeOwnershipInput
 
 __all__ = [
     "GetUserProfileUseCase", "GetProfileUserInput",
@@ -50,4 +53,7 @@ __all__ = [
     "GetCloudCardsInput", "GetCloudCardsUseCase",
     "GetCloudCardUseCase",
     "GetPublicDecksUseCase", "PublicDecksListOutput",
+    "DeleteCloudDeckUseCase", "DeleteCloudDeckInput",
+    "CanTakeOwnershipUseCase", "CanTakeOwnershipInput",
+    "TakeOwnershipUseCase", "TakeOwnershipInput",
 ]

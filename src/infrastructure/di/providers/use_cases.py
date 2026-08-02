@@ -24,6 +24,9 @@ from src.application.use_cases import (
     GetCloudCardsUseCase,
     GetCloudCardUseCase,
     GetPublicDecksUseCase,
+    DeleteCloudDeckUseCase,
+    CanTakeOwnershipUseCase,
+    TakeOwnershipUseCase,
 )
 
 
@@ -56,3 +59,6 @@ class UseCaseProvider(Provider):
     get_cloud_cards = provide(GetCloudCardsUseCase, scope=Scope.REQUEST)
     get_cloud_card = provide(GetCloudCardUseCase, scope=Scope.REQUEST)
     get_public_decks = provide(GetPublicDecksUseCase, scope=Scope.REQUEST)
+    delete_cloud_deck = provide(DeleteCloudDeckUseCase, scope=Scope.REQUEST)
+    can_take_ownership = provide(CanTakeOwnershipUseCase, scope=Scope.REQUEST)
+    take_ownership = provide(TakeOwnershipUseCase, scope=Scope.REQUEST)

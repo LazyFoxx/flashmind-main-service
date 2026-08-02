@@ -93,25 +93,32 @@ class SyncCardsToCloudUseCase:
         """
         Синхронизация для Пользователя (Получателя).
         Облачное состояние -> Локальное хранилище.
+        
+        Логика:
+        - Если карточка НЕ была отредактирована (is_updated=False) → обновляем из облака
+        - Если карточка была отредактирована (is_updated=True) → пропускаем, сохраняем правки
+        - Если карточка мягко удалена локально то она пропускается ( не обновляется и не добавляется )
         """
         async with self.uow:
              # 1. Получаем облачные шаблоны
-            cloud_templates: List[CloudCardTemplate] = await self.uow.cloud_cards.get_by_deck_id(
-                cloud_deck_id=cloud_deck_id
-             )
-            
-            templates = [t for t in cloud_templates]
-            
-             # 2. Получаем локальные карточки
-            local_cards: List[Card] = await self.uow.cards.get_by_deck_id(deck_id=deck_id)
+            cloud_templates = await self.uow.cloud_cards.get_by_deck_id(cloud_deck_id=cloud_deck_id)
+            local_cards = await self.uow.cards.get_by_deck_id(deck_id=deck_id, include_deleted=True)
             local_cards_map = {c.card_template_id: c for c in local_cards if c.card_template_id}
             
             added_count = 0
-            for template in templates:
+            updated_count = 0
+            
+            for template in cloud_templates:
                 if template.id in local_cards_map:
-                     # Карточка уже есть -> НЕ ОБНОВЛЯЕМ!
-                     # Мы сохраняем правки пользователя.
-                    pass
+                    local_card = local_cards_map[template.id]
+                    
+                    # ПРОВЕРКА В ПАМЯТИ — не лезем в БД без необходимости
+                    if local_card.front != template.front or local_card.back != template.back:
+                        if not local_card.is_updated and not local_card.is_deleted:
+                            updated_card = local_card._copy(front=template.front, back=template.back)
+                            await self.uow.cards.update(updated_card)
+                            updated_count += 1
+
                 else:
                      # Карточки нет локально -> Создаем её
                     new_card = Card(
@@ -121,10 +128,9 @@ class SyncCardsToCloudUseCase:
                         front=template.front,
                         back=template.back,
                      )
-                    await self.uow.cards.add(new_card, )
+                    await self.uow.cards.add(new_card)
                     added_count += 1
 
             await self.uow.decks.update_last_synced_at(deck_id=deck_id)
-            
             await self.uow.commit()
-            return SyncCardsToCloudOutput(added=added_count, updated=0, deleted=0)
+            return SyncCardsToCloudOutput(added=added_count, updated=updated_count, deleted=0)

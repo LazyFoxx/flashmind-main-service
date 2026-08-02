@@ -16,6 +16,14 @@ class CloudDeck:
     approved_at: Optional[datetime] = None
     last_synced_at: Optional[datetime] = None 
     total_cards: Optional[int] = None
+    previous_authors: List[UUID] = field(default_factory=list)
+    
+    def set_previous_authors(
+            self,
+            previous_authors: List[UUID]
+         ) -> "CloudDeck":
+            """Устанавливает значение previous_authors."""
+            return replace(self, previous_authors=previous_authors)
 
     def approve(self) -> "CloudDeck":
         """Одобрить колоду (вызывает админ)."""

@@ -89,6 +89,7 @@ class CardModel(Base):
         lazy="raise",
     )
     
+    # параметры необходимые для облачных колод
     card_template_id: Mapped[Optional[UUID]] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("cloud_card_templates.id", ondelete="SET NULL"),
@@ -103,6 +104,14 @@ class CardModel(Base):
         nullable=False,
         index=True,
     )
+    
+    is_updated: Mapped[bool] = mapped_column(
+            Boolean,
+            default=False,
+            server_default="false",
+            nullable=False,
+            index=True,
+        )
 
 
     def to_entity(self) -> Card:
@@ -117,6 +126,7 @@ class CardModel(Base):
                 difficulty=self.difficulty,
                 stability=self.stability,
                 is_deleted=self.is_deleted,
+                is_updated=self.is_updated,
                 card_template_id=self.card_template_id,
                 _fsrs_card=None,
                 in_learning=False,
@@ -130,6 +140,7 @@ class CardModel(Base):
             difficulty=self.difficulty,
             stability=self.stability,
             is_deleted=self.is_deleted,
+            is_updated=self.is_updated,
             card_template_id=self.card_template_id,
             _fsrs_card=FSRS_Card.from_json(self.fsrs_state),
             in_learning=True,
@@ -137,33 +148,35 @@ class CardModel(Base):
 
     @classmethod
     def from_domain(cls, card: Card) -> "CardModel":
-        if not card.in_learning:
-            return CardModel(
-                id=card.id,
-                deck_id=card.deck_id,
-                front=card.front,
-                back=card.back,
-                in_learning=False,
-                fsrs_state=None,
-                next_due=None,
-                difficulty=None,
-                stability=None,
-                is_deleted=False,
-                card_template_id=card.card_template_id,
-            )
+      if not card.in_learning:
+          return CardModel(
+              id=card.id,
+              deck_id=card.deck_id,
+              front=card.front,
+              back=card.back,
+              in_learning=False,
+              fsrs_state=None,
+              next_due=None,
+              difficulty=None,
+              stability=None,
+              is_deleted=card.is_deleted,
+              is_updated=card.is_updated,
+              card_template_id=card.card_template_id,
+          )
 
-        # in_learning = True → берем параметры
-        fsrs_card = card._fsrs_card or FSRS_Card()
-        return CardModel(
-            id=card.id,
-            deck_id=card.deck_id,
-            front=card.front,
-            back=card.back,
-            in_learning=True,
-            fsrs_state=fsrs_card.to_json(),
-            next_due=fsrs_card.due,
-            difficulty=fsrs_card.difficulty,
-            stability=fsrs_card.stability,
-            is_deleted=False,
-            card_template_id=card.card_template_id,
-        )
+      # in_learning = True → берем параметры
+      fsrs_card = card._fsrs_card or FSRS_Card()
+      return CardModel(
+          id=card.id,
+          deck_id=card.deck_id,
+          front=card.front,
+          back=card.back,
+          in_learning=True,
+          fsrs_state=fsrs_card.to_json(),
+          next_due=fsrs_card.due,
+          difficulty=fsrs_card.difficulty,
+          stability=fsrs_card.stability,
+          is_deleted=card.is_deleted,
+          is_updated=card.is_updated,
+          card_template_id=card.card_template_id,
+      )

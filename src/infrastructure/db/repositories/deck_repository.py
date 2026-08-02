@@ -100,7 +100,8 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
         stmt = (
             select(func.count())
             .select_from(CardModel)
-            .where(CardModel.deck_id == deck_id)
+            .where(CardModel.deck_id == deck_id,
+                   CardModel.is_deleted == False,)
         )
         result = await self.session.execute(stmt)
 
@@ -110,7 +111,8 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
             select(func.count())
             .select_from(CardModel)
             .where(CardModel.deck_id == deck_id)
-            .where(CardModel.in_learning)
+            .where(CardModel.in_learning,
+                   CardModel.is_deleted == False,)
         )
         result = await self.session.execute(stmt)
 
@@ -120,7 +122,8 @@ class SQlAlchemyDeckRepository(AbstractDeckRepository):
             select(func.count())
             .select_from(CardModel)
             .where(CardModel.deck_id == deck_id)
-            .where(CardModel.stability >= 100)
+            .where(CardModel.stability >= 100,
+                   CardModel.is_deleted == False,)
         )
         result = await self.session.execute(stmt)
 

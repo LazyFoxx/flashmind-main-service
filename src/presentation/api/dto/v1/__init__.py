@@ -23,7 +23,8 @@ from .study import (
 
 from .cloud_deck import (
     EnableSharingRequest, EnableSharingResponse, SyncStats, ImportDeckRequest, ImportDeckResponse,
-    CloudDeckResponse, CloudTemplateCardResponse, PublicDecksResponse, PublicDeckPreviewResponse
+    CloudDeckResponse, CloudTemplateCardResponse, PublicDecksResponse, PublicDeckPreviewResponse,
+    CanTakeOwnershipResponse, TakeOwnershipRequest, TakeOwnershipResponse
 )
 
 from .stats import StudyStatsResponse
@@ -54,5 +55,6 @@ __all__ = [
     "CloudTemplateCardResponse",
     "PublicDecksResponse",
     "PublicDeckPreviewResponse",
-    "StudyStatsResponse"
+    "StudyStatsResponse",
+    "CanTakeOwnershipResponse", "TakeOwnershipRequest", "TakeOwnershipResponse",
 ]
