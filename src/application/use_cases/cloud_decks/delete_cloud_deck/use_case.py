@@ -22,7 +22,9 @@ class DeleteCloudDeckUseCase:
 
                 if not cloud_deck:
                     self.logger.debug("Облачная колода не найдена", deck_id=input_dto.cloud_deck_id)
-                    raise DeckNotExistsError(f"Cloud deck {input_dto.cloud_deck_id} not found")
+                    await self.uow.cloud_decks.delete(cloud_deck_id=cloud_deck.id)
+                    return None
+                    
                 
                 if cloud_deck.author_id != input_dto.user_id:
                     self.logger.warning("Колоду может удалить только автор колоды!", cloud_deck_id=input_dto.cloud_deck_id, user_id=input_dto.user_id)
