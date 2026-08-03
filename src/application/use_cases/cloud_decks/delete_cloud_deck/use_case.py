@@ -30,16 +30,6 @@ class DeleteCloudDeckUseCase:
                     self.logger.warning("Колоду может удалить только автор колоды!", cloud_deck_id=input_dto.cloud_deck_id, user_id=input_dto.user_id)
                     raise UserIsNotAuthor(user_id=input_dto.user_id, message="Колоду может удалить только автор колоды!")
                 
-                
-                deck: Deck = await self.uow.decks.get_by_cloud_deck_id(cloud_deck_id=cloud_deck.id, user_id=input_dto.user_id)
-                
-                if not deck:
-                    self.logger.warning(
-                        "Локальная колода не найдена",
-                        cloud_deck_id=input_dto.cloud_deck_id,
-                    )
-                    raise DeckNotExistsError(f"Cloud deck {input_dto.cloud_deck_id} not found")
-                
 
                 await self.uow.cloud_decks.delete(cloud_deck_id=cloud_deck.id)
                 await self.uow.commit()
@@ -50,10 +40,12 @@ class DeleteCloudDeckUseCase:
                 
                 await self.uow.cards.delete_orphan_deleted_cards()
                 
-                local_deck = deck.to_local()
-                
-                await self.uow.decks.update(deck=local_deck)
-                await self.uow.commit()
+                deck: Deck = await self.uow.decks.get_by_cloud_deck_id(cloud_deck_id=cloud_deck.id, user_id=input_dto.user_id)
+                                
+                if deck:
+                    local_deck = deck.to_local()
+                    await self.uow.decks.update(deck=local_deck)
+                    await self.uow.commit()
                 
 
                 
