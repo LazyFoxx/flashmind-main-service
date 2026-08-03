@@ -27,6 +27,7 @@ from src.application.use_cases import (
     DeleteCloudDeckUseCase,
     CanTakeOwnershipUseCase,
     TakeOwnershipUseCase,
+    StudyStatUseCase,
 )
 
 
@@ -51,6 +52,7 @@ class UseCaseProvider(Provider):
     review_due_card = provide(ReviewDueCardsUseCase, scope=Scope.REQUEST)
     
     daily_rev_stats = provide(DailyReviewStatUseCase, scope=Scope.REQUEST)
+    # study_stats = provide(StudyStatUseCase, scope=Scope.REQUEST)
     
     enable_sharing = provide(EnableSharingUseCase, scope=Scope.REQUEST)
     sync_cards_to_cloud = provide(SyncCardsToCloudUseCase, scope=Scope.REQUEST)
@@ -62,3 +64,4 @@ class UseCaseProvider(Provider):
     delete_cloud_deck = provide(DeleteCloudDeckUseCase, scope=Scope.REQUEST)
     can_take_ownership = provide(CanTakeOwnershipUseCase, scope=Scope.REQUEST)
     take_ownership = provide(TakeOwnershipUseCase, scope=Scope.REQUEST)
+    

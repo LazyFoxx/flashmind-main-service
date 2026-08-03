@@ -4,7 +4,7 @@ from uuid import UUID
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 
-from src.application.use_cases import GetUserProfileUseCase
+from src.application.use_cases import StudyStatUseCase, StudyStatInput
 
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/stats", tags=["stats"])
 # )
 # @inject
 # async def get_study_stats(
-#     use_case: FromDishka[DailyReviewStatUseCase],
+#     use_case: FromDishka[StudyStatUseCase],
 #     user_id: UUID = Depends(get_current_user_id),
 #     deck_id: Optional[UUID] = Query(
 #         None,
@@ -31,8 +31,8 @@ router = APIRouter(prefix="/stats", tags=["stats"])
 #     ),
 # ) -> StudyStatsResponse:
 #      # 1. Вызываем Use Case для профиля
-#     input_dto = GetProfileUserInput(user_id=user_id, deck_id=deck_id)
-#     study_stats = await use_case.execute(input_dto=input_dto)
+#     input_dto = StudyStatInput(user_id=user_id, deck_id=deck_id)
+#     result = await use_case.execute(input_dto=input_dto)
 
 #      # 3. Объединяем результаты
 #     return StudyStatsResponse(

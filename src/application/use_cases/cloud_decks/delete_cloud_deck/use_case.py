@@ -2,7 +2,7 @@ import structlog
 
 from src.domain.entities import Deck
 from src.application.interfaces import (
-    AbstractUnitOfWork,
+    AbstractUnitOfWork, AbstractCacheService
 )
 
 from src.application.exceptions import DeckNotExistsError, UserIsNotAuthor
@@ -10,9 +10,10 @@ from .dto import DeleteCloudDeckInput, DeleteCloudDeckOutput
 
 
 class DeleteCloudDeckUseCase:
-    def __init__(self, uow: AbstractUnitOfWork):
+    def __init__(self, uow: AbstractUnitOfWork, cache: AbstractCacheService,):
         self.uow = uow
         self.logger = structlog.get_logger(__name__)
+        self.cache = cache
     
     async def execute(self, input_dto: DeleteCloudDeckInput) -> DeleteCloudDeckOutput:
         try:
@@ -40,6 +41,10 @@ class DeleteCloudDeckUseCase:
 
                 await self.uow.cloud_decks.delete(cloud_deck_id=cloud_deck.id)
                 await self.uow.commit()
+                
+                # при удалении публичной облачной колоды сбрасываем кеш публичных облачных колод
+                # if cloud_deck.type == "PUBLIC":
+                await self.cache.invalidate(key="public_decks_approved:all")
                 
                 await self.uow.cards.delete_orphan_deleted_cards()
                 
