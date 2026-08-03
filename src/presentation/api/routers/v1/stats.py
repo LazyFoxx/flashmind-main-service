@@ -4,7 +4,7 @@ from uuid import UUID
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 
-from src.application.use_cases import StudyStatUseCase, StudyStatInput
+# from src.application.use_cases import StudyStatUseCase, StudyStatInput
 
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (

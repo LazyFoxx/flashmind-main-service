@@ -27,7 +27,7 @@ from src.application.use_cases import (
     DeleteCloudDeckUseCase,
     CanTakeOwnershipUseCase,
     TakeOwnershipUseCase,
-    StudyStatUseCase,
+    # StudyStatUseCase,
 )
 
 
