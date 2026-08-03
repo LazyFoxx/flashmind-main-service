@@ -42,13 +42,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     lifespan=lifespan,
-    version="1.2.2",
+    version="1.2.3",
     # title="",
     description="""
     Добавилены 3 эндпоинта:
     
+    1.2.3
+    - Пофиксил сброс кеша при удалении облачной колоды
     
-    
+    1.2.3
     - Эндпоинт удаления колоды
     Удаляет облачную колоду 
         - Находит облачную колоду по cloud_uuid
