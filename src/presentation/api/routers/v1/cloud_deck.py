@@ -313,7 +313,6 @@ async def take_ownership(
     
     return TakeOwnershipResponse(
         cloud_uuid=str(result.cloud_uuid),
-        old_cloud_uuid=str(result.old_cloud_uuid),
         status="ACTIVE" if result.is_approved else "PENDING_APPROVAL",
         type=result.type,
         sync_stats=SyncStats(

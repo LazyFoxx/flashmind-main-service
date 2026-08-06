@@ -4,22 +4,28 @@ from pydantic import BaseModel, Field
 
 
 class OneTimeMetricsResponse(BaseModel):
-    """Разовые метрики: общее время изучения."""
+    """Разовые метрики: общее время изучения и общее количество повторов."""
     total_study_seconds: int = Field(
-        ...,
+         ...,
         description="Общее время изучения в секундах",
         examples=[45630],
-    )
+      )
+    total_reviews: int = Field(
+         ...,
+        description="Общее количество повторов карточек",
+        examples=[1234],
+      )
 
     model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "total_study_seconds": 45630,
-                 }
-             ]
-        }
-    }
+         "json_schema_extra": {
+             "examples": [
+                 {
+                     "total_study_seconds": 45630,
+                     "total_reviews": 1234,
+                  }
+              ]
+         }
+      }
 
 
 class ForecastPoint(BaseModel):
@@ -347,12 +353,13 @@ class StudyStatsResponse(BaseModel):
       )
 
     model_config = {
-         "json_schema_extra": {
-             "examples": [
-                 {
-                     "one_time_metrics": {
-                         "total_study_seconds": 45630,
-                     },
+          "json_schema_extra": {
+              "examples": [
+                  {
+                      "one_time_metrics": {
+                          "total_study_seconds": 45630,
+                          "total_reviews": 1234,
+                      },
                      "forecast": {
                          "points": [
                              {"date": "2023-10-25", "count": 4},

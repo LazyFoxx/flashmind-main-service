@@ -601,10 +601,6 @@ class TakeOwnershipResponse(BaseModel):
         ...,
         description="UUID новой облачной колоды где пользователь становится автором"
     )
-    old_cloud_uuid: str = Field(
-        ...,
-        description="UUID старой облачной колоды от которой отвязались"
-    )
     
     status: str = Field(
             ...,

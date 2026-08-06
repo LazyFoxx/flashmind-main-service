@@ -1,9 +1,7 @@
-from datetime import datetime
-from typing import List, Optional, Tuple, Union
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID
-
-
-from sqlalchemy import delete, desc, func, select, update
+from sqlalchemy import delete, desc, func, select, update, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities import AbstractCardRepository, Card
@@ -308,4 +306,261 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         )
         result = await self.session.execute(stmt)
         return result.rowcount
+
+    async def get_difficulty_distribution(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+         # Создаем подзапрос для вычисления difficulty range
+        base_conditions = [CardModel.is_deleted == False, CardModel.difficulty.isnot(None)]
+        
+        if deck_id is not None:
+            base_conditions.append(CardModel.deck_id == deck_id)
+        
+        difficulty_subquery = (
+            select(
+                CardModel.id.label('card_id'),
+                CardModel.deck_id,
+                case(
+                    (CardModel.difficulty >= 9, '9-10'),
+                    (CardModel.difficulty >= 8, '8-9'),
+                    (CardModel.difficulty >= 7, '7-8'),
+                    (CardModel.difficulty >= 6, '6-7'),
+                    (CardModel.difficulty >= 5, '5-6'),
+                    (CardModel.difficulty >= 4, '4-5'),
+                    (CardModel.difficulty >= 3, '3-4'),
+                    (CardModel.difficulty >= 2, '2-3'),
+                    (CardModel.difficulty >= 1, '1-2'),
+                    else_='0-1',
+                ).label('difficulty_range'),
+            )
+            .where(*base_conditions)
+            .subquery()
+        )
+        
+        # Основной запрос: агрегация по difficulty_range из подзапроса
+        query = select(
+            difficulty_subquery.c.difficulty_range,
+            func.count(difficulty_subquery.c.card_id).label("count"),
+        ).group_by(difficulty_subquery.c.difficulty_range)
+        
+        # Если deck_id не передан, фильтруем по пользователю через JOIN с decks
+        if deck_id is None:
+            query = query.join(
+                DeckModel,
+                DeckModel.id == difficulty_subquery.c.deck_id
+            ).where(DeckModel.user_id == user_id)
+
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+
+        # Создаем словарь со всеми диапазонами и нулями
+        all_ranges = ['1-2', '2-3', '3-4', '4-5', '5-6', '6-7', '7-8', '8-9', '9-10']
+        distribution: Dict[str, int] = {range_label: 0 for range_label in all_ranges}
+
+        # Заполняем реальными данными
+        for row in rows:
+            range_label = row.difficulty_range
+            count = row.count
+            if range_label in distribution:
+                distribution[range_label] = count
+
+        return distribution
+
+    async def get_stability_distribution(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+         # Создаем подзапрос для вычисления stability range
+        base_conditions = [CardModel.is_deleted == False, CardModel.stability.isnot(None)]
+        
+        if deck_id is not None:
+            base_conditions.append(CardModel.deck_id == deck_id)
+        
+        stability_subquery = (
+            select(
+                CardModel.id.label('card_id'),
+                CardModel.deck_id,
+                case(
+                    ((CardModel.stability >= 1) & (CardModel.stability < 25), '1-25 дней'),
+                    ((CardModel.stability >= 25) & (CardModel.stability < 50), '25-50 дней'),
+                    ((CardModel.stability >= 50) & (CardModel.stability < 100), '50-100 дней'),
+                    else_='>100 дней',
+                ).label('stability_range'),
+            )
+            .where(*base_conditions)
+             .subquery()
+         )
+        
+        # Основной запрос: агрегация по stability_range из подзапроса
+        query = select(
+            stability_subquery.c.stability_range,
+            func.count(stability_subquery.c.card_id).label("count"),
+         ).group_by(stability_subquery.c.stability_range)
+        
+        # Если deck_id не передан, фильтруем по пользователю через JOIN с decks
+        if deck_id is None:
+            query = query.join(
+                DeckModel,
+                DeckModel.id == stability_subquery.c.deck_id
+             ).where(DeckModel.user_id == user_id)
+
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+
+        # Создаем словарь со всеми диапазонами и нулями
+        all_ranges = ['1-25 дней', '25-50 дней', '50-100 дней', '>100 дней']
+        distribution: Dict[str, int] = {range_label: 0 for range_label in all_ranges}
+
+        # Заполняем реальными данными
+        for row in rows:
+            range_label = row.stability_range
+            count = row.count
+            if range_label in distribution:
+                distribution[range_label] = count
+
+        return distribution
+
+    async def get_card_types_distribution(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+        """Получить распределение карточек по типам.
+
+        Args:
+            user_id: ID пользователя
+            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
+
+        Returns:
+            Словарь {card_type: count}, где:
+                - 'новые': in_learning = False
+                - 'изучаемые': in_learning = True AND (stability <= 100 OR difficulty >= 3)
+                - 'изученные': in_learning = True AND stability > 100 AND difficulty < 3
+                - 'отложенные': всегда 0
+        """
+        from sqlalchemy import case, func
+
+        # Базовый запрос
+        query = select(
+            CardModel.in_learning,
+            CardModel.stability,
+            CardModel.difficulty,
+            func.count(CardModel.id).label("count"),
+        )
+
+        # Фильтруем только не удалённые карточки
+        query = query.where(CardModel.is_deleted == False)
+
+        # Если есть deck_id, фильтруем по нему
+        if deck_id is not None:
+            query = query.where(CardModel.deck_id == deck_id)
+        else:
+            # Если deck_id не передан, фильтруем по пользователю через колоды
+            query = (
+                query.join(
+                    DeckModel
+                )
+                .where(DeckModel.user_id == user_id)
+            )
+
+        # Группируем по in_learning, stability, difficulty
+        query = (
+            query.group_by(
+                CardModel.in_learning,
+                CardModel.stability,
+                CardModel.difficulty,
+            )
+        )
+
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+
+        # Создаем словарь со всеми типами и нулями
+        distribution: Dict[str, int] = {
+            'новые': 0,
+            'изучаемые': 0,
+            'изученные': 0,
+            'отложенные': 0,
+        }
+
+        # Заполняем реальными данными
+        for row in rows:
+            in_learning = row.in_learning
+            stability = row.stability
+            difficulty = row.difficulty
+            count = row.count
+
+            if not in_learning:
+                # in_learning = False → новые
+                distribution['новые'] += count
+            else:
+                # in_learning = True
+                # Проверяем условие для изученных
+                if stability is not None and stability > 100:
+                    if difficulty is not None and difficulty < 3:
+                        # stability > 100 AND difficulty < 3 → изученные
+                        distribution['изученные'] += count
+                    else:
+                        # stability > 100 BUT difficulty >= 3 → изучаемые
+                        distribution['изучаемые'] += count
+                else:
+                    # stability <= 100 → изучаемые
+                    distribution['изучаемые'] += count
+
+        return distribution
+
+    async def get_forecast_due_cards(
+        self,
+        user_id: UUID,
+        days: int = 30,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+
+        now = datetime.now(timezone.utc)
+        end_date = now + timedelta(days=days)
+
+        # Базовый запрос
+        query = select(
+            func.date(CardModel.next_due).label("forecast_date"),
+            func.count(CardModel.id).label("count"),
+        )
+
+        # Фильтруем только не удалённые карточки с next_due IS NOT NULL
+        query = query.where(CardModel.is_deleted == False)
+        query = query.where(CardModel.next_due.isnot(None))
+        query = query.where(CardModel.next_due >= now)
+        query = query.where(CardModel.next_due <= end_date)
+
+        # Если есть deck_id, фильтруем по нему
+        if deck_id is not None:
+            query = query.where(CardModel.deck_id == deck_id)
+        else:
+            # Если deck_id не передан, фильтруем по пользователю через колоды
+            query = (
+                query.join(DeckModel)
+                .where(DeckModel.user_id == user_id)
+            )
+
+        # Группируем по дате
+        query = query.group_by(func.date(CardModel.next_due))
+
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+
+        # Создаём словарь со всеми днями и нулями
+        forecast: Dict[str, int] = {
+            (now + timedelta(days=i)).strftime("%Y-%m-%d"): 0
+            for i in range(days + 1)
+        }
+
+        # Заполняем реальными данными
+        for row in rows:
+            date_str = row.forecast_date.strftime("%Y-%m-%d")
+            if date_str in forecast:
+                forecast[date_str] = row.count
+
+        return forecast
 

@@ -33,7 +33,7 @@ class GetUserProfileUseCase:
             )
             raise UserNotFoundError(user_id=str(input_dto.user_id))
 
-        self.logger.debug("Получил профиль пользователя из БД", user_id=str(user.id)[:8])
+        # self.logger.debug("Получил профиль пользователя из БД", user_id=str(user.id)[:8])
 
         if not user.avatar_key:
             avatar_url = ""

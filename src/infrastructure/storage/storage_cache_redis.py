@@ -13,7 +13,7 @@ class RedisS3Cache(AbstractS3Cache):
         url = await self.redis.get(key)
         if url is None:
             return None
-        self.logger.info("Получена ссылка из кэша по ключу", key=key)
+        # self.logger.info("Получена ссылка из кэша по ключу", key=key)
         return str(url)
 
     async def set_url(self, key: str, url: str, ttl: int) -> None:
@@ -23,4 +23,4 @@ class RedisS3Cache(AbstractS3Cache):
             ex=ttl,
             nx=True,
         )
-        self.logger.info("Сохранена ссылка в кэш по ключу", key=key)
+        # self.logger.info("Сохранена ссылка в кэш по ключу", key=key)

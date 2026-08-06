@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 from .card import Card
@@ -203,4 +203,85 @@ class AbstractCardRepository(ABC):
             Количество удалённых карточек.
         """
         ...
+    
+    @abstractmethod
+    async def get_difficulty_distribution(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+        """Получить распределение карточек по диапазонам сложности.
+
+        Args:
+            user_id: ID пользователя
+            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
+
+        Returns:
+            Словарь {range_label: count}, где:
+                - range_label: '1-2', '2-3', ..., '9-10'
+                - count: количество карточек в этом диапазоне
+        """
+        ...
+    
+    @abstractmethod
+    async def get_stability_distribution(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+        """Получить распределение карточек по диапазонам стабильности.
+
+        Args:
+            user_id: ID пользователя
+            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
+
+        Returns:
+            Словарь {range_label: count}, где:
+                - range_label: '1-25 дней', '25-50 дней', '50-100 дней', '>100 дней'
+                - count: количество карточек в этом диапазоне
+        """
+        ...
+
+    @abstractmethod
+    async def get_card_types_distribution(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+        """Получить распределение карточек по типам.
+
+        Args:
+            user_id: ID пользователя
+            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
+
+        Returns:
+            Словарь {card_type: count}, где:
+                - 'новые': in_learning = False
+                - 'изучаемые': in_learning = True AND (stability <= 100 OR difficulty >= 3) ( временно )
+                - 'изученные': in_learning = True AND stability > 100 AND difficulty < 3
+                - 'отложенные': всегда 0
+        """
+        ...
+    
+    @abstractmethod
+    async def get_forecast_due_cards(
+        self,
+        user_id: UUID,
+        days: int = 30,
+        deck_id: Optional[UUID] = None,
+    ) -> Dict[str, int]:
+        """Получить прогноз повтора карточек по дням.
+
+        Args:
+            user_id: ID пользователя
+            days: Количество дней на прогноз 
+            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
+
+        Returns:
+            Словарь {date: count}, где:
+                - date: "yyyy-mm-dd" дата диапозона
+                - count: количество карточек в эту дату
+        """
+        ...
+
 
