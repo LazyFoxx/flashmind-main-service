@@ -42,12 +42,25 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     lifespan=lifespan,
-    version="1.2.5",
+    version="1.2.6",
     # title="",
     description="""
+    1.2.6
+    - Добавлены responses в эндпоинты с ошибкой 410 ( облачная колода не найдена)
+    
     1.2.5
     Исправлены ошибки обработки исключений в облачных колодах:
      
+     
+     - Добавлен error_code в ответ при удалении облачной колоды автором
+         CloudDeckNotExistsError теперь возвращает 410 Gone с error_code "CLOUD_DECK_NOT_EXIST"
+         Пример ответа:
+          {
+              "error_code": "CLOUD_DECK_NOT_EXIST",
+              "message": "Автор удалил эту колоду из общего облака"
+          }
+          
+    Внутренние фиксы: 
      - Добавлена try/except обёртка в enable_sharing/use_case.py
          Теперь все известные исключения (DeckNotExistsError, UserNotFoundError,
          UserIsNotAuthor, CloudDeckNotExistsError) правильно пробрасываются в handler'ы
@@ -60,14 +73,6 @@ app = FastAPI(
      - Исправлен баг с cloud_deck_id в enable_sharing
          cloud_deck_id теперь сохраняется до использования
      - Удалён бесполезный finally блок из get_public_decks/use_case.py
-     
-     - Добавлен error_code в ответ при удалении облачной колоды автором
-         CloudDeckNotExistsError теперь возвращает 410 Gone с error_code "CLOUD_DECK_NOT_EXIST"
-         Пример ответа:
-          {
-              "error_code": "CLOUD_DECK_NOT_EXIST",
-              "message": "Автор удалил эту колоду из общего облака"
-          }
 
     1.2.4
     Добавил 1 новый эндпонт:

@@ -53,6 +53,19 @@ router = APIRouter(prefix="/cloud_decks", tags=["cloud_decks"])
         "Генерирует уникальный UUID и ссылку для шаринга. "
         "Колода становится приватной по умолчанию, но доступна по ссылке."
     ),
+    responses={
+            410: {
+                "description": "Автор удалил эту колоду из общего облака",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "error_code": "CLOUD_DECK_NOT_EXIST",
+                            "message": "Автор удалил эту колоду из общего облака"
+                        }
+                    }
+                }
+            },
+        },
 )
 @inject
 async def enable_sharing(
@@ -94,6 +107,19 @@ async def enable_sharing(
         "Импортирует облачную колоду в локальное хранилище. "
         "Создает новые карточки, но не перезаписывает существующие."
     ),
+    responses={
+            410: {
+                "description": "Автор удалил эту колоду из общего облака",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "error_code": "CLOUD_DECK_NOT_EXIST",
+                            "message": "Автор удалил эту колоду из общего облака"
+                        }
+                    }
+                }
+            },
+        },
 )
 @inject
 async def import_deck(
@@ -125,8 +151,21 @@ async def import_deck(
     status_code=status.HTTP_200_OK,
     summary="Превью облачной колоды",
     description=(
-        ""
-    ),
+         ""
+      ),
+    responses={
+        410: {
+            "description": "Автор удалил эту колоду из общего облака",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error_code": "CLOUD_DECK_NOT_EXIST",
+                        "message": "Автор удалил эту колоду из общего облака"
+                    }
+                }
+            }
+        },
+    },
 )
 @inject
 async def get_cloud_deck(
@@ -201,8 +240,8 @@ async def get_public_decks(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удаление колоды из облака",
     description=(
-        "Удаляет облачную колоду и отвязывает все пользовательские колоды "
-    ),
+         "Удаляет облачную колоду и отвязывает все пользовательские колоды "
+      ),
 )
 @inject
 async def delete_cloud_deck(
@@ -236,6 +275,19 @@ async def delete_cloud_deck(
            "Проверяет может ли пользователь стать автором облачной колоды. "
            "Проверяет: изменил ли пользователь описание колоды и имеет ли 20% своих карточек."
        ),
+    responses={
+            410: {
+                "description": "Автор удалил эту колоду из общего облака",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "error_code": "CLOUD_DECK_NOT_EXIST",
+                            "message": "Автор удалил эту колоду из общего облака"
+                        }
+                    }
+                }
+            },
+        },
 )
 @inject
 async def can_take_ownership(
