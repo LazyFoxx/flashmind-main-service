@@ -7,7 +7,7 @@ from src.application.interfaces import (
     AbstractUnitOfWork,
 )
 
-from src.application.exceptions import DeckNotExistsError, UserIsNotAuthor
+from src.application.exceptions import DeckNotExistsError, UserIsNotAuthor, CloudDeckNotExistsError
 from .dto import CanTakeOwnershipInput, CanTakeOwnershipOutput
 
 
@@ -30,7 +30,7 @@ class CanTakeOwnershipUseCase:
                 
                 if not deck.is_cloud_deck:
                     self.logger.warning("Колода должна быть привязана к облаку", deck_id=input_dto.deck_id)
-                    raise DeckNotExistsError(deck_id=input_dto.deck_id, user_id=input_dto.user_id)
+                    raise CloudDeckNotExistsError(message="Колода должна быть привязана к облаку")
                 
                 
                 cloud_deck = await self.uow.cloud_decks.get_by_id(deck_id=deck.cloud_deck_id)
@@ -60,7 +60,7 @@ class CanTakeOwnershipUseCase:
                                               allowed=True if description_changed and cards_needed_count == 0 else False
                                               )
                 
-        except (DeckNotExistsError):
+        except (DeckNotExistsError, CloudDeckNotExistsError):
             # Перебрасываем уже известные ошибки
             raise
         except Exception as e:

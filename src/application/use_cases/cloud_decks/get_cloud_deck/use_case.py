@@ -7,7 +7,7 @@ from src.application.interfaces import (
     AbstractUnitOfWork,
 )
 
-from src.application.exceptions import DeckNotExistsError
+from src.application.exceptions import DeckNotExistsError, CloudDeckNotExistsError
 from .dto import GetCloudDeckOutput, GetCloudDeckInput
 
 
@@ -23,10 +23,10 @@ class GetCloudDeckUseCase:
 
                 if not deck:
                     self.logger.debug("Облачная колода не найдена", deck_id=input_dto.deck_id)
-                    raise DeckNotExistsError(f"Cloud deck {input_dto.deck_id} not found")
+                    raise CloudDeckNotExistsError(message="Облачная колода не найдена")
 
                 return GetCloudDeckOutput(deck=deck)
-        except DeckNotExistsError:
+        except CloudDeckNotExistsError:
             # Перебрасываем уже известные ошибки
             raise
         except Exception as e:

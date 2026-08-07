@@ -42,17 +42,37 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     lifespan=lifespan,
-    version="1.2.4",
+    version="1.2.5",
     # title="",
     description="""
+    1.2.5
+    Исправлены ошибки обработки исключений в облачных колодах:
+     
+     - Добавлена try/except обёртка в enable_sharing/use_case.py
+         Теперь все известные исключения (DeckNotExistsError, UserNotFoundError,
+         UserIsNotAuthor, CloudDeckNotExistsError) правильно пробрасываются в handler'ы
+     - Добавлена try/except обёртка в import_deck/use_case.py
+         Исправлено корректное возвращение 400/410 при ошибках импорта
+     - Исправлен dead code в delete_cloud_deck/use_case.py
+         Удалён неиспользуемый код после return None
+     - Добавлена try/except обёртка в sync_cards_to_cloud/use_case.py
+         Добавлено логирование ошибок при синхронизации карточек
+     - Исправлен баг с cloud_deck_id в enable_sharing
+         cloud_deck_id теперь сохраняется до использования
+     - Удалён бесполезный finally блок из get_public_decks/use_case.py
+     
+     - Добавлен error_code в ответ при удалении облачной колоды автором
+         CloudDeckNotExistsError теперь возвращает 410 Gone с error_code "CLOUD_DECK_NOT_EXIST"
+         Пример ответа:
+          {
+              "error_code": "CLOUD_DECK_NOT_EXIST",
+              "message": "Автор удалил эту колоду из общего облака"
+          }
+
     1.2.4
     Добавил 1 новый эндпонт:
     - Эндпоинст статистики пользователя
         /api/v1/flashmind/stats/stats
-    
-    1.2.3
-    - Пофиксил сброс кеша при удалении облачной колоды
-    - Пофиксил ошибку сервера при удалении колоды когда отсуствует родительская локальная версия
     
     1.2.3
     Добавилены 3 эндпоинта:

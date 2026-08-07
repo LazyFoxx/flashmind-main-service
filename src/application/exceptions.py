@@ -27,6 +27,11 @@ class DeckNotExistsError(Exception):
     def __init__(self, deck_id: UUID, user_id: UUID):
         self.deck_id = deck_id
         self.user_id = user_id
+        
+class CloudDeckNotExistsError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
 
 class UserIsNotAuthor(Exception):
     def __init__(self, user_id: UUID, message: str):

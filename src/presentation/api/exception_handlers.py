@@ -12,6 +12,7 @@ from src.application.exceptions import (
     InvalidTokenError,
     UserNotFoundError,
     UserIsNotAuthor,
+    CloudDeckNotExistsError,
 )
 
 logger = structlog.get_logger()
@@ -60,6 +61,15 @@ async def deck_not_exist(request: Request, exc: DeckNotExistsError) -> JSONRespo
         content={
             "message": f"Колода не найдена",
         },
+    )
+
+async def cloud_deck_not_exist(request: Request, exc: CloudDeckNotExistsError) -> JSONResponse:
+    return JSONResponse(
+        status_code=410,
+        content={
+             "error_code": "CLOUD_DECK_NOT_EXIST",
+             "message": f"{exc.message}",
+         },
     )
 
 
@@ -145,4 +155,5 @@ def setup_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(CardNotInLearningError, card_not_in_learning)    # type: ignore[arg-type]
     app.add_exception_handler(DeckImportFromOwnAuthorError, deck_import_from_own_author)    # type: ignore[arg-type]
     app.add_exception_handler(UserIsNotAuthor, user_is_not_author)    # type: ignore[arg-type]
+    app.add_exception_handler(CloudDeckNotExistsError, cloud_deck_not_exist)    # type: ignore[arg-type]
 

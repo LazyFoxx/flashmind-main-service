@@ -22,7 +22,6 @@ class DeleteCloudDeckUseCase:
 
                 if not cloud_deck:
                     self.logger.debug("Облачная колода не найдена", deck_id=input_dto.cloud_deck_id)
-                    await self.uow.cloud_decks.delete(cloud_deck_id=cloud_deck.id)
                     return None
                     
                 

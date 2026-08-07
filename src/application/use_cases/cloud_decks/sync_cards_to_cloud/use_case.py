@@ -27,10 +27,20 @@ class SyncCardsToCloudUseCase:
         """
         Выполняет синхронизацию в зависимости от роли.
         """
-        if input_dto.is_owner:
-            return await self._sync_owner(input_dto.deck_id, input_dto.cloud_deck_id)
-        else:
-            return await self._sync_user(input_dto.deck_id, input_dto.cloud_deck_id)
+        try:
+            if input_dto.is_owner:
+                return await self._sync_owner(input_dto.deck_id, input_dto.cloud_deck_id)
+            else:
+                return await self._sync_user(input_dto.deck_id, input_dto.cloud_deck_id)
+        except Exception as e:
+            self.logger.error(
+                "Ошибка при синхронизации карточек",
+                error=str(e),
+                deck_id=input_dto.deck_id,
+                cloud_deck_id=input_dto.cloud_deck_id,
+                is_owner=input_dto.is_owner,
+            )
+            raise
 
     async def _sync_owner(self, deck_id: UUID, cloud_deck_id: UUID) -> SyncCardsToCloudOutput:
         """
