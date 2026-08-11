@@ -428,19 +428,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         user_id: UUID,
         deck_id: Optional[UUID] = None,
     ) -> Dict[str, int]:
-        """Получить распределение карточек по типам.
 
-        Args:
-            user_id: ID пользователя
-            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
-
-        Returns:
-            Словарь {card_type: count}, где:
-                - 'новые': in_learning = False
-                - 'изучаемые': in_learning = True AND (stability <= 100 OR difficulty >= 3)
-                - 'изученные': in_learning = True AND stability > 100 AND difficulty < 3
-                - 'отложенные': всегда 0
-        """
         from sqlalchemy import case, func
 
         # Базовый запрос
@@ -480,10 +468,10 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
 
         # Создаем словарь со всеми типами и нулями
         distribution: Dict[str, int] = {
-            'новые': 0,
-            'изучаемые': 0,
-            'изученные': 0,
-            'отложенные': 0,
+            'new': 0,
+            'in_learning': 0,
+            'learned': 0,
+            'suspended': 0,
         }
 
         # Заполняем реальными данными
@@ -495,20 +483,20 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
 
             if not in_learning:
                 # in_learning = False → новые
-                distribution['новые'] += count
+                distribution['new'] += count
             else:
                 # in_learning = True
                 # Проверяем условие для изученных
                 if stability is not None and stability > 100:
                     if difficulty is not None and difficulty < 3:
                         # stability > 100 AND difficulty < 3 → изученные
-                        distribution['изученные'] += count
+                        distribution['learned'] += count
                     else:
                         # stability > 100 BUT difficulty >= 3 → изучаемые
-                        distribution['изучаемые'] += count
+                        distribution['in_learning'] += count
                 else:
                     # stability <= 100 → изучаемые
-                    distribution['изучаемые'] += count
+                    distribution['in_learning'] += count
 
         return distribution
 
@@ -517,50 +505,92 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         user_id: UUID,
         days: int = 30,
         deck_id: Optional[UUID] = None,
-    ) -> Dict[str, int]:
+     ) -> Dict[str, int]:
 
         now = datetime.now(timezone.utc)
         end_date = now + timedelta(days=days)
+         # Сегодняшняя дата для группировки просроченных карточек
+        today_str = now.strftime("%Y-%m-%d")
 
-        # Базовый запрос
+           # Базовый запрос
         query = select(
             func.date(CardModel.next_due).label("forecast_date"),
             func.count(CardModel.id).label("count"),
-        )
+           )
 
-        # Фильтруем только не удалённые карточки с next_due IS NOT NULL
+           # Фильтруем только не удалённые карточки с next_due IS NOT NULL
         query = query.where(CardModel.is_deleted == False)
         query = query.where(CardModel.next_due.isnot(None))
-        query = query.where(CardModel.next_due >= now)
+          # Убираем >= now, чтобы включить все карточки с next_due <= end_date
+          # Карточки с прошлой датой попадут в "сегодня" при заполнении словаря
         query = query.where(CardModel.next_due <= end_date)
 
-        # Если есть deck_id, фильтруем по нему
+           # Если есть deck_id, фильтруем по нему
         if deck_id is not None:
             query = query.where(CardModel.deck_id == deck_id)
         else:
-            # Если deck_id не передан, фильтруем по пользователю через колоды
+              # Если deck_id не передан, фильтруем по пользователю через колоды
             query = (
                 query.join(DeckModel)
-                .where(DeckModel.user_id == user_id)
+                 .where(DeckModel.user_id == user_id)
             )
 
-        # Группируем по дате
+           # Группируем по дате
         query = query.group_by(func.date(CardModel.next_due))
 
         result = await self.session.execute(query)
         rows = result.fetchall()
 
-        # Создаём словарь со всеми днями и нулями
+           # Создаём словарь со всеми днями и нулями
         forecast: Dict[str, int] = {
-            (now + timedelta(days=i)).strftime("%Y-%m-%d"): 0
-            for i in range(days + 1)
-        }
+              (now + timedelta(days=i)).strftime("%Y-%m-%d"): 0
+             for i in range(days + 1)
+          }
 
-        # Заполняем реальными данными
+           # Заполняем реальными данными
+           # Карточки с прошлой датой (просроченные) добавляем в "сегодня"
         for row in rows:
             date_str = row.forecast_date.strftime("%Y-%m-%d")
             if date_str in forecast:
                 forecast[date_str] = row.count
+            elif date_str < today_str:
+                  # Просроченные карточки — добавляем в сегодняшний день
+                if today_str in forecast:
+                    forecast[today_str] += row.count
 
         return forecast
+    
+    async def get_hardest_cards(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+        limit: int = 5,
+    ) -> List[Card]:
+        query = select(CardModel).where(
+            CardModel.is_deleted == False,
+            CardModel.stability.isnot(None),
+            CardModel.difficulty.isnot(None),
+        )
+        
+        if deck_id is not None:
+            query = query.where(CardModel.deck_id == deck_id)
+        else:
+            query = (
+                query.join(DeckModel)
+                .where(DeckModel.user_id == user_id)
+            )
+        
+        # Сортировка: сначала низкая стабильность, потом высокая сложность
+        query = query.order_by(
+            CardModel.stability.asc(),
+            CardModel.difficulty.desc(),
+        )
+        
+        query = query.limit(limit)
+        
+        result = await self.session.execute(query)
+        card_models = result.scalars().all()
+        
+        return [card_model.to_entity() for card_model in card_models]
+
 

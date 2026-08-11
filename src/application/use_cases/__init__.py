@@ -25,7 +25,7 @@ from .cloud_decks.get_public_decks.use_case import GetPublicDecksUseCase, Public
 from .cloud_decks.delete_cloud_deck.use_case import DeleteCloudDeckUseCase, DeleteCloudDeckInput
 from .cloud_decks.can_take_ownership.use_case import CanTakeOwnershipUseCase, CanTakeOwnershipInput
 from .cloud_decks.take_ownership.use_case import TakeOwnershipUseCase, TakeOwnershipInput
-
+from .ai.analyze_study_stat.use_case import AIAnalyzeStudyStatUseCase, AIAnalyzeStudyStatInput
 __all__ = [
     "GetUserProfileUseCase", "GetProfileUserInput",
     "CreateUserProfileUseCase", "CreateUserProfileInput"
@@ -54,4 +54,5 @@ __all__ = [
     "CanTakeOwnershipUseCase", "CanTakeOwnershipInput",
     "TakeOwnershipUseCase", "TakeOwnershipInput",
     "StudyStatUseCase", "StudyStatInput",
+    "AIAnalyzeStudyStatUseCase", "AIAnalyzeStudyStatInput",
 ]

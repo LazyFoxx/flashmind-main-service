@@ -58,6 +58,7 @@ class StudyStatUseCase:
             daily_review_by_rating = await self.uow.review_logs.get_daily_review_by_rating(
                 user_id=input_dto.user_id,
                 days=input_dto.days,
+                deck_id=input_dto.deck_id,
             )
             
             # 4. Запрос: Суммарное время ревью в секундах по дням

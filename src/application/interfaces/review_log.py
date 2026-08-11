@@ -104,13 +104,15 @@ class AbstractReviewLogRepository(ABC):
     async def get_daily_review_by_rating(
         self, 
         user_id: UUID, 
-        days: int = 30
+        days: int = 30,
+        deck_id: Optional[UUID] = None
     ) -> Dict[str, Dict[int, int]]:
         """Получить количество повторений по дням с разбивкой по рейтингам за последние N дней.
 
         Args:
             user_id: UUID пользователя
             days: Количество дней (по умолчанию 30)
+            deck_id: Опционально — ID колоды (если None, то по всем колодам)
             
         Returns:
             Словарь {date_str: {rating: count}}, где:

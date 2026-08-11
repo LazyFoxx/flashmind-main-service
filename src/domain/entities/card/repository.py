@@ -256,10 +256,10 @@ class AbstractCardRepository(ABC):
 
         Returns:
             Словарь {card_type: count}, где:
-                - 'новые': in_learning = False
-                - 'изучаемые': in_learning = True AND (stability <= 100 OR difficulty >= 3) ( временно )
-                - 'изученные': in_learning = True AND stability > 100 AND difficulty < 3
-                - 'отложенные': всегда 0
+                - 'new': in_learning = False
+                - 'in_learning': in_learning = True AND (stability <= 100 OR difficulty >= 3) ( временно )
+                - 'learned': in_learning = True AND stability > 100 AND difficulty < 3
+                - 'suspended': всегда 0
         """
         ...
     
@@ -283,5 +283,29 @@ class AbstractCardRepository(ABC):
                 - count: количество карточек в эту дату
         """
         ...
+
+    @abstractmethod
+    async def get_hardest_cards(
+        self,
+        user_id: UUID,
+        deck_id: Optional[UUID] = None,
+        limit: int = 5,
+    ) -> List[Card]:
+        """Получить N самых сложных карточек пользователя.
+
+        Сортировка:
+        1. По низкой стабильности (stability ASC) — карточки которые пользователь плохо запоминает
+        2. По высокой сложности (difficulty DESC) — карточки с высокой сложностью
+
+        Args:
+            user_id: ID пользователя
+            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
+            limit: Количество возвращаемых карточек (по умолчанию 5)
+
+        Returns:
+            List[Card]: Список сущностей Card, отсортированных по сложности
+        """
+        ...
+
 
 

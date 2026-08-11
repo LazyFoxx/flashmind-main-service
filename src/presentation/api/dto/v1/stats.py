@@ -281,7 +281,7 @@ class CardTypePoint(BaseModel):
     """Точка круговой диаграммы типов карт."""
     card_type: str = Field(
          ...,
-        description="Тип карты: 'новые', 'изучаемые', 'изученные', 'отложенные'",
+        description="Тип карты: 'new', 'in_learning', 'learned', 'suspended'",
         examples=["новые"],
      )
     count: int = Field(
@@ -303,10 +303,10 @@ class CardTypeResponse(BaseModel):
              "examples": [
                  {
                       "points": [
-                          {"card_type": "новые", "count": 10},
-                          {"card_type": "изучаемые", "count": 45},
-                          {"card_type": "изученные", "count": 50},
-                          {"card_type": "отложенные", "count": 5},
+                          {"card_type": "new", "count": 10},
+                          {"card_type": "in_learning", "count": 45},
+                          {"card_type": "learned", "count": 50},
+                          {"card_type": "suspended", "count": 5},
                       ]
                   }
               ]
@@ -416,11 +416,11 @@ class StudyStatsResponse(BaseModel):
                      },
                      "card_types": {
                          "points": [
-                             {"card_type": "новые", "count": 10},
-                             {"card_type": "изучаемые", "count": 45},
-                             {"card_type": "изученные", "count": 50},
-                             {"card_type": "отложенные", "count": 5},
-                         ]
+                                    {"card_type": "new", "count": 10},
+                                    {"card_type": "in_learning", "count": 45},
+                                    {"card_type": "learned", "count": 50},
+                                    {"card_type": "suspended", "count": 5},
+                                ]
                      },
                  }
              ]

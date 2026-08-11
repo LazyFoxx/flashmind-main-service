@@ -8,6 +8,7 @@ from .providers import (
     RedisProvider,
     StorageProvider,
     UseCaseProvider,
+    AIProvider,
 )
 
 # Список всех провайдеров
@@ -19,6 +20,7 @@ _PROVIDERS = [
     AuthProvider(),
     StorageProvider(),
     RabbitProvider(),
+    AIProvider(),
 ]
 
 

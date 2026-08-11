@@ -57,10 +57,13 @@ class InvalidTokenError(ApplicationError):
 class UserNotFoundError(ApplicationError):
     def __init__(self, user_id: str):
         self.user_id = user_id
-        
-class UserNotFoundError(ApplicationError):
-    def __init__(self, user_id: str):
-        self.user_id = user_id
+
+
+class InsufficientReviewsError(ApplicationError):
+    """Недостаточно повторов для AI-анализа"""
+    def __init__(self, total_reviews: int, remaining_reviews: int):
+        self.total_reviews = total_reviews
+        self.remaining_reviews = remaining_reviews
 
 
 class DeckImportFromOwnAuthorError(ApplicationError):

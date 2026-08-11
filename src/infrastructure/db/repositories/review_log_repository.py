@@ -197,7 +197,8 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
     async def get_daily_review_by_rating(
         self, 
         user_id: UUID, 
-        days: int = 30
+        days: int = 30,
+        deck_id: Optional[UUID] = None
     ) -> Dict[str, Dict[int, int]]:
         """Получить количество повторений по дням с разбивкой по рейтингам за последние N дней.
 
@@ -209,21 +210,26 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
         now = datetime.now(timezone.utc)
         start_date = now - timedelta(days=days)
 
+        conditions = [
+            ReviewLogModel.user_id == user_id,
+            ReviewLogModel.review_datetime >= start_date,
+         ]
+        
+        if deck_id is not None:
+            conditions.append(ReviewLogModel.deck_id == deck_id)
+
         stmt = (
             select(
                 func.date(ReviewLogModel.review_datetime).label("review_date"),
                 ReviewLogModel.rating,
                 func.count(ReviewLogModel.id).label("count"),
-            )
-            .where(
-                ReviewLogModel.user_id == user_id,
-                ReviewLogModel.review_datetime >= start_date,
-            )
-            .group_by(
+              )
+              .where(*conditions)
+              .group_by(
                 func.date(ReviewLogModel.review_datetime),
                 ReviewLogModel.rating,
-            )
-        )
+              )
+          )
 
         result = await self.session.execute(stmt)
         rows = result.all()

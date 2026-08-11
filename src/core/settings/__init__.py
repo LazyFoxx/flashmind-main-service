@@ -4,6 +4,7 @@ from .database import DatabaseSettings
 from .rabbit import RabbitSettings
 from .redis import RedisSettings
 from .s3 import S3Settings
+from .ai import AISettings
 
 __all__ = [
     "DatabaseSettings",
@@ -12,4 +13,5 @@ __all__ = [
     "cors_config",
     "S3Settings",
     "RabbitSettings",
+    "AISettings",
 ]

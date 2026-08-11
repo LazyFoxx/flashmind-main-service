@@ -6,6 +6,7 @@ from src.core.settings import (
     RabbitSettings,
     RedisSettings,
     S3Settings,
+    AISettings
 )
 
 
@@ -31,3 +32,7 @@ class ConfigProvider(Provider):
     @provide(scope=Scope.APP)
     def rabbit_settings(self) -> RabbitSettings:
         return RabbitSettings()
+    
+    @provide(scope=Scope.APP)
+    def ai_settings(self) -> AISettings:
+        return AISettings()

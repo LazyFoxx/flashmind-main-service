@@ -28,6 +28,7 @@ from src.application.use_cases import (
     CanTakeOwnershipUseCase,
     TakeOwnershipUseCase,
     StudyStatUseCase,
+    AIAnalyzeStudyStatUseCase,
 )
 
 
@@ -64,4 +65,6 @@ class UseCaseProvider(Provider):
     delete_cloud_deck = provide(DeleteCloudDeckUseCase, scope=Scope.REQUEST)
     can_take_ownership = provide(CanTakeOwnershipUseCase, scope=Scope.REQUEST)
     take_ownership = provide(TakeOwnershipUseCase, scope=Scope.REQUEST)
+    
+    ai_analyze_stats = provide(AIAnalyzeStudyStatUseCase, scope=Scope.REQUEST)
     

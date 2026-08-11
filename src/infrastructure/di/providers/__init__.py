@@ -5,6 +5,7 @@ from .rabbit import RabbitProvider
 from .redis import RedisProvider
 from .cache import StorageProvider
 from .use_cases import UseCaseProvider
+from .ai import AIProvider
 
 __all__ = [
     "UseCaseProvider",
@@ -15,4 +16,5 @@ __all__ = [
     "AuthProvider",
     "StorageProvider",
     "RabbitProvider",
+    "AIProvider"
 ]
