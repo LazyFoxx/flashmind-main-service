@@ -3,7 +3,7 @@ from typing import List
 
 import structlog
 
-from src.application.interfaces import AbstractUnitOfWork
+from src.application.interfaces import AbstractUnitOfWork, AbstractCacheService
 from src.domain.entities.cloud_card.cloud_card import CloudCardTemplate
 from src.domain.entities.card.card import Card
 from .dto import SyncCardsToCloudInput, SyncCardsToCloudOutput
@@ -19,9 +19,10 @@ class SyncCardsToCloudUseCase:
        Облачные изменения применяются к локальному хранилищу сохраняя данные пользователя.
     """
 
-    def __init__(self, uow: AbstractUnitOfWork):
+    def __init__(self, uow: AbstractUnitOfWork, cache: AbstractCacheService):
         self.uow = uow
         self.logger = structlog.get_logger(__name__)
+        self.cache = cache
 
     async def execute(self, input_dto: SyncCardsToCloudInput) -> SyncCardsToCloudOutput:
         """
@@ -29,7 +30,11 @@ class SyncCardsToCloudUseCase:
         """
         try:
             if input_dto.is_owner:
-                return await self._sync_owner(input_dto.deck_id, input_dto.cloud_deck_id)
+                return await self._sync_owner(input_dto.deck_id,
+                                              input_dto.cloud_deck_id,
+                                              input_dto.is_public,
+                                              input_dto.is_approved,
+                                              )
             else:
                 return await self._sync_user(input_dto.deck_id, input_dto.cloud_deck_id)
         except Exception as e:
@@ -42,7 +47,7 @@ class SyncCardsToCloudUseCase:
             )
             raise
 
-    async def _sync_owner(self, deck_id: UUID, cloud_deck_id: UUID) -> SyncCardsToCloudOutput:
+    async def _sync_owner(self, deck_id: UUID, cloud_deck_id: UUID, is_public: bool, is_approved: bool) -> SyncCardsToCloudOutput:
         """
         Синхронизация для Владельца (Авторa).
         Локальное состояние -> Эталон в облаке.
@@ -95,6 +100,10 @@ class SyncCardsToCloudUseCase:
                     deleted_count += 1
 
             await self.uow.cloud_decks.update_last_synced_at(cloud_deck_id=cloud_deck_id)
+            
+            # Сброс кеша только для автора PUBLIC одобренной колоды ( если были изменения )
+            if (is_public and is_approved) and (added_count or updated_count or deleted_count):
+                await self.cache.invalidate(key="public_decks_approved:all")
             
             await self.uow.commit()
             return SyncCardsToCloudOutput(added=added_count, updated=updated_count, deleted=deleted_count)

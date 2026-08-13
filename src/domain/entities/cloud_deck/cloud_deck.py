@@ -42,11 +42,10 @@ class CloudDeck:
         return replace(self, is_approved=False, approved_at=None)
     
     def change_type(self, type: str) -> "CloudDeck":
-        """устанавливает или меняет type колоды"""
-
+        """Устанавливает или меняет type колоды"""
         if type == "PUBLIC":
-            return self._copy(type="PUBLIC", is_approved=False, approved_at=None)
+            return replace(self, type="PUBLIC", is_approved=False, approved_at=None)
         elif type == "PRIVATE":
-            return self._copy(type="PRIVATE", is_approved=True, approved_at=None)
+            return replace(self, type="PRIVATE", is_approved=True, approved_at=None)
         else:
-            raise
+            raise ValueError(f"Invalid type: {type}")

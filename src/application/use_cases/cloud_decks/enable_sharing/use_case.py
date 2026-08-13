@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 import structlog
 
 from src.application.exceptions import DeckNotExistsError, UserNotFoundError, UserIsNotAuthor, CloudDeckNotExistsError
-from src.application.interfaces import AbstractUnitOfWork, AbstractCacheService
+from src.application.interfaces import AbstractUnitOfWork
 from src.domain.entities import Deck, CloudDeck
 
 from .dto import EnableSharingInput, EnableSharingOutput
@@ -12,14 +12,15 @@ from src.application.use_cases.cloud_decks.sync_cards_to_cloud.use_case import S
 
 class EnableSharingUseCase:
     def __init__(self, uow: AbstractUnitOfWork,
-                 sync_cards_use_case: SyncCardsToCloudUseCase,
-                 cache: AbstractCacheService,):
+                 sync_cards_use_case: SyncCardsToCloudUseCase,):
         self.uow = uow
         self.sync_cards_use_case = sync_cards_use_case
         self.logger = structlog.get_logger(__name__)
-        self.cache = cache
 
     async def execute(self, input_dto: EnableSharingInput) -> EnableSharingOutput:
+        cloud_deck: CloudDeck | None = None
+        deck: Deck | None = None
+
         try:
             async with self.uow:
                 
@@ -49,8 +50,6 @@ class EnableSharingUseCase:
                         self.logger.warning("Пользователь облачной колоды не может share колоду")
                         raise UserIsNotAuthor(user_id=input_dto.user_id, message="Вы используете колоду другого автора")
                     
-                    if cloud_deck.type != input_dto.type:
-                        cloud_deck = cloud_deck.change_type(type=input_dto.type)
                 else:
                      # Новое добавление облачной колоды
                     cloud_uuid = uuid4()
@@ -59,17 +58,13 @@ class EnableSharingUseCase:
                         description=deck.description,
                         id=cloud_uuid,
                         author_id=input_dto.user_id,
-                        type=input_dto.type,
-                         # is_approved=True if input_dto.type == "PRIVATE" else False,
+                        type="PRIVATE",
                         is_approved=True,
                         approved_at=None,
                      )
 
                     await self.uow.cloud_decks.add(cloud_deck)
                     
-                     # При добавлении новой публичной ОДОБРЕННОЙ колоды сбрасываем кеш
-                    await self.cache.invalidate(key="public_decks_approved:all")
-
                      # Сбрасываем прошлую связь если есть
                     deck = deck.to_local()
                      # Обновляем локальную колоду: связываем её с облаком
@@ -77,36 +72,47 @@ class EnableSharingUseCase:
                                          cloud_type=cloud_deck.type,
                                          is_approved=cloud_deck.is_approved,
                                          author_id=cloud_deck.author_id,
-                                          )
+                                           )
 
                     await self.uow.decks.update(deck)
 
-                 # 9. Фиксируем транзакцию
+                 # 3. Фиксируем транзакцию
                 await self.uow.commit()
-                    
-                 # Производим синхронизацию карточек
-                input_sync = SyncCardsToCloudInput(
-                        deck_id=input_dto.deck_id,
-                        cloud_deck_id=deck.cloud_deck_id,
-                        is_owner=True)
-                sync_result = await self.sync_cards_use_case.execute(input_dto=input_sync)
-
-            return EnableSharingOutput(
-                cloud_uuid=cloud_deck.id,
-                type=cloud_deck.type,
-                is_approved=cloud_deck.is_approved,
-                added=sync_result.added,
-                updated=sync_result.updated,
-                deleted=sync_result.deleted,
-             )
+                
         except (DeckNotExistsError, UserNotFoundError, UserIsNotAuthor, CloudDeckNotExistsError):
              # Перебрасываем уже известные ошибки
             raise
         except Exception as e:
             self.logger.error(
-                 "Ошибка при включении шаринга",
+                   "Ошибка при включении шаринга",
                 error=str(e),
                 deck_id=input_dto.deck_id,
                 user_id=input_dto.user_id,
-             )
+               )
             raise
+
+         # После async with — синхронизация карточек
+        assert cloud_deck is not None
+        assert deck is not None
+
+        is_public = (cloud_deck.type == "PUBLIC")
+        is_approved = cloud_deck.is_approved
+
+        input_sync = SyncCardsToCloudInput(
+            deck_id=input_dto.deck_id,
+            cloud_deck_id=deck.cloud_deck_id,
+            is_owner=True,
+            is_public=is_public,
+            is_approved=is_approved,
+         )
+
+        sync_result = await self.sync_cards_use_case.execute(input_dto=input_sync)
+
+        return EnableSharingOutput(
+            cloud_uuid=cloud_deck.id,
+            type=cloud_deck.type,
+            is_approved=cloud_deck.is_approved,
+            added=sync_result.added,
+            updated=sync_result.updated,
+            deleted=sync_result.deleted,
+         )

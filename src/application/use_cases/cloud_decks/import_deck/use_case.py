@@ -74,7 +74,10 @@ class ImportDeckUseCase:
                 
                 input_sync = SyncCardsToCloudInput(deck_id=local_deck.id,
                                                    cloud_deck_id=cloud_deck.id,
-                                                   is_owner=False)
+                                                   is_owner=False,
+                                                   is_public=(cloud_deck.type == "PUBLIC"),
+                                                   is_approved=cloud_deck.is_approved,
+                                                   )
                 
                 result = await self.sync_cards_use_case.execute(input_dto=input_sync)
                 
