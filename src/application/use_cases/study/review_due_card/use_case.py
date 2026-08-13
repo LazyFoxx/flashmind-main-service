@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta, timezone
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 import structlog
 from fsrs import Rating, Scheduler, State
@@ -14,6 +15,7 @@ from src.application.interfaces import (
 )
 from src.domain.entities import Card
 
+from src.application.use_cases.common.utils import get_current_datetime, get_study_cutoff
 from .dto import ReviewDueCardInput
 
 
@@ -22,14 +24,6 @@ class ReviewDueCardsUseCase:
         self.uow = uow
         self.logger = structlog.get_logger(__name__)
 
-    async def _get_study_cutoff(
-        self, now: datetime, rollover_hour: int = 3
-    ) -> datetime:
-        study_day = now.date()
-        cutoff = datetime.combine(
-            study_day + timedelta(days=1), time(rollover_hour, 0), tzinfo=now.tzinfo
-        )
-        return cutoff
 
     async def execute(self, input_dto: ReviewDueCardInput) -> Card | None:
         """Логика повторения просроченной карточки"""
@@ -42,9 +36,11 @@ class ReviewDueCardsUseCase:
                 if previous_card is None:
                     raise CardNotExistsError(card_id=input_dto.card_id)
                 
-                # 6. Проверяем нужно ли сегодня повторять карточку
-                now = datetime.now(timezone.utc)
-                cutoff = await self._get_study_cutoff(now)
+                # получаем timezone пользователя и cutoff
+                user = await self.uow.users.get_by_id(input_dto.user_id)
+                user_tz = user.timezone if user else "UTC"
+                now = get_current_datetime(user_tz)
+                cutoff = get_study_cutoff(now)
 
                 if not previous_card.is_due(cutoff):
                     return None
@@ -87,7 +83,7 @@ class ReviewDueCardsUseCase:
                 new_card, _ = previous_card.review(scheduler=scheduler, rating=fsrs_rating)
                 
                  # 5. Сохраняем лог
-                review_dt = datetime.now(timezone.utc)
+                review_dt = datetime.now(ZoneInfo(user_tz))
                 
                  # Получаем следующую дату повторения из обновленной карточки
                 next_review_dt = new_card._fsrs_card.due

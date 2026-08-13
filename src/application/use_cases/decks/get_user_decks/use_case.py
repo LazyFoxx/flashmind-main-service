@@ -3,11 +3,13 @@ from datetime import datetime, time, timedelta, timezone
 
 import structlog
 
+from application.exceptions import UserNotFoundError
 from src.application.interfaces import (
     AbstractUnitOfWork,
 )
 
-from .dto import GetUserDecksOutput
+from src.application.use_cases.common.utils import get_current_datetime, get_study_cutoff
+from .dto import GetUserDecksOutput, GetUserDecksInput
 
 
 class GetUserDecksUseCase:
@@ -15,21 +17,13 @@ class GetUserDecksUseCase:
         self.uow = uow
         self.logger = structlog.get_logger(__name__)
     
-    async def _get_study_cutoff(
-        self, now: datetime, rollover_hour: int = 3
-    ) -> datetime:
-        study_day = now.date()
-        cutoff = datetime.combine(
-            study_day + timedelta(days=1), time(rollover_hour, 0), tzinfo=now.tzinfo
-        )
-        return cutoff
-
-    async def execute(self, user_id: UUID) -> GetUserDecksOutput:
+    
+    async def execute(self, input_dto: GetUserDecksInput)  -> GetUserDecksOutput:
         async with self.uow:
-            decks = await self.uow.decks.list_by_user(user_id=user_id)
+            decks = await self.uow.decks.list_by_user(user_id=input_dto.user_id)
 
             if not decks:
-                self.logger.debug("Пользователь пока не добавил колод", user_id=user_id)
+                self.logger.debug("Пользователь пока не добавил колод", user_id=input_dto.user_id)
                 return GetUserDecksOutput(decks=[])
 
             deck_ids = [deck.id for deck in decks]
@@ -39,9 +33,29 @@ class GetUserDecksUseCase:
                 await self.uow.cards.get_total_cards_by_deck_ids(deck_ids=deck_ids)
             )
             
-            # Получаем время для сравнения (3 ночи следующего дня)
-            now = datetime.now(timezone.utc)
-            cutoff = await self._get_study_cutoff(now)
+            user = await self.uow.users.get_by_id(input_dto.user_id)
+            if user is None:
+                self.logger.warning(
+                        "Пользователь не найден",
+                    user_id=input_dto.user_id,
+                    )
+                raise UserNotFoundError(user_id=str(input_dto.user_id))
+            
+            # Синхронизация timezone: если timezone из DTO отличается от пользовательского — обновляем
+            if user.timezone != input_dto.timezone:
+                old_tz = user.timezone  # <-- Сохраняем старое значение
+                user = user.with_timezone(input_dto.timezone)
+                await self.uow.users.update(user)
+                self.logger.info(
+                    "Пользовательская таймзона обновлена",
+                    user_id=input_dto.user_id,
+                    old_timezone=old_tz,
+                    new_timezone=input_dto.timezone,
+                )
+            
+            # Получаем время для сравнения 
+            now = get_current_datetime(user.timezone)
+            cutoff = get_study_cutoff(now)
             
             # Получаем количество просроченных карт по всем колодам
             list_deck_id_and_due_cards = (
@@ -69,6 +83,6 @@ class GetUserDecksUseCase:
                 
                 
             
-        self.logger.debug(f"Найдено {len(decks)} колоды", user_id=user_id)
+        # self.logger.debug(f"Найдено {len(decks)} колоды", user_id=input_dto.user_id)
 
         return GetUserDecksOutput(decks=decks_with_total_cards)

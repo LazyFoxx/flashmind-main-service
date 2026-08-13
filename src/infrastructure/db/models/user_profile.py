@@ -37,6 +37,13 @@ class UserProfileModel(Base):
         nullable=True,
     )
 
+    timezone_str: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="UTC",
+        server_default="UTC",
+    )
+
     def to_entity(self) -> User:
         """Конвертирует загруженную ORM-модель в чистую доменную сущность."""
         return User(
@@ -45,6 +52,7 @@ class UserProfileModel(Base):
             last_name=self.last_name,
             avatar_key=self.avatar_key,
             bio=self.bio,
+            timezone=self.timezone_str,
         )
 
     @classmethod
@@ -56,4 +64,5 @@ class UserProfileModel(Base):
             last_name=user.last_name,
             avatar_key=user.avatar_key,
             bio=user.bio,
+            timezone_str=user.timezone,
         )

@@ -43,6 +43,8 @@ class StudyStatUseCase:
                 )
                 raise UserNotFoundError(user_id=str(input_dto.user_id))
 
+            user_tz = user.timezone if user else "UTC"
+            
             # 2. Запрос: Общее время изучения ЗА ВСЁ ВРЕМЯ (опционально по колоде)
             total_study_seconds = await self.uow.review_logs.get_total_study_seconds(
                 user_id=input_dto.user_id,
@@ -59,6 +61,7 @@ class StudyStatUseCase:
                 user_id=input_dto.user_id,
                 days=input_dto.days,
                 deck_id=input_dto.deck_id,
+                timezone=user_tz,
             )
             
             # 4. Запрос: Суммарное время ревью в секундах по дням
@@ -66,6 +69,7 @@ class StudyStatUseCase:
                 user_id=input_dto.user_id,
                 deck_id=input_dto.deck_id,
                 days=input_dto.days,
+                timezone=user_tz,
             )
             
             # 5. Запрос: Продуктивность по часам суток
@@ -73,6 +77,7 @@ class StudyStatUseCase:
                 user_id=input_dto.user_id,
                 deck_id=input_dto.deck_id,
                 days=input_dto.days,
+                timezone=user_tz,
             )
             
             # 6. Запрос: Распределение по сложности
@@ -97,7 +102,8 @@ class StudyStatUseCase:
             forecast_points = await self.uow.cards.get_forecast_due_cards(
                 user_id=input_dto.user_id,
                 deck_id=input_dto.deck_id,
-                days=180)
+                days=180,
+                timezone=user_tz,)
 
             return StudyStatOutput(
                 total_study_seconds=total_study_seconds,

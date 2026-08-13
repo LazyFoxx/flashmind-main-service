@@ -1,5 +1,6 @@
 import structlog
 from typing import Dict
+from zoneinfo import ZoneInfo
 
 from src.application.exceptions import UserNotFoundError
 from src.application.interfaces import (
@@ -35,26 +36,39 @@ class DailyReviewStatUseCase:
     async def execute(self, input_dto: DailyReviewStatInput) -> DailyReviewStatOutput:
 
         async with self.uow:
-             # Проверяем существование пользователя
+                # Проверяем существование пользователя
             user = await self.uow.users.get_by_id(input_dto.user_id)
             if user is None:
                 self.logger.warning(
-                    "Пользователь не найден",
+                       "Пользователь не найден",
                     user_id=input_dto.user_id,
-                )
+                  )
                 raise UserNotFoundError(user_id=str(input_dto.user_id))
-              
             
-             # Получаем статистику повторений
+                # Синхронизация timezone: если timezone из DTO отличается от пользовательского — обновляем
+            if user.timezone != input_dto.timezone:
+                old_tz = user.timezone  # <-- Сохраняем старое значение
+                user = user.with_timezone(input_dto.timezone)
+                await self.uow.users.update(user)
+                self.logger.info(
+                    "Пользовательская таймзона обновлена",
+                    user_id=input_dto.user_id,
+                    old_timezone=old_tz,  # <-- Теперь правильно
+                    new_timezone=input_dto.timezone,
+                )
+              
+                # Получаем статистику повторений с timezone пользователя
             stats: Dict[str, int] = await self.uow.review_logs.get_daily_review_counts(
                 user_id=input_dto.user_id,
                 days=input_dto.days,
-              )
+                timezone=input_dto.timezone,
+                 )
 
-              # Получаем текущую серию дней подряд (streak)
+                # Получаем текущую серию дней подряд (streak) с timezone пользователя
             review_series = await self.uow.review_logs.get_current_streak_days(
-                user_id=input_dto.user_id
-              )
+                user_id=input_dto.user_id,
+                timezone=input_dto.timezone,
+                 )
             
             # получаем статистику пользователя (создаем если нет)
             user_stats = await self.uow.user_stats.get_by_user_id(user_id=input_dto.user_id)

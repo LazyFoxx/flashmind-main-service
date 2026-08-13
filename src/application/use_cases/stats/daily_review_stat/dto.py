@@ -7,6 +7,7 @@ from uuid import UUID
 class DailyReviewStatInput:
     user_id: UUID
     days: int
+    timezone: str = "UTC"
 
 
 @dataclass(frozen=True, slots=True)

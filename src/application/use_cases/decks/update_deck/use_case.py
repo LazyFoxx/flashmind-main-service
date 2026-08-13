@@ -9,6 +9,7 @@ from src.application.interfaces import (
 from datetime import datetime, time, timedelta, timezone
 from src.domain.entities import Deck
 
+from src.application.use_cases.common.utils import get_current_datetime, get_study_cutoff
 from .dto import UpdateDeckInput, UpdateDeckOutput
 
 
@@ -18,15 +19,6 @@ class UpdateDeckUseCase:
         self.logger = structlog.get_logger(__name__)
         
         
-    async def _get_study_cutoff(
-        self, now: datetime, rollover_hour: int = 3
-    ) -> datetime:
-        study_day = now.date()
-        cutoff = datetime.combine(
-            study_day + timedelta(days=1), time(rollover_hour, 0), tzinfo=now.tzinfo
-        )
-        return cutoff
-
     async def execute(self, input_dto: UpdateDeckInput) -> UpdateDeckOutput:
         
         async with self.uow:
@@ -39,9 +31,11 @@ class UpdateDeckUseCase:
                     await self.uow.cards.get_total_cards_by_deck_ids(deck_ids=deck_ids)
                   )
                 
-                 # Получаем время для сравнения (3 ночи следующего дня)
-                now = datetime.now(timezone.utc)
-                cutoff = await self._get_study_cutoff(now)
+                # Получаем timezone пользователя и cutoff
+                user = await self.uow.users.get_by_id(input_dto.user_id)
+                user_tz = user.timezone if user else "UTC"
+                now = get_current_datetime(user_tz)
+                cutoff = get_study_cutoff(now)
                 
                  # Получаем количество просроченных карт по всем колонам
                 list_deck_id_and_due_cards = (

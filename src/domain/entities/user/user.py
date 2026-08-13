@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Optional
 from uuid import UUID
 
@@ -14,3 +14,8 @@ class User:
     last_name: str
     avatar_key: str
     bio: Optional[str] = None
+    timezone: str = "UTC"
+
+    def with_timezone(self, timezone: str) -> "User":
+        """Возвращает копию User с новым timezone (для frozen dataclass)."""
+        return replace(self, timezone=timezone)

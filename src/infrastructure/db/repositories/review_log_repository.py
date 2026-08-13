@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Dict, Optional
 from uuid import UUID
+from zoneinfo import ZoneInfo
 from sqlalchemy import select, func, case, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -34,10 +35,12 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
         self.session.add(model)
 
     async def get_daily_review_counts(
-        self, user_id: UUID, days: int = 28
+        self, user_id: UUID, days: int = 28, timezone: str = "UTC",
     ) -> Dict[str, int]:
         """Получить количество повторений по дням за последние N дней."""
-        now = datetime.now(timezone.utc)
+
+        user_tz = ZoneInfo(timezone) if timezone else ZoneInfo("UTC")
+        now = datetime.now(user_tz)
         start_date = now - timedelta(days=days)
 
         stmt = (
@@ -108,13 +111,10 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
         return total or 0
 
 
-    async def get_current_streak_days(self, user_id: UUID) -> int:
-        """Получить текущую серию дней подряд с повторениями (streak).
+    async def get_current_streak_days(self, user_id: UUID, timezone: str = "UTC") -> int:
 
-        Returns:
-            Текущее количество дней подряд с повторениями.
-         """
-        now = datetime.now(timezone.utc)
+        user_tz = ZoneInfo(timezone) if timezone else ZoneInfo("UTC")
+        now = datetime.now(user_tz)
         today = now.date()   # <-- Исправлено: получаем date, а не datetime
 
         # Получаем все уникальные даты с повторениями за последние 365 дней
@@ -198,7 +198,8 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
         self, 
         user_id: UUID, 
         days: int = 30,
-        deck_id: Optional[UUID] = None
+        deck_id: Optional[UUID] = None,
+        timezone: str = "UTC"  # ← Уже есть
     ) -> Dict[str, Dict[int, int]]:
         """Получить количество повторений по дням с разбивкой по рейтингам за последние N дней.
 
@@ -207,9 +208,10 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
             - date_str в формате 'YYYY-MM-DD'
             - rating: 1 (Again/forgotten), 2 (Hard/hard), 3 (Good/good), 4 (Easy/easy)
         """
-        now = datetime.now(timezone.utc)
+        user_tz = ZoneInfo(timezone) if timezone else ZoneInfo("UTC")
+        now = datetime.now(user_tz)
         start_date = now - timedelta(days=days)
-
+        
         conditions = [
             ReviewLogModel.user_id == user_id,
             ReviewLogModel.review_datetime >= start_date,
@@ -255,23 +257,13 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
         self, 
         user_id: UUID, 
         deck_id: Optional[UUID] = None,
-        days: int = 30
+        days: int = 30,
+        timezone: str = "UTC"
     ) -> Dict[str, int]:
-        """Получить суммарное время ревью в секундах по дням за последние N дней.
 
-        Args:
-            user_id: UUID пользователя
-            deck_id: Опционально — ID колоды (если None, то по всем колодам)
-            days: Количество дней (по умолчанию 30)
-            
-        Returns:
-            Словарь {date_str: total_seconds}, где:
-            - date_str в формате 'YYYY-MM-DD'
-            - total_seconds: суммарное время в секундах за день
-        """
-        now = datetime.now(timezone.utc)
+        user_tz = ZoneInfo(timezone) if timezone else ZoneInfo("UTC")
+        now = datetime.now(user_tz)
         start_date = now - timedelta(days=days)
-
         conditions = [
             ReviewLogModel.user_id == user_id,
             ReviewLogModel.review_datetime >= start_date,
@@ -312,7 +304,8 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
         self,
         user_id: UUID,
         deck_id: Optional[UUID] = None,
-        days: int = 30
+        days: int = 30,
+        timezone: str = "UTC",
     ) -> Dict[str, float]:
         """Получить продуктивность по часам суток за последние N дней.
 
@@ -321,9 +314,11 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
                  - hour_range: '00:00-04:00', '04:00-08:00', ..., '20:00-24:00'
                  - percentage: процент правильно отвеченных (Good + Easy) от всех ответов
         """
-        now = datetime.now(timezone.utc)
-        start_date = now - timedelta(days=days)
 
+        user_tz = ZoneInfo(timezone) if timezone else ZoneInfo("UTC")
+        now = datetime.now(user_tz)
+        start_date = now - timedelta(days=days)
+        
         # Подзапрос: вычисляем hour_index для каждой записи
         base_conditions = [
             ReviewLogModel.user_id == user_id,

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple, Union
 from uuid import UUID
+from zoneinfo import ZoneInfo
 from sqlalchemy import delete, desc, func, select, update, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -505,11 +506,12 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         user_id: UUID,
         days: int = 30,
         deck_id: Optional[UUID] = None,
+        timezone: str = "UTC",
      ) -> Dict[str, int]:
 
-        now = datetime.now(timezone.utc)
+        user_tz = ZoneInfo(timezone) if timezone else ZoneInfo("UTC")
+        now = datetime.now(user_tz)
         end_date = now + timedelta(days=days)
-         # Сегодняшняя дата для группировки просроченных карточек
         today_str = now.strftime("%Y-%m-%d")
 
            # Базовый запрос

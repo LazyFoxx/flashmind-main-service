@@ -16,6 +16,7 @@ from src.application.interfaces import (
 )
 from src.application.interfaces.ai_service import AIStudyAnalysisResult
 
+from src.application.use_cases.common.utils import get_current_datetime
 from .dto import AIAnalyzeStudyStatInput, AIAnalyzeStudyStatOutput
 
 
@@ -75,19 +76,22 @@ class AIAnalyzeStudyStatUseCase:
             user_id=user_id, deck_id=None  # None = все колоды
         )
         
+        user = await self.uow.users.get_by_id(user_id)
+        user_tz = user.timezone if user else "UTC"
+        
         # 3. Повторения по дням и рейтингам — ЗА 7 ДНЕЙ (по всем колодам)
         daily_review_by_rating_7d = await self.uow.review_logs.get_daily_review_by_rating(
-            user_id=user_id, days=7, deck_id=None
+            user_id=user_id, days=7, deck_id=None, timezone=user_tz
         )
         
         # 4. Время ревью по дням — ЗА 7 ДНЕЙ (по всем колодам)
         daily_review_time_7d = await self.uow.review_logs.get_daily_review_time(
-            user_id=user_id, deck_id=None, days=7
+            user_id=user_id, deck_id=None, days=7, timezone=user_tz
         )
         
         # 5. Продуктивность по часам — ЗА 30 ДНЕЙ (по всем колодам)
         hourly_breakdown_30d = await self.uow.review_logs.get_hourly_breakdown(
-            user_id=user_id, deck_id=None, days=30
+            user_id=user_id, deck_id=None, days=30, timezone=user_tz
         )
         
         # 6. Распределение по сложности — ЗА ВСЁ ВРЕМЯ (по всем колодам)
@@ -107,7 +111,7 @@ class AIAnalyzeStudyStatUseCase:
         
         # 9. Прогноз на 7 дней вперёд (по всем колодам)
         forecast_7d = await self.uow.cards.get_forecast_due_cards(
-            user_id=user_id, deck_id=None, days=7
+            user_id=user_id, deck_id=None, days=7, timezone=user_tz
         )
         
         # ─── ВЫЧИСЛЕНИЕ СРЕДНИХ ЗА 7 ДНЕЙ ───
@@ -298,19 +302,22 @@ class AIAnalyzeStudyStatUseCase:
             user_id=user_id, deck_id=deck_id
         )
         
+        user = await self.uow.users.get_by_id(user_id)
+        user_tz = user.timezone if user else "UTC"
+        
         # 3. Повторения по дням и рейтингам — ЗА 7 ДНЕЙ
         daily_review_by_rating_7d = await self.uow.review_logs.get_daily_review_by_rating(
-            user_id=user_id, days=7, deck_id=deck_id
+            user_id=user_id, days=7, deck_id=deck_id, timezone=user_tz
         )
         
         # 4. Время ревью по дням — ЗА 7 ДНЕЙ
         daily_review_time_7d = await self.uow.review_logs.get_daily_review_time(
-            user_id=user_id, deck_id=deck_id, days=7
+            user_id=user_id, deck_id=deck_id, days=7, timezone=user_tz
         )
         
         # 5. Продуктивность по часам — ЗА 30 ДНЕЙ
         hourly_breakdown_30d = await self.uow.review_logs.get_hourly_breakdown(
-            user_id=user_id, deck_id=deck_id, days=30
+            user_id=user_id, deck_id=deck_id, days=30, timezone=user_tz
         )
         
         # 6. Распределение по сложности — ЗА ВСЁ ВРЕМЯ
@@ -330,7 +337,7 @@ class AIAnalyzeStudyStatUseCase:
         
         # 9. Прогноз на 7 дней вперёд
         forecast_7d = await self.uow.cards.get_forecast_due_cards(
-            user_id=user_id, deck_id=deck_id, days=7
+            user_id=user_id, deck_id=deck_id, days=7, timezone=user_tz
         )
         
         # ─── ВЫЧИСЛЕНИЕ СРЕДНИХ ЗА 7 ДНЕЙ ───
@@ -541,7 +548,8 @@ class AIAnalyzeStudyStatUseCase:
                      )
                     raise UserNotFoundError(user_id=str(input_dto.user_id))
                 
-                now = datetime.now()
+                user_tz = user.timezone if user else "UTC"
+                now = get_current_datetime(user_tz)
                 user_name = user.first_name
                 
                 # 2. Проверка: достаточно ли всего повторов для AI-анализа

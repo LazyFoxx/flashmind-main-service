@@ -8,7 +8,7 @@ from src.application.interfaces import (
     AbstractUnitOfWork,
 )
 from src.domain.entities import Card
-
+from src.application.use_cases.common.utils import get_current_datetime, get_study_cutoff
 from .dto import GetStudyCardsInput, GetStudyCardsOutput
 
 
@@ -16,15 +16,6 @@ class GetStudyCardsUseCase:
     def __init__(self, uow: AbstractUnitOfWork):
         self.uow = uow
         self.logger = structlog.get_logger(__name__)
-
-    async def _get_study_cutoff(
-        self, now: datetime, rollover_hour: int = 3
-    ) -> datetime:
-        study_day = now.date()
-        cutoff = datetime.combine(
-            study_day + timedelta(days=1), time(rollover_hour, 0), tzinfo=now.tzinfo
-        )
-        return cutoff
 
     async def execute(self, input_dto: GetStudyCardsInput) -> GetStudyCardsOutput:
         "Получает карточки к повтору сегодня и возвращает их с мета информацией по колоде"
@@ -40,9 +31,12 @@ class GetStudyCardsUseCase:
                         deck_id=input_dto.deck_id, user_id=input_dto.user_id
                     )
 
-                # получаем время для сравнения ( 3 ночи следующего дня)
-                now = datetime.now(timezone.utc)
-                cutoff = await self._get_study_cutoff(now)
+                # получаем timezone пользователя и cutoff
+                user = await self.uow.users.get_by_id(input_dto.user_id)
+                user_tz = user.timezone if user else "UTC"
+                now = get_current_datetime(user_tz)
+                cutoff = get_study_cutoff(now)
+                
                 # извлекаем карточки для повторения сегодня
                 cards = await self.uow.cards.get_due_cards(
                     input_dto.deck_id, due_before=cutoff

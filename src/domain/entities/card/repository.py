@@ -269,13 +269,15 @@ class AbstractCardRepository(ABC):
         user_id: UUID,
         days: int = 30,
         deck_id: Optional[UUID] = None,
+        timezone: str = "UTC"  # ← ДОБАВИТЬ
     ) -> Dict[str, int]:
         """Получить прогноз повтора карточек по дням.
 
         Args:
             user_id: ID пользователя
-            days: Количество дней на прогноз 
-            deck_id: Опционально — ID колоды (если None, то по всем колодам пользователя)
+            days: Количество дней на прогноз
+            deck_id: Опционально — ID колоды
+            timezone: IANA таймзона (по умолчанию "UTC")
 
         Returns:
             Словарь {date: count}, где:

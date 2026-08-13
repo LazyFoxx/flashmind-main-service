@@ -39,19 +39,21 @@ class AbstractReviewLogRepository(ABC):
 
     @abstractmethod
     async def get_daily_review_counts(
-        self, user_id: UUID, days: int = 30
-      ) -> Dict[str, int]:
+        self, user_id: UUID, days: int = 30, timezone: str = "UTC"
+    ) -> Dict[str, int]:
         """Получить количество повторений по дням за последние N дней.
 
         Args:
             user_id: UUID пользователя
             days: Количество дней (по умолчанию 30)
+            timezone: IANA таймзона (по умолчанию "UTC")
             
         Returns:
             Словарь {date_str: count}, где date_str в формате 'YYYY-MM-DD'
             Все дни за указанный период присутствуют, даже если count=0
-         """
+        """
         ...
+
 
     @abstractmethod
     async def get_total_reviews_count(
@@ -72,16 +74,20 @@ class AbstractReviewLogRepository(ABC):
 
 
     @abstractmethod
-    async def get_current_streak_days(self, user_id: UUID) -> int:
-         """Получить текущую серию дней подряд с повторениями (streak).
-         
+    async def get_current_streak_days(
+        self, user_id: UUID, timezone: str = "UTC"
+    ) -> int:
+        """Получить текущую серию дней подряд с повторениями (streak).
+        
         Args:
             user_id: UUID пользователя
+            timezone: IANA таймзона (по умолчанию "UTC")
 
         Returns:
             Текущее количество дней подряд с повторениями.
-         """
-         ...
+        """
+        ...
+
     
     @abstractmethod
     async def get_total_study_seconds(
@@ -105,20 +111,19 @@ class AbstractReviewLogRepository(ABC):
         self, 
         user_id: UUID, 
         days: int = 30,
-        deck_id: Optional[UUID] = None
+        deck_id: Optional[UUID] = None,
+        timezone: str = "UTC"  # ← ДОБАВИТЬ
     ) -> Dict[str, Dict[int, int]]:
         """Получить количество повторений по дням с разбивкой по рейтингам за последние N дней.
 
         Args:
             user_id: UUID пользователя
             days: Количество дней (по умолчанию 30)
-            deck_id: Опционально — ID колоды (если None, то по всем колодам)
-            
+            deck_id: Опционально — ID колоды
+            timezone: IANA таймзона (по умолчанию "UTC")
+
         Returns:
-            Словарь {date_str: {rating: count}}, где:
-            - date_str в формате 'YYYY-MM-DD'
-            - rating: 1 (Again/forgotten), 2 (Hard/hard), 3 (Good/good), 4 (Easy/easy)
-            - Все дни за указанный период присутствуют, даже если count=0
+            Словарь {date_str: {rating: count}}
         """
         ...
     
@@ -127,20 +132,19 @@ class AbstractReviewLogRepository(ABC):
         self, 
         user_id: UUID, 
         deck_id: Optional[UUID] = None,
-        days: int = 30
+        days: int = 30,
+        timezone: str = "UTC"  # ← ДОБАВИТЬ
     ) -> Dict[str, int]:
         """Получить суммарное время ревью в секундах по дням за последние N дней.
 
         Args:
             user_id: UUID пользователя
-            deck_id: Опционально — ID колоды (если None, то по всем колодам)
+            deck_id: Опционально — ID колоды
             days: Количество дней (по умолчанию 30)
-            
+            timezone: IANA таймзона (по умолчанию "UTC")
+
         Returns:
-            Словарь {date_str: total_seconds}, где:
-            - date_str в формате 'YYYY-MM-DD'
-            - total_seconds: суммарное время в секундах за день
-            - Все дни за указанный период присутствуют, даже если seconds=0
+            Словарь {date_str: total_seconds}
         """
         ...
     
@@ -149,20 +153,19 @@ class AbstractReviewLogRepository(ABC):
         self, 
         user_id: UUID, 
         deck_id: Optional[UUID] = None,
-        days: int = 30
+        days: int = 30,
+        timezone: str = "UTC"  # ← ДОБАВИТЬ
     ) -> Dict[str, float]:
         """Получить продуктивность по часам суток за последние N дней.
 
         Args:
             user_id: UUID пользователя
-            deck_id: Опционально — ID колоды (если None, то по всем колодам)
+            deck_id: Опционально — ID колоды
             days: Количество дней (по умолчанию 30)
-            
+            timezone: IANA таймзона (по умолчанию "UTC")
+
         Returns:
-            Словарь {hour_range: percentage}, где:
-                - hour_range: '00:00-04:00', '04:00-08:00', ..., '20:00-24:00'
-                - percentage: процент правильно отвеченных (Good + Easy) от всех ответов
-                - Если ревью нет в диапазоне, percentage = 0.0
+            Словарь {hour_range: percentage}
         """
         ...
 

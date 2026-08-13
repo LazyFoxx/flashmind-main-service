@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
 
 from src.application.use_cases import GetUserProfileUseCase, UpdateUserProfileUseCase, DailyReviewStatUseCase, DailyReviewStatInput
 from src.application.use_cases.users.get_user_profile.dto import GetProfileUserInput
@@ -29,13 +29,15 @@ async def get_user_profile(
     profile_use_case: FromDishka[GetUserProfileUseCase],
     stats_use_case: FromDishka[DailyReviewStatUseCase],
     user_id: UUID = Depends(get_current_user_id),
+    request: Request = Depends(),
 ) -> UserProfileResponse:
      # 1. Вызываем Use Case для профиля
     profile_input = GetProfileUserInput(user_id=user_id)
     user_profile = await profile_use_case.execute(input_dto=profile_input)
     
      # 2. Вызываем Use Case для статистики
-    stats_input = DailyReviewStatInput(user_id=user_id, days=28)
+    timezone = getattr(request.state, 'timezone', 'UTC')
+    stats_input = DailyReviewStatInput(user_id=user_id, days=28, timezone=timezone)
     stats = await stats_use_case.execute(input_dto=stats_input)
 
      # 3. Объединяем результаты

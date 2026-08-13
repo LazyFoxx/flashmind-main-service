@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.logging.config import setup_logging
 from src.core.middleware.logging_middleware import LoggingMiddleware
+from src.core.middleware.timezone_middleware import TimezoneMiddleware
 from src.core.settings import cors_config
 from src.infrastructure.di.container import get_container
 from src.infrastructure.di.providers.rabbit import USER_REGISTERED
@@ -42,43 +43,74 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     lifespan=lifespan,
-    version="1.2.7",
-      # title="",
+    version="1.2.8",
+       # title="",
     description="""
+    1.2.8
+    **Новая функция: Поддержка пользовательских таймзонов**
+    
+    Все даты и времена в ответах API теперь учитывают часовой пояс пользователя.
+    
+    Обязательный заголовок для всех запросов:
+        - `X-Timezone`: IANA таймзона (например: "Europe/Moscow", "America/New_York", "Asia/Tokyo")
+        - Если заголовок не передан или невалиден — используется UTC по умолчанию
+        - Валидация через `zoneinfo.ZoneInfo()` — автоматически проверяет корректность
+    
+    Затронутые эндпоинты:
+        - `GET /users/profile` — статистика (daily_review_counts, review_series) в таймзоне пользователя
+        - `GET /stats/stats` — вся статистика (forecast, review_count, review_time, hourly_breakdown) в таймзоне пользователя
+        - `GET /study/study-cards` — due cards учитывают cutoff time пользователя
+        - `POST /study/review-card` — лог ревью сохраняется в таймзоне пользователя
+        - `GET /decks/user-decks` — сортировка и фильтрация по updated_at в таймзоне пользователя
+        - `POST /ai/analyze-study-stat` — анализ в контексте таймзоны пользователя
+    
+    Технические детали:
+        - `review_datetime` в БД хранится с timezone (PostgreSQL `timestamp with time zone`)
+        - `next_due` (due time карточек) хранится с timezone
+        - `next_review_datetime` хранится с timezone
+        - Cutoff time (rollover hour = 3:00) применяется в таймзоне пользователя
+        - Timezone синхронизируется: если заголовок отличается от сохранённого — обновляется в БД
+    
+    Примеры заголовков:
+        - `X-Timezone: Europe/Moscow`
+        - `X-Timezone: America/Los_Angeles`
+        - `X-Timezone: Asia/Tokyo`
+        - `X-Timezone: UTC`
+    
     1.2.7
     Новый эндпоинт:
-        - AI-анализ статистики обучения
-           /api/v1/flashmind/ai/analyze-study-stat
-         Анализ статистики обучения пользователя с помощью AI (DeepSeek).
-         Проверяет количество повторов, анализирует статистику и возвращает:
-            - AIStudyAnalysisResult: общий анализ с проблемами, рекомендациями, целями
-            - insights: список инсайтов по карточкам
-            - problem_areas: проблемные области
-            - recommendations: рекомендации по улучшению
-            - goals: цели обучения
-         
-         Новая ошибка 422 INSUFFICIENT_REVIEWS:
-           Возвращается когда недостаточно повторов для AI-анализа
-           Пример ответа:
-              {
-                "error": "INSUFFICIENT_REVIEWS",
-                "message": "Недостаточно повторов для AI-анализа. У вас X из 100. Необходимо еще Y.",
-                "total_reviews": X,
-                "remaining_reviews": Y
-              }
-         
-         Изменения:
-            - Исправлен график карточек (get_card_types_stats)
-              Теперь учитывается deck_id — до этого возвращал повторы по рейтингам без привязки к колоде
-            - Исправлен график прогноза
-              Теперь учитываются повторы на сегодня
-            - Изменены описания типов карт в get_card_types_stats
-             С русских на английские: 'new', 'in_learning', 'learned', 'suspended'
+    - AI-анализ статистики обучения
+        /api/v1/flashmind/ai/analyze-study-stat
+        Анализ статистики обучения пользователя с помощью AI (DeepSeek).
+        Проверяет количество повторов, анализирует статистику и возвращает:
+        - AIStudyAnalysisResult: общий анализ с проблемами, рекомендациями, целями
+        - insights: список инсайтов по карточкам
+        - problem_areas: проблемные области
+        - recommendations: рекомендации по улучшению
+        - goals: цели обучения
+        
+        Новая ошибка 422 INSUFFICIENT_REVIEWS:
+        Возвращается когда недостаточно повторов для AI-анализа
+        Пример ответа:
+            {
+            "error": "INSUFFICIENT_REVIEWS",
+            "message": "Недостаточно повторов для AI-анализа. У вас X из 100. Необходимо еще Y.",
+            "total_reviews": X,
+            "remaining_reviews": Y
+            }
+        
+        Изменения:
+        - Исправлен график карточек (get_card_types_stats)
+            Теперь учитывается deck_id — до этого возвращал повторы по рейтингам без привязки к колоде
+        - Исправлен график прогноза
+            Теперь учитываются повторы на сегодня
+        - Изменены описания типов карт в get_card_types_stats
+            С русских на английские: 'new', 'in_learning', 'learned', 'suspended'
     
     1.2.6
     - Добавлены responses в эндпоинты с ошибкой 410 ( облачная колода не найдена)
     
-      1.2.5
+    1.2.5
     Исправлены ошибки обработки исключений в облачных колодах:
      
      
@@ -109,43 +141,12 @@ app = FastAPI(
     - Эндпоинст статистики пользователя
         /api/v1/flashmind/stats/stats
     
-    1.2.3
-    Добавилены 3 эндпоинта:
-    - Эндпоинт удаления колоды
-    Удаляет облачную колоду 
-        - Находит облачную колоду по cloud_uuid
-        - Удаляет ее физически с сервера и карточки связанные с ней
-        - Удаляет все связи других пользователей колоды и делает их локальными
-        
-        !!! Если автор удалил колоду и нужно пользователю уведомление то использовать флаг
-        is_cloud_deck == True and cloud_deck_id == None !!!
-        
-    - Эндпоинт проверки возможность стать автором пользователю авторской колоды
-    Проверяет может ли пользователь стать автором колоды.
-           - Находит локальную колоду по deck_id
-           - Проверяет изменил ли пользователь описание
-           - Проверяет имеет ли 20% своих карточек в колоде
-           
-    - Эндпоинт чтобы стать автором своей локальной версии авторской колоды
-    Отвязывает локальную колоду от чужой облачной и создаёт новую облачную колоду.
-        - Проверяет может ли пользователь быть автором колоды
-        - Находит текущую локальную колоду по deck_id
-        - Создаёт новую облачную колоду с текущим пользователем как автором
-        - Отвязывает локальную колоду от оригинальной облачной
-        - Привязывает к новой облачной колоде
-    
-    
-    Исправлены баги
-    
-    - Исправлен баг отвязывания колоды от облака при обновлении
-    - Исправлен баг не определения пользовательских карточек
-    - Исправлен баг синхранизации удаленных карточек
-    - Исправлен баг перезаписывания обновленных карточек пользователя ( которые он обновил авторские карточки )
     """,
 )
 
 
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(TimezoneMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_config.origins,

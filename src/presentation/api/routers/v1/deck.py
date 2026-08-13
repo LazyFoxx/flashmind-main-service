@@ -2,14 +2,14 @@ from typing import Annotated, Optional
 from uuid import UUID
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, File, Form, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Request, Response, UploadFile, status
 
 from src.application.use_cases import (
     CreateDeckInput,
     CreateDeckUseCase,
     DeleteDeckInput,
     DeleteDeckUseCase,
-    GetUserDecksUseCase,
+    GetUserDecksUseCase, GetUserDecksInput,
     UpdateDeckInput,
     UpdateDeckUseCase,
 )
@@ -67,8 +67,11 @@ async def create_deck(
 async def get_user_decks(
     use_case: FromDishka[GetUserDecksUseCase],
     user_id: UUID = Depends(get_current_user_id),
+    request: Request = Depends(),
 ) -> UserDecksResponse:
-    decks = await use_case.execute(user_id=user_id)
+    timezone = getattr(request.state, 'timezone', 'UTC')
+    input_dto = GetUserDecksInput(user_id=user_id, timezone=timezone)
+    decks = await use_case.execute(input_dto=input_dto)
 
     return UserDecksResponse(
         decks=[DeckResponse.from_entity(deck, user_id=user_id) for deck in decks.decks]
