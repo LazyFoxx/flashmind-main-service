@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "fastapi-clean-arch-template"
+name = "flashmind-main-service"
 version = "0.1.0"
-description = "FastAPI Clean Architecture template"
+description = ""
 authors = ["LazyFoxx <chernomor987654321@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "src" }]
@@ -41,6 +41,10 @@ httpx = "^0.28.1"
 requests = "^2.32.3"   # используется в jwks_client.py
 structlog = "^25.5.0"
 python-json-logger = "^4.0.0"
+pillow = "^12.1.0"
+aioboto3 = "^15.5.0"
+aio-pika = "^9.5.8"
+fsrs = "^6.3.0"
 
 [tool.poetry.group.dev.dependencies]
 # --- Lint / format ---
@@ -67,8 +71,11 @@ target-version = ["py313"]
 [tool.ruff]
 target-version = "py313"
 line-length = 88
+
+[tool.ruff.lint]
+ignore = ["E501", "B903", "B008"]
 select = ["E", "F", "W", "I", "B"]
-ignore = ["E501", "B008"]
+extend-ignore = ["F", "W"]
 
 [tool.mypy]
 python_version = "3.13"

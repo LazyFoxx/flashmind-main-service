@@ -18,16 +18,16 @@ class UserProfileModel(Base):
     )
 
     first_name: Mapped[str] = mapped_column(
-        String(100),
+        String(35),
         nullable=False,
     )
 
     last_name: Mapped[str] = mapped_column(
-        String(100),
+        String(35),
         nullable=False,
     )
 
-    avatar_url: Mapped[str] = mapped_column(
+    avatar_key: Mapped[str] = mapped_column(
         String(512),
         nullable=False,
     )
@@ -37,14 +37,22 @@ class UserProfileModel(Base):
         nullable=True,
     )
 
+    timezone_str: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="UTC",
+        server_default="UTC",
+    )
+
     def to_entity(self) -> User:
         """Конвертирует загруженную ORM-модель в чистую доменную сущность."""
         return User(
             id=self.id,
             first_name=self.first_name,
             last_name=self.last_name,
-            avatar_url=self.avatar_url,
+            avatar_key=self.avatar_key,
             bio=self.bio,
+            timezone=self.timezone_str,
         )
 
     @classmethod
@@ -54,6 +62,7 @@ class UserProfileModel(Base):
             id=user.id,
             first_name=user.first_name,
             last_name=user.last_name,
-            avatar_url=user.avatar_url,
+            avatar_key=user.avatar_key,
             bio=user.bio,
+            timezone_str=user.timezone,
         )

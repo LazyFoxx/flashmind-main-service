@@ -10,13 +10,18 @@ services:
       sh -c "alembic upgrade head || { echo 'Alembic migration failed'; exit 1; }"
     env_file:
       - .env
+    volumes:
+      # Монтируем код для миграций
+      - ./src:/app/src:rw
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      - ./poetry.lock:/app/poetry.lock:ro
     depends_on:
       postgres:
         condition: service_healthy
     restart: "no"
     networks:
       - backend
-  fastapi_template:
+  fastapi_main_service:
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -54,7 +59,7 @@ services:
     env_file:
       - .env
     volumes:
-      - fastapi_template_postgres_data:/var/lib/postgresql/data
+      - fastapi_main_service_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 10s
@@ -70,16 +75,10 @@ services:
       - .env
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-    command:
-    - /bin/sh
-    - -c
-    # - Double dollars, so that the variable is not expanded by Docker Compose
-    # - Surround by quotes, so that the shell does not split the password
-    # - The ${variable:?message} syntax causes shell to exit with a non-zero
-    #   code and print a message, when the variable is not set or empty
-    - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    command: redis-server
+      --appendonly yes
     volumes:
-      - fastapi_template_redis_data:/data
+      - fastapi_main_service_redis_data:/data
     networks:
       - backend
 
@@ -98,24 +97,10 @@ services:
     networks:
       - backend
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    restart: unless-stopped
-    ports:
-      - "5051:80"
-    env_file:
-      - .env
-    volumes:
-      - fastapi_template_pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - backend
-
 volumes:
-  fastapi_template_postgres_data:
-  fastapi_template_redis_data:
-  fastapi_template_pgadmin_data:
+  fastapi_main_service_postgres_data:
+  fastapi_main_service_redis_data:
+  fastapi_main_service_pgadmin_data:
 
 networks:
   backend:

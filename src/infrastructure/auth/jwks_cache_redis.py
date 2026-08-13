@@ -3,10 +3,10 @@ import json
 from authlib.jose import JsonWebKey
 from redis.asyncio import Redis
 
-from src.application.interfaces import JWKSCache
+from src.application.interfaces import AbstractJWKSCache
 
 
-class RedisJWKSCache(JWKSCache):
+class RedisJWKSCache(AbstractJWKSCache):
     def __init__(self, redis: Redis) -> None:
         self.redis = redis
 

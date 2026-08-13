@@ -23,15 +23,15 @@ class SQlAlchemyUserRepository(AbstractUserRepository):
         self.session.add(user_model)
 
     async def update(self, user: User) -> None:
-        # Обычно делаем через merge или update-выражение
         stmt = (
             update(UserProfileModel)
-            .where(UserProfileModel.id == user.id)
-            .values(
-                first_name=user.first_name,
-                last_name=user.last_name,
-                avatar_url=user.avatar_url,
-                bio=user.bio,
-            )
+                .where(UserProfileModel.id == user.id)
+                .values(
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    avatar_key=user.avatar_key,
+                    bio=user.bio,
+                    timezone_str=user.timezone,
+                )
         )
         await self.session.execute(stmt)

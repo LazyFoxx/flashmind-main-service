@@ -77,6 +77,10 @@ def setup_logging() -> None:
         "httpx",
         "sqlalchemy.engine",
         "sqlalchemy.pool",
+        "aio_pika",
+        "aiormq",
+        "botocore",
+        "boto3",
     ]
     for name in noisy:
         logger = logging.getLogger(name)

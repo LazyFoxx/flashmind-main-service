@@ -1,12 +1,12 @@
 import httpx
 from authlib.jose import JsonWebKey
 
-from src.application.interfaces import JWKSCache
+from src.application.interfaces import AbstractJWKSCache
 from src.core.settings import AuthSettings
 
 
 class JWKSClient:
-    def __init__(self, cache: JWKSCache, settings: AuthSettings):
+    def __init__(self, cache: AbstractJWKSCache, settings: AuthSettings):
         self.url = settings.jwks_url
         self.ttl = settings.jwks_cache_ttl_seconds
         self.cache = cache

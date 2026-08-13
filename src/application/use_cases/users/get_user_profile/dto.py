@@ -10,6 +10,7 @@ class GetProfileUserInput:
 
 @dataclass(frozen=True, slots=True)
 class GetProfileUserOutput:
+    user_id: UUID
     first_name: str
     last_name: str
     avatar_url: str

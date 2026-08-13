@@ -66,4 +66,5 @@ coverage.xml
 *.log
 *.sqlite3
 
+plans/
 keys/

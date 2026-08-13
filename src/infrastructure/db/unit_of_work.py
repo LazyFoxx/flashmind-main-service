@@ -4,7 +4,16 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.interfaces import AbstractUnitOfWork
-from src.infrastructure.db.repositories import SQlAlchemyUserRepository
+from src.infrastructure.db.repositories import (
+    SQlAlchemyCardRepository,
+    SQlAlchemyDeckRepository,
+    SQlAlchemyUserRepository,
+    SQLAlchemyReviewLogRepository,
+    SQlAlchemyCloudDeckRepository,
+    SQlAlchemyCloudCardTemplateRepository,
+    SQLAlchemyUserStatsRepository,
+    SQLAlchemyAiAnalysisRepository,
+)
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
@@ -14,6 +23,13 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     async def __aenter__(self) -> "SqlAlchemyUnitOfWork":
         # Репозитории создаём здесь — они используют текущую session
         self.users = SQlAlchemyUserRepository(self.session)
+        self.cards = SQlAlchemyCardRepository(self.session)
+        self.decks = SQlAlchemyDeckRepository(self.session)
+        self.review_logs = SQLAlchemyReviewLogRepository(self.session)
+        self.cloud_decks = SQlAlchemyCloudDeckRepository(self.session)
+        self.cloud_cards = SQlAlchemyCloudCardTemplateRepository(self.session)
+        self.user_stats = SQLAlchemyUserStatsRepository(self.session)
+        self.ai_analysis = SQLAlchemyAiAnalysisRepository(self.session)
         return self
 
     async def __aexit__(

@@ -2,13 +2,31 @@ from abc import ABC, abstractmethod
 from types import TracebackType
 from typing import Optional
 
-from src.domain.entities import AbstractUserRepository
+from src.domain.entities import (
+    AbstractCardRepository,
+    AbstractDeckRepository,
+    AbstractUserRepository,
+    AbstractCloudDeckRepository,
+    AbstractCloudCardTemplateRepository,
+    
+    
+)
+from src.application.interfaces.review_log import AbstractReviewLogRepository
+from src.application.interfaces.user_stats import AbstractUserStatsRepository
+from src.application.interfaces.ai_analysis_repository import AbstractAiAnalysisRepository
 
 
 class AbstractUnitOfWork(ABC):
     """Минималистичный современный UoW для async"""
 
     users: AbstractUserRepository
+    decks: AbstractDeckRepository
+    cards: AbstractCardRepository
+    review_logs: AbstractReviewLogRepository
+    cloud_decks: AbstractCloudDeckRepository
+    cloud_cards: AbstractCloudCardTemplateRepository
+    user_stats: AbstractUserStatsRepository
+    ai_analysis: AbstractAiAnalysisRepository
 
     async def __aenter__(self) -> "AbstractUnitOfWork":
         return self
