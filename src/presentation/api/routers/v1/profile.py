@@ -39,7 +39,7 @@ async def get_user_profile(
     timezone = getattr(request.state, 'timezone', 'UTC')
     stats_input = DailyReviewStatInput(user_id=user_id, days=28, timezone=timezone)
     stats = await stats_use_case.execute(input_dto=stats_input)
-
+    
      # 3. Объединяем результаты
     return UserProfileResponse(
         first_name=user_profile.first_name,

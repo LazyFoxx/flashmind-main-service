@@ -61,13 +61,13 @@ class DailyReviewStatUseCase:
             stats: Dict[str, int] = await self.uow.review_logs.get_daily_review_counts(
                 user_id=input_dto.user_id,
                 days=input_dto.days,
-                timezone=input_dto.timezone,
+                timezone=user.timezone,
                  )
 
                 # Получаем текущую серию дней подряд (streak) с timezone пользователя
             review_series = await self.uow.review_logs.get_current_streak_days(
                 user_id=input_dto.user_id,
-                timezone=input_dto.timezone,
+                timezone=user.timezone,
                  )
             
             # получаем статистику пользователя (создаем если нет)
@@ -91,6 +91,12 @@ class DailyReviewStatUseCase:
             if user_stats.max_days_streak < review_series:
                 user_stats.max_days_streak = review_series
                 await self.uow.user_stats.update(stats=user_stats)
+
+            self.logger.debug(
+                "Проверка таймзоны",
+                daily_review_counts=stats,
+                timezone=user.timezone,
+            )
 
             await self.uow.commit()
 
