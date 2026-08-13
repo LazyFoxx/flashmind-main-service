@@ -65,9 +65,9 @@ async def create_deck(
 )
 @inject
 async def get_user_decks(
+    request: Request,
     use_case: FromDishka[GetUserDecksUseCase],
     user_id: UUID = Depends(get_current_user_id),
-    request: Request = Depends(),
 ) -> UserDecksResponse:
     timezone = getattr(request.state, 'timezone', 'UTC')
     input_dto = GetUserDecksInput(user_id=user_id, timezone=timezone)

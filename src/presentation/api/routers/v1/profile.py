@@ -26,10 +26,10 @@ router = APIRouter(prefix="/users", tags=["users"])
 )
 @inject
 async def get_user_profile(
+    request: Request,
     profile_use_case: FromDishka[GetUserProfileUseCase],
     stats_use_case: FromDishka[DailyReviewStatUseCase],
     user_id: UUID = Depends(get_current_user_id),
-    request: Request = Depends(),
 ) -> UserProfileResponse:
      # 1. Вызываем Use Case для профиля
     profile_input = GetProfileUserInput(user_id=user_id)
