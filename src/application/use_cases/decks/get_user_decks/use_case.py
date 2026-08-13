@@ -3,7 +3,7 @@ from datetime import datetime, time, timedelta, timezone
 
 import structlog
 
-from application.exceptions import UserNotFoundError
+from src.application.exceptions import UserNotFoundError
 from src.application.interfaces import (
     AbstractUnitOfWork,
 )
