@@ -20,15 +20,15 @@ class AbstractCardRepository(ABC):
         ...
 
     @abstractmethod
-    async def get_by_front(
-        self, front: str, deck_id: Optional[UUID] = None
+    async def get_by_title(
+        self, title: str, deck_id: Optional[UUID] = None
     ) -> Optional[Card]:
         """
-        Находит карточку по лицевой стороне и (опционально) по владельцу.
+        Находит карточку по названию в данной колоде.
 
         Args:
-            front: точное название карточки
-            user_id: если передан — фильтруем только колоды этого пользователя
+            title: точное название карточки
+            deck_id: id колоды
 
         Returns:
             Card или None, если ничего не найдено
@@ -73,34 +73,34 @@ class AbstractCardRepository(ABC):
         """
         ...
 
-    @abstractmethod
-    async def get_all_light_by_user_and_deck(
-        self,
-        user_id: UUID,
-        desk: True,
-        deck_id: Optional[UUID] = None,
-        offset: Optional[int] = None,  # None = все
-        limit: Optional[int] = None,  # None = все
-        created_at: Optional[bool] = None,
-        difficulty: Optional[bool] = None,
-        stability: Optional[bool] = None,
+    # @abstractmethod
+    # async def get_all_light_by_user_and_deck(
+    #     self,
+    #     user_id: UUID,
+    #     desk: True,
+    #     deck_id: Optional[UUID] = None,
+    #     offset: Optional[int] = None,  # None = все
+    #     limit: Optional[int] = None,  # None = все
+    #     created_at: Optional[bool] = None,
+    #     difficulty: Optional[bool] = None,
+    #     stability: Optional[bool] = None,
         
 
-    ) -> List[tuple[UUID, UUID, str, float, float]]:
-        """
-        Выводит список всех карточек пользователя без обратной стороны.
-        Если передан параметр фильтрации deck_id - то выводит карточки по колоде пользователя.
-        Если offset и limit переданы, то производится вывод с пагинацией.
+    # ) -> List[tuple[UUID, UUID, str, float, float]]:
+    #     """
+    #     Выводит список всех карточек пользователя без обратной стороны.
+    #     Если передан параметр фильтрации deck_id - то выводит карточки по колоде пользователя.
+    #     Если offset и limit переданы, то производится вывод с пагинацией.
 
-        Args:
-            user_id: ID пользователя.
-            deck_id: ID колоды (если передан, то выводятся карточки по этой колоде).
-            offset: Если передан, то пропускает указанное количество карточек.
-            limit: Если передан, ограничивает количество возвращаемых карточек.
+    #     Args:
+    #         user_id: ID пользователя.
+    #         deck_id: ID колоды (если передан, то выводятся карточки по этой колоде).
+    #         offset: Если передан, то пропускает указанное количество карточек.
+    #         limit: Если передан, ограничивает количество возвращаемых карточек.
 
-        Returns:
-            List[light_cards]: Список карточек.
-        """
+    #     Returns:
+    #         List[light_cards]: Список карточек.
+    #     """
 
     @abstractmethod
     async def get_total_cards_by_deck_id(self, deck_id: UUID) -> int:
@@ -135,20 +135,24 @@ class AbstractCardRepository(ABC):
     deck_id: UUID,
     in_learning: Optional[bool] = None,
     limit: Optional[int] = None,
-    include_deleted: bool = False,    # ← ДОБАВЛЕН
+    include_deleted: bool = False,
+    include_suspended: bool = True, 
 ) -> List[Card]:
      """Получить список Card по id Deck.
 
      Args:
          deck_id: UUID конкретной колоды
          in_learning:
-              - True   → только карточки в обучении (in_learning=True)
-              - False → только новые (in_learning=False)
-              - None   → все карточки
+            - True   → только карточки в обучении (in_learning=True)
+            - False → только новые (in_learning=False)
+            - None   → все карточки
          limit: Максимальное количество возвращаемых карточек (None = без ограничения)
          include_deleted:
-              - True   → включать удалённые карточки
-              - False  → только не удалённые (по умолчанию)
+            - True   → включать удалённые карточки
+            - False  → только не удалённые (по умолчанию)
+        include_suspended:
+            - True   → включать отложенные карточеки ( по умолчанию )
+            - False  → только не отложенные
 
      Returns:
          List[Card]   # domain entities
@@ -178,22 +182,22 @@ class AbstractCardRepository(ABC):
             ValueError: если deck_id и user_id оба None
         """
         
-    @abstractmethod
-    async def get_total_due_cards_by_deck_ids(
-        self,
-        deck_ids: List[UUID],
-        due_before: datetime,
-    ) -> List[Tuple[UUID, int]]:
-        """
-        возвращает список с количеством карточек к повтору сегодня для каждой колоды:
-        [(deck_id, количество карточек)].
+    # @abstractmethod
+    # async def get_total_due_cards_by_deck_ids(
+    #     self,
+    #     deck_ids: List[UUID],
+    #     due_before: datetime,
+    # ) -> List[Tuple[UUID, int]]:
+    #     """
+    #     возвращает список с количеством карточек к повтору сегодня для каждой колоды:
+    #     [(deck_id, количество карточек)].
 
-        Аргументы:
-            deck_ids: Список ID колод (по умолчанию None)
+    #     Аргументы:
+    #         deck_ids: Список ID колод (по умолчанию None)
 
-        Возвращает:
-            list: [(deck_id, total_cards)]
-        """
+    #     Возвращает:
+    #         list: [(deck_id, total_cards)]
+    #     """
     
     @abstractmethod
     async def delete_orphan_deleted_cards(self) -> int:
@@ -308,6 +312,3 @@ class AbstractCardRepository(ABC):
             List[Card]: Список сущностей Card, отсортированных по сложности
         """
         ...
-
-
-

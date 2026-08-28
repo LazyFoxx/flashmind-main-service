@@ -1,9 +1,9 @@
 from .card import (
-    CardLightResponse,
     CardListResponse,
     CardResponse,
     CreateCardRequest,
     UpdateCardRequest,
+    CardDetailResponse
 )
 from .deck import (
     CreateDeckRequest,
@@ -16,14 +16,12 @@ from .profile import UserProfileResponse
 from .study import (
     NewToStudyRequest,
     ReviewDueCardRequest,
-    StudyCardListResponse,
-    StudyCardListWithStatsResponse,
-    StudyCardResponse,
+    ReviewDueCardResponse,
 )
 
 from .cloud_deck import (
     EnableSharingRequest, EnableSharingResponse, SyncStats, ImportDeckRequest, ImportDeckResponse,
-    CloudDeckResponse, CloudTemplateCardResponse, PublicDecksResponse, PublicDeckPreviewResponse,
+    CloudDeckResponse, PublicDecksResponse, PublicDeckPreviewResponse,
     CanTakeOwnershipResponse, TakeOwnershipRequest, TakeOwnershipResponse
 )
 
@@ -39,11 +37,11 @@ __all__ = [
     "CardResponse",
     "CreateCardRequest",
     "UpdateCardRequest",
-    "CardLightResponse",
     "CardListResponse",
     "StudyCardResponse",
     "StudyCardListResponse",
     "NewToStudyRequest",
+    "ReviewDueCardResponse"
     "StudyCardListWithStatsResponse",
     "ReviewDueCardRequest",
     "EnableSharingRequest",
@@ -52,7 +50,6 @@ __all__ = [
     "ImportDeckRequest",
     "ImportDeckResponse",
     "CloudDeckResponse",
-    "CloudTemplateCardResponse",
     "PublicDecksResponse",
     "PublicDeckPreviewResponse",
     "StudyStatsResponse",

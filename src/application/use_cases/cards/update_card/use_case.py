@@ -29,10 +29,20 @@ class UpdateCardUseCase:
                     raise CardNotExistsError(card_id=input_dto.card_id)
 
                 updates = {}
-                updates["front"] = input_dto.front
-                updates["back"] = input_dto.back
+                if input_dto.title is not None:
+                    updates["title"] = input_dto.title
+                if input_dto.front is not None:
+                    updates["front"] = input_dto.front
+                if input_dto.back is not None:
+                    updates["back"] = input_dto.back
+                if input_dto.hint1 is not None:
+                    updates["hint1"] = input_dto.hint1
+                if input_dto.hint2 is not None:
+                    updates["hint2"] = input_dto.hint2
+                if input_dto.is_suspended is not None:
+                    updates["is_suspended"] = input_dto.is_suspended
 
-                updated_card = dataclasses.replace(existing_card, **updates)  # type: ignore
+                updated_card = dataclasses.replace(existing_card, **updates)
                 
                 if updated_card.card_template_id:
                     updated_card = updated_card.set_is_updated_true()
@@ -44,8 +54,7 @@ class UpdateCardUseCase:
                 updated_card = await self.uow.cards.get_by_id(input_dto.card_id)
                 self.logger.debug(
                     "Карточка обновлена",
-                    front=updated_card.front,
-                    back=updated_card.back,
+                    title=updated_card.title,
                     card_id=updated_card.id,
                     user_id=input_dto.user_id,
                 )
@@ -57,8 +66,5 @@ class UpdateCardUseCase:
                 raise
 
         return UpdateCardOutput(
-            card_id=str(updated_card.id),
-            deck_id=str(updated_card.deck_id),
-            front=updated_card.front,
-            back=updated_card.back,
+            card=updated_card
         )

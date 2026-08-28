@@ -30,10 +30,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     asyncio.create_task(
         consumer.start_consuming(
             queue_name="register_user",
-            container=container,  # передаем контейнер
-            callback_key=USER_REGISTERED,  # передаем ключ DI
-        )
-    )
+            container=container,   # передаем контейнер
+            callback_key=USER_REGISTERED,   # передаем ключ DI
+          )
+       )
 
     yield
     # shutdown
@@ -43,105 +43,206 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(
     lifespan=lifespan,
-    version="1.2.8",
-       # title="",
+    version="2.0.0",
+           # title="",
     description="""
-    1.2.8
-    **Новая функция: Поддержка пользовательских таймзонов**
-    
-    Все даты и времена в ответах API теперь учитывают часовой пояс пользователя.
-    
-    Обязательный заголовок для всех запросов:
-        - `X-Timezone`: IANA таймзона (например: "Europe/Moscow", "America/New_York", "Asia/Tokyo")
-        - Если заголовок не передан или невалиден — используется UTC по умолчанию
-        - Валидация через `zoneinfo.ZoneInfo()` — автоматически проверяет корректность
-    
-    Затронутые эндпоинты:
-        - `GET /users/profile` — статистика (daily_review_counts, review_series) в таймзоне пользователя
-        - `GET /stats/stats` — вся статистика (forecast, review_count, review_time, hourly_breakdown) в таймзоне пользователя
-        - `GET /study/study-cards` — due cards учитывают cutoff time пользователя
-        - `POST /study/review-card` — лог ревью сохраняется в таймзоне пользователя
-        - `GET /decks/user-decks` — сортировка и фильтрация по updated_at в таймзоне пользователя
-        - `POST /ai/analyze-study-stat` — анализ в контексте таймзоны пользователя
-    
-    Технические детали:
-        - `review_datetime` в БД хранится с timezone (PostgreSQL `timestamp with time zone`)
-        - `next_due` (due time карточек) хранится с timezone
-        - `next_review_datetime` хранится с timezone
-        - Cutoff time (rollover hour = 3:00) применяется в таймзоне пользователя
-        - Timezone синхронизируется: если заголовок отличается от сохранённого — обновляется в БД
-    
-    Примеры заголовков:
-        - `X-Timezone: Europe/Moscow`
-        - `X-Timezone: America/Los_Angeles`
-        - `X-Timezone: Asia/Tokyo`
-        - `X-Timezone: UTC`
-    
-    1.2.7
-    Новый эндпоинт:
-    - AI-анализ статистики обучения
-        /api/v1/flashmind/ai/analyze-study-stat
-        Анализ статистики обучения пользователя с помощью AI (DeepSeek).
-        Проверяет количество повторов, анализирует статистику и возвращает:
-        - AIStudyAnalysisResult: общий анализ с проблемами, рекомендациями, целями
-        - insights: список инсайтов по карточкам
-        - problem_areas: проблемные области
-        - recommendations: рекомендации по улучшению
-        - goals: цели обучения
-        
-        Новая ошибка 422 INSUFFICIENT_REVIEWS:
-        Возвращается когда недостаточно повторов для AI-анализа
-        Пример ответа:
-            {
-            "error": "INSUFFICIENT_REVIEWS",
-            "message": "Недостаточно повторов для AI-анализа. У вас X из 100. Необходимо еще Y.",
-            "total_reviews": X,
-            "remaining_reviews": Y
-            }
-        
-        Изменения:
-        - Исправлен график карточек (get_card_types_stats)
-            Теперь учитывается deck_id — до этого возвращал повторы по рейтингам без привязки к колоде
-        - Исправлен график прогноза
-            Теперь учитываются повторы на сегодня
-        - Изменены описания типов карт в get_card_types_stats
-            С русских на английские: 'new', 'in_learning', 'learned', 'suspended'
-    
-    1.2.6
-    - Добавлены responses в эндпоинты с ошибкой 410 ( облачная колода не найдена)
-    
-    1.2.5
-    Исправлены ошибки обработки исключений в облачных колодах:
-     
-     
-     - Добавлен error_code в ответ при удалении облачной колоды автором
-         CloudDeckNotExistsError теперь возвращает 410 Gone с error_code "CLOUD_DECK_NOT_EXIST"
-         Пример ответа:
-          {
-              "error_code": "CLOUD_DECK_NOT_EXIST",
-              "message": "Автор удалил эту колоду из общего облака"
-          }
-          
-    Внутренние фиксы: 
-     - Добавлена try/except обёртка в enable_sharing/use_case.py
-         Теперь все известные исключения (DeckNotExistsError, UserNotFoundError,
-         UserIsNotAuthor, CloudDeckNotExistsError) правильно пробрасываются в handler'ы
-     - Добавлена try/except обёртка в import_deck/use_case.py
-         Исправлено корректное возвращение 400/410 при ошибках импорта
-     - Исправлен dead code в delete_cloud_deck/use_case.py
-         Удалён неиспользуемый код после return None
-     - Добавлена try/except обёртка в sync_cards_to_cloud/use_case.py
-         Добавлено логирование ошибок при синхронизации карточек
-     - Исправлен баг с cloud_deck_id в enable_sharing
-         cloud_deck_id теперь сохраняется до использования
-     - Удалён бесполезный finally блок из get_public_decks/use_case.py
+        2.0.0 - Глобальная переработка модели карточки и обучения
 
-    1.2.4
-    Добавил 1 новый эндпонт:
-    - Эндпоинст статистики пользователя
-        /api/v1/flashmind/stats/stats
-    
-    """,
+        ---
+
+       Cards API (/api/v1/flashmind/cards)
+
+       POST /cards — создание карточки
+        - CreateCardRequest: front: str → front: Any (JSON), back: str → back: Any (JSON)
+        - Добавлено обязательное поле title: str (название карточки)
+        - Добавлены hint1: Optional[str], hint2: Optional[str] (подсказки)
+        - **title уникально для всей колоды** (была уникальность по front)
+        - Response: CardResponse — полный объект карточки
+
+       PUT /cards/{card_id} — частичное обновление карточки (PATCH)
+         - UpdateCardRequest: все поля опциональны — передавай только те поля, которые хочешь изменить
+         - Если поле не передано (None) — оно не изменяется
+         - Пример: чтобы обновить только front, отправь {"front": [...]} без title, back и других полей
+         - Добавлена поддержка поля is_suspended: Optional[bool] для отложенных карточек
+         - Response: CardResponse — полный объект карточки
+
+       GET /cards — список карточек колоды
+        - Response: CardListResponse → cards: List[CardResponse]
+        - Убрана пагинация (page, per_page) и сортировка
+        - CardLightResponse заменён на CardResponse
+
+       GET /cards/{card_id} — одна карточка с расширенной статистикой
+          - **Response изменён**: теперь возвращается CardDetailResponse (вместо CardResponse)
+          - CardDetailResponse включает:
+            {
+              "card": { /* CardResponse — полный объект карточки */ },
+              "last_review_datetime": "2024-01-20T15:30:00Z" | null,
+              "next_review_datetime": "2024-01-22T10:00:00Z" | null,
+              "review_history": [
+                {
+                  "review_datetime": "2024-01-10T10:00:00Z",
+                  "rating": 3,
+                  "difficulty": 2.8,
+                  "stability": 1.5,
+                  "review_duration_ms": 5000
+                }
+              ]
+            }
+          - Новые поля:
+            - last_review_datetime — дата последнего повтора (ISO 8601)
+            - next_review_datetime — дата следующего повтора (ISO 8601)
+            - review_history — массив всех ревью карточки с деталями:
+              - review_datetime: дата и время ревью
+              - rating: оценка (1: Again, 2: Hard, 3: Good, 4: Easy)
+              - difficulty: сложность после ревью
+              - stability: стабильность после ревью
+              - review_duration_ms: длительность ревью в миллисекундах
+
+          ### Пример ответа CardDetailResponse
+          {
+            "card": {
+              "id": "123e4567-e89b-12d3-a456-426614174000",
+              "deck_id": "123e4567-e89b-12d3-a456-426614174001",
+              "title": "Любимый напиток",
+              "front": [{"type": "text", "value": "Любимый Настин напиток"}],
+              "back": [{"type": "text", "value": "Тот что с сарахозаменителем"}],
+              "hint1": "Подсказка 1",
+              "hint2": "Подсказка 2",
+              "difficulty": 3.32344,
+              "stability": 1.23434,
+              "in_learning": false,
+              "card_template_id": null,
+              "created_at": "2024-01-15T12:00:00Z"
+            },
+            "last_review_datetime": "2024-01-20T15:30:00Z",
+            "next_review_datetime": "2024-01-22T10:00:00Z",
+            "review_history": [
+              {
+                "review_datetime": "2024-01-10T10:00:00Z",
+                "rating": 3,
+                "difficulty": 2.8,
+                "stability": 1.5,
+                "review_duration_ms": 5000
+              },
+              {
+                "review_datetime": "2024-01-15T14:00:00Z",
+                "rating": 2,
+                "difficulty": 3.0,
+                "stability": 1.2,
+                "review_duration_ms": 8000
+              },
+              {
+                "review_datetime": "2024-01-20T15:30:00Z",
+                "rating": 3,
+                "difficulty": 3.3,
+                "stability": 1.8,
+                "review_duration_ms": 6000
+              }
+            ]
+          }
+
+          ### Важно для фронтенда
+          1. GET /cards/{card_id} теперь возвращает CardDetailResponse вместо CardResponse
+          2. Поле `card` содержит тот же CardResponse как и раньше
+          3. `last_review_datetime` и `next_review_datetime` могут быть null (если не было ревью)
+          4. `review_history` — массив всех ревью карточки, отсортированный по дате (asc)
+          5. Для новых карточек без истории — вернётся пустой массив review_history и null даты
+
+          ---
+
+       Study API (/api/v1/flashmind/study)
+
+       POST /study/new-to-study — перевод карточек в обучение
+        - Response изменён: теперь только `cards: List[CardResponse]` (убрано поле `total`)
+        - Убрана логика добавления due cards — теперь возвращаются только новые карточки
+
+       POST /study/review-card — повтор карточки
+        - Response изменён: теперь всегда возвращает `ReviewDueCardResponse` (убран 204 No Content)
+        - Новый ответ:
+          {
+            "card": { /* CardResponse — полный объект */ },
+            "success": true/false
+          }
+        - success — true если карточку больше не нужно повторять сегодня, false — отправить на повтор
+
+       ### Удалено
+       - GET /study/study-cards полностью удалён (GetStudyCardsUseCase удалён)
+
+        ---
+
+       Deck API (/api/v1/flashmind/decks)
+
+       GET /decks/user-decks — колоды пользователя
+        - DeckResponse получил новое поле:
+          {
+            "cards_on_study": [ /* List[CardResponse] — карточки на обучение на сегодня */ ]
+          }
+
+       PUT /decks/{deck_id} — обновление колоды
+        - Response теперь включает `cards_on_study: List[CardResponse]` (карточки на обучение на сегодня)
+
+        ---
+
+       Cloud Deck API (/api/v1/flashmind/cloud-decks)
+
+       GET /cloud-decks/public — публичные колоды
+        - PublicDeckPreviewResponse получил новое поле `description: str`
+
+        ### Удалено
+        - GET /cloud-cards/{card_id} полностью удалён (GetCloudCardUseCase удалён)
+          - Причина: облачные карточки теперь полностью передаются вместе с превью колоды
+            через GET /cloud-decks/public и GET /cloud-decks/{deck_id} — отдельный эндпоинт не нужен
+
+        ---
+
+       Новый универсальный ответ CardResponse (все эндпоинты)
+
+         {
+           "id": "uuid",
+           "deck_id": "uuid",
+           "title": "название карточки",
+           "front": [/* JSON: {type: "text", value: "..."} */],
+           "back": [/* JSON: {type: "text", value: "..."} */],
+           "hint1": "подсказка 1 или null",
+           "hint2": "подсказка 2 или null",
+           "difficulty": 3.32,
+           "stability": 1.23,
+           "in_learning": false,
+           "card_template_id": "uuid или null",
+           "created_at": "2024-01-15T12:00:00Z",
+           "is_suspended": false
+         }
+
+        ---
+
+       Важно для фронтенда
+
+       1. front и back больше не строки — теперь Any (JSON). Фронтенд должен парсить как объект/массив
+       2. title стало обязательным при создании и обновлении карточки
+       3. **title уникально для всей колоды** (была уникальность по front)
+       4. Появились hint1 и hint2 — дополнительные подсказки
+       5. Появилось created_at в ответах
+       6. Все карточные эндпоинты возвращают CardResponse — единый формат
+       7. Study review-card теперь возвращает success: bool — нужно обрабатывать логику
+       8. Study review-card теперь ВСЕГДА возвращает 200 + CardResponse (убран 204 No Content)
+       9. Study new-to-study теперь возвращает только cards (убрано поле total)
+       10. Deck user-decks теперь включает cards_on_study — список карточек на сегодня
+       11. Deck update теперь включает cards_on_study в ответе
+       12. Удалён эндпоинт get_study_cards — больше не доступен
+       13. Удалён эндпоинт GET /cloud-cards/{card_id} — больше не доступен
+       14. **ВАЖНО: Обучение возвращает карточки со всеми полями** — теперь POST /study/review-card возвращает
+          обновлённую карточку с актуальными FSRS-параметрами (difficulty, stability, in_learning, due date).
+          Фронтенд должен сразу обновлять карточку в списке карточек колоды, а НЕ сбрасывать кеш карточек
+          при обучении. Вместо перезагрузки всего списка через GET /cards — замените карточку по ID
+          на обновлённую из ответа /study PATCH. Это устраняет лишний запрос и обеспечивает мгновенное обновление UI.
+       15. **PUT /cards/{card_id} теперь поддерживает частичное обновление** — все поля опциональны.
+          Чтобы обновить только front, отправь {"front": [...]} без title, back и других полей.
+          Поля которые не переданы (null/None) остаются без изменений.
+       16. **Новое поле is_suspended** — логика отложенной карточки. Когда is_suspended true, карточка
+          не появляется в списке due cards для повторения. Поле добавлено во все CardResponse и поддерживается
+          в PUT /cards/{card_id}. Фронтенд может использовать это для паузы карточек.
+
+        """,
 )
 
 

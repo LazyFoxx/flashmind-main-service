@@ -20,6 +20,7 @@ from src.presentation.api.dto.v1 import (
     ErrorMessageResponse,
     UserDecksResponse,
     UpdateDeckRequest,
+    CardResponse
 )
 
 router = APIRouter(prefix="/decks", tags=["decks"])
@@ -71,11 +72,20 @@ async def get_user_decks(
 ) -> UserDecksResponse:
     timezone = getattr(request.state, 'timezone', 'UTC')
     input_dto = GetUserDecksInput(user_id=user_id, timezone=timezone)
-    decks = await use_case.execute(input_dto=input_dto)
+    result = await use_case.execute(input_dto=input_dto)
+    decks_response = []
+    for deck in result.decks:
+        cards_on_study = []
+        deck_id_str = str(deck.id)
+        if result.cards_on_study_by_deck:
+            due_cards = result.cards_on_study_by_deck.get(deck_id_str, [])
+            cards_on_study = [CardResponse.from_entity(card) for card in due_cards]
 
-    return UserDecksResponse(
-        decks=[DeckResponse.from_entity(deck, user_id=user_id) for deck in decks.decks]
-    )
+        decks_response.append(
+            DeckResponse.from_entity(deck, user_id, cards_on_study)
+        )
+
+    return UserDecksResponse(decks=decks_response)
 
 
 @router.put(
@@ -103,9 +113,9 @@ async def update_deck(
         maximum_interval=payload.maximum_interval,
         color=payload.color,
     )
-    deck = await use_case.execute(input_dto=dto)
+    result = await use_case.execute(input_dto=dto)
 
-    return DeckResponse.from_entity(deck=deck.deck, user_id=user_id)
+    return DeckResponse.from_entity(deck=result.deck, user_id=user_id, cards_on_study=result.due_cards)
 
 
 @router.delete(

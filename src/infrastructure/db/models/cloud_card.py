@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import JSONB
 
 from src.domain.entities import CloudCardTemplate
 from src.infrastructure.db.base import Base
@@ -27,15 +28,31 @@ class CloudCardTemplateModel(Base):
         nullable=False,
         index=True,
     )
+    
+    title: Mapped[str] = mapped_column(
+        String(512),
+        nullable=False,
+        index=True,
+    )
 
-    front: Mapped[str] = mapped_column(
-        Text,
+    front: Mapped[Any] = mapped_column(
+        JSONB,
         nullable=False,
     )
 
-    back: Mapped[str] = mapped_column(
-        Text,
+    back: Mapped[Any] = mapped_column(
+        JSONB,
         nullable=False,
+    )
+    
+    hint1: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    hint2: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -54,8 +71,11 @@ class CloudCardTemplateModel(Base):
         return CloudCardTemplate(
             id=self.id,
             cloud_deck_id=self.cloud_deck_id,
+            title=self.title,
             front=self.front,
             back=self.back,
+            hint1=self.hint1,
+            hint2=self.hint2,
         )
 
     @classmethod
@@ -63,6 +83,9 @@ class CloudCardTemplateModel(Base):
         return CloudCardTemplateModel(
             id=template.id,
             cloud_deck_id=template.cloud_deck_id,
+            title=template.title,
             front=template.front,
             back=template.back,
+            hint1=template.hint1,
+            hint2=template.hint2,
         )

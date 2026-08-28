@@ -8,7 +8,6 @@ from src.application.use_cases import (
     DeleteDeckUseCase,
     GetCardsUseCase,
     GetCardUseCase,
-    GetStudyCardsUseCase,
     GetUserDecksUseCase,
     GetUserProfileUseCase,
     NewToStudyUseCase,
@@ -22,7 +21,6 @@ from src.application.use_cases import (
     ImportDeckUseCase,
     GetCloudDeckUseCase,
     GetCloudCardsUseCase,
-    GetCloudCardUseCase,
     GetPublicDecksUseCase,
     DeleteCloudDeckUseCase,
     CanTakeOwnershipUseCase,
@@ -49,7 +47,6 @@ class UseCaseProvider(Provider):
     get_cards = provide(GetCardsUseCase, scope=Scope.REQUEST)
 
     new_to_study = provide(NewToStudyUseCase, scope=Scope.REQUEST)
-    get_study_cards = provide(GetStudyCardsUseCase, scope=Scope.REQUEST)
     review_due_card = provide(ReviewDueCardsUseCase, scope=Scope.REQUEST)
     
     daily_rev_stats = provide(DailyReviewStatUseCase, scope=Scope.REQUEST)
@@ -60,7 +57,6 @@ class UseCaseProvider(Provider):
     import_deck = provide(ImportDeckUseCase, scope=Scope.REQUEST)
     get_cloud_deck = provide(GetCloudDeckUseCase, scope=Scope.REQUEST)
     get_cloud_cards = provide(GetCloudCardsUseCase, scope=Scope.REQUEST)
-    get_cloud_card = provide(GetCloudCardUseCase, scope=Scope.REQUEST)
     get_public_decks = provide(GetPublicDecksUseCase, scope=Scope.REQUEST)
     delete_cloud_deck = provide(DeleteCloudDeckUseCase, scope=Scope.REQUEST)
     can_take_ownership = provide(CanTakeOwnershipUseCase, scope=Scope.REQUEST)

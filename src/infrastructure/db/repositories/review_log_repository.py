@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, Dict, Optional
+from typing import Dict, Any, Dict, List, Optional
 from uuid import UUID
 from zoneinfo import ZoneInfo
 from sqlalchemy import select, func, case, extract
@@ -395,5 +395,33 @@ class SQLAlchemyReviewLogRepository(AbstractReviewLogRepository):
                 hourly_percentage[hr] = 0.0
 
         return hourly_percentage
+    
+    async def get_card_review_history(
+        self,
+        card_id: UUID,
+    ) -> List[Dict[str, Any]]:
+        stmt = (
+            select(
+                ReviewLogModel.review_datetime.label('review_datetime'),
+                ReviewLogModel.rating.label('rating'),
+                ReviewLogModel.new_difficulty.label('difficulty'),
+                ReviewLogModel.new_stability.label('stability'),
+                ReviewLogModel.review_duration.label('review_duration_ms'),
+            )
+            .where(ReviewLogModel.card_id == card_id)
+            .order_by(ReviewLogModel.review_datetime.asc())
+        )
 
+        result = await self.session.execute(stmt)
+        rows = result.all()
 
+        return [
+            {
+                'review_datetime': row.review_datetime,
+                'rating': row.rating,
+                'difficulty': row.difficulty,
+                'stability': row.stability,
+                'review_duration_ms': row.review_duration_ms,
+            }
+            for row in rows
+        ]

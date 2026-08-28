@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from src.domain.entities.deck.deck import Deck
+from src.domain.entities.card.card import Card
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,3 +20,4 @@ class UpdateDeckInput:
 @dataclass(frozen=True, slots=True)
 class UpdateDeckOutput:
     deck: Deck
+    due_cards: List[Card]

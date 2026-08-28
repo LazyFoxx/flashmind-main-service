@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from src.presentation.api.dto.v1.card import CardResponse
 from src.domain.entities import Card
 
 
@@ -13,114 +14,6 @@ class NewToStudyRequest(BaseModel):
     total: int = Field(
         description="Количество карточек которые нужно добавить к изучению"
     )
-
-
-# базовая модель карточки в обучении
-class StudyCardResponse(BaseModel):
-    id: str
-    deck_id: str
-    front: str
-    back: str
-    difficulty: Optional[float] = 0
-    stability: Optional[float] = 0
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": "123e4567-e89b-12d3-a456-426614174000",
-                    "deck_id": "123e4567-e89b-12d3-a456-426614174001",
-                    "front": "Любимый Настин напиток",
-                    "back": "Тот что с сарахозаменителем",
-                    "difficulty": "3.32344",
-                    "stability": "1,23434",
-                }
-            ]
-        }
-    }
-
-    @classmethod
-    def from_entity(cls, card: Card) -> "StudyCardResponse":
-        return cls(
-            id=str(card.id),
-            deck_id=str(card.deck_id),
-            front=card.front,
-            back=card.back,
-            difficulty=card.difficulty,
-            stability = card.stability,
-        )
-
-
-class StudyCardListResponse(BaseModel):
-    cards: List[StudyCardResponse]
-    total: int
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "cards": [
-                        {
-                            "id": "123e4567-e89b-12d3-a456-426614174000",
-                            "deck_id": "123e4567-e89b-12d3-a456-426614174001",
-                            "front": "Любовь",
-                            "back": "Это просто",
-                            "difficulty": "3.32344",
-                            "stability": "1,23434",
-                        },
-                        {
-                            "id": "123e4567-e89b-12d3-a456-426614174002",
-                            "deck_id": "123e4567-e89b-12d3-a456-426614174001",
-                            "front": "Смех",
-                            "back": "Ахахахаа ору",
-                            "difficulty": "3.32344",
-                            "stability": "1,23434",
-                        },
-                    ],
-                    "total": 100,
-                }
-            ]
-        }
-    }
-
-
-class StudyCardListWithStatsResponse(BaseModel):
-    total: int
-    in_learning: int
-    learned: int
-    learning_today: int
-    cards: List[StudyCardResponse]
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "cards": [
-                        {
-                            "id": "123e4567-e89b-12d3-a456-426614174000",
-                            "deck_id": "123e4567-e89b-12d3-a456-426614174001",
-                            "front": "Любовь",
-                            "back": "Это просто",
-                            "difficulty": "3.32344",
-                            "stability": "1,23434",
-                        },
-                        {
-                            "id": "123e4567-e89b-12d3-a456-426614174002",
-                            "deck_id": "123e4567-e89b-12d3-a456-426614174001",
-                            "front": "Смех",
-                            "back": "Ахахахаа ору",
-                            "difficulty": "3.32344",
-                            "stability": "1,23434",
-                        },
-                    ],
-                    "total": 100,
-                    "in_learning": 30,
-                    "learned": 30,
-                    "learning_today": 15,
-                }
-            ]
-        }
-    }
 
 
 class ReviewDueCardRequest(BaseModel):
@@ -139,6 +32,37 @@ class ReviewDueCardRequest(BaseModel):
                     "card_id": "123e4567-e89b-12d3-a456-426614174000",
                     "rating": 3,
                     "review_duration": 5000
+                }
+            ]
+        }
+    }
+
+class ReviewDueCardResponse(BaseModel):
+    card: CardResponse
+    success: bool = Field(
+        description="Успешность повтора True - карточку больше повторять не нужно, False - отправить на повтор сегодня"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "card": {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "deck_id": "UUID",
+                        "title": "Любовь",
+                        "front": "Что такое любовь",
+                        "back": "Это когда она в тебя высмаркивается",
+                        "hint1": None,
+                        "hint2": None,
+                        "difficulty": 3.32344,
+                        "stability": 1.23434,
+                        "in_learning": True,
+                        "card_template_id": None,
+                        "created_at": "2024-01-15T12:00:00Z",
+                        "updated_at": "2024-01-16T10:30:00Z",
+                    },
+                    "success": False
                 }
             ]
         }

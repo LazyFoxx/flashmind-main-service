@@ -30,8 +30,11 @@ class SQlAlchemyCloudCardTemplateRepository(AbstractCloudCardTemplateRepository)
             update(CloudCardTemplateModel)
             .where(CloudCardTemplateModel.id == card.id)
             .values(
+                title=card.title,
                 front=card.front,
                 back=card.back,
+                hint1=card.hint1,
+                hint2=card.hint2,
 
             )
         )

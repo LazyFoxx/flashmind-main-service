@@ -16,7 +16,7 @@ from src.application.interfaces import (
 from src.domain.entities import Card
 
 from src.application.use_cases.common.utils import get_current_datetime, get_study_cutoff
-from .dto import ReviewDueCardInput
+from .dto import ReviewDueCardInput, ReviewDueCardOutput
 
 
 class ReviewDueCardsUseCase:
@@ -25,7 +25,7 @@ class ReviewDueCardsUseCase:
         self.logger = structlog.get_logger(__name__)
 
 
-    async def execute(self, input_dto: ReviewDueCardInput) -> Card | None:
+    async def execute(self, input_dto: ReviewDueCardInput) -> ReviewDueCardOutput:
         """Логика повторения просроченной карточки"""
         
         
@@ -117,9 +117,9 @@ class ReviewDueCardsUseCase:
 
                 # 6. Определяем, возвращать ли карточку на повтор сейчас
                 if new_card.is_due(cutoff):
-                    return new_card
+                    return ReviewDueCardOutput(card=new_card, success=False)
                 else:
-                    return None
+                    return ReviewDueCardOutput(card=new_card, success=True)
 
             except CardNotExistsError:
                 raise
@@ -130,4 +130,3 @@ class ReviewDueCardsUseCase:
                     "Ошибка при извлечении или обновлении карточки", error=str(e)
                 )
                 raise
-

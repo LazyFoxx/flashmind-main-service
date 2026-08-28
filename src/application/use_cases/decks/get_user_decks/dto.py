@@ -8,6 +8,7 @@ from src.domain.entities import Deck
 @dataclass(frozen=True, slots=True)
 class GetUserDecksOutput:
     decks: List[Deck]
+    cards_on_study_by_deck: Optional[dict] = None 
 
 
 @dataclass(frozen=True, slots=True)

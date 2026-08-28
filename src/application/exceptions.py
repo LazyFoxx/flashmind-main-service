@@ -40,8 +40,8 @@ class UserIsNotAuthor(Exception):
 
 
 class CardAlreadyExistsError(Exception):
-    def __init__(self, front: str, deck_id: UUID):
-        self.front = front
+    def __init__(self, title: str, deck_id: UUID):
+        self.title = title
         self.deck_id = deck_id
 
 

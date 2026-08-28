@@ -16,7 +16,6 @@ from src.application.use_cases import (
     GetCloudDeckInput,
     GetCloudCardsUseCase,
     GetCloudCardsInput,
-    GetCloudCardUseCase,
     GetPublicDecksUseCase,
     DeleteCloudDeckUseCase,
     DeleteCloudDeckInput,
@@ -33,7 +32,6 @@ from src.presentation.api.dto.v1 import (
     ImportDeckResponse,
     ImportDeckRequest,
     CloudDeckResponse,
-    CloudTemplateCardResponse,
     PublicDecksResponse,
     PublicDeckPreviewResponse,
     CanTakeOwnershipResponse,
@@ -189,29 +187,6 @@ async def get_cloud_deck(
     cards = await get_cards_use_case.execute(input_dto=dto_cards)
     
     return CloudDeckResponse.from_entity(deck=deck.deck, author=author, cards=cards.cards)
-
-@router.get(
-    "/cards/{card_id}",
-    response_model=CloudTemplateCardResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Получить шаблон карточки по ее id",
-    description=("возвращает карточку со всеми основными полями"),
-
-)
-@inject
-async def get_card(
-    card_id: UUID,
-    use_case: FromDishka[GetCloudCardUseCase],
-    # user_id: UUID = Depends(get_current_user_id),
-) -> CloudTemplateCardResponse:
-
-    card = await use_case.execute(card_id=card_id)
-
-    return CloudTemplateCardResponse(
-        id=card.card_id, front=card.front, back=card.back
-    )
-
-
 
 @router.get(
     "",

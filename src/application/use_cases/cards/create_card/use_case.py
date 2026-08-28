@@ -21,8 +21,11 @@ class CreateCardUseCase:
         new_card = Card(
             id=uuid4(),
             deck_id=input_dto.deck_id,
+            title=input_dto.title,
             front=input_dto.front,
             back=input_dto.back,
+            hint1=input_dto.hint1,
+            hint2=input_dto.hint2,
             in_learning=False,
         )
 
@@ -37,23 +40,29 @@ class CreateCardUseCase:
                         deck_id=input_dto.deck_id, user_id=input_dto.user_id
                     )
 
-                # нельзя иметь две карты с одним и тем же front в одной колоде.
-                existing_card = await self.uow.cards.get_by_front(
-                    front=new_card.front, deck_id=new_card.deck_id
+                # нельзя иметь две карты с одним и тем же title в одной колоде.
+                existing_card = await self.uow.cards.get_by_title(
+                    title=new_card.title, deck_id=new_card.deck_id
                 )
                 if existing_card:
                     raise CardAlreadyExistsError(
-                        front=existing_card.front, deck_id=existing_card.deck_id
+                        title=existing_card.title, deck_id=existing_card.deck_id
                     )
 
                 # добавляем новою карточку
                 await self.uow.cards.add(card=new_card)
                 await self.uow.commit()
-                self.logger.info(
+                
+                # пере-загружаем, чтобы получить created_at из БД
+                new_card = await self.uow.cards.get_by_id(card_id=new_card.id)
+                
+                self.logger.debug(
                     "Карточка создана и добавлена в БД",
-                    front=new_card.front,
+                    title=new_card.title,
                     user_id=input_dto.user_id,
                 )
+                
+                
             except CardAlreadyExistsError:
                 raise
             except DeckNotExistsError:
@@ -64,8 +73,5 @@ class CreateCardUseCase:
                 raise
 
         return CreateCardOutput(
-            card_id=str(new_card.id),
-            deck_id=str(new_card.deck_id),
-            front=new_card.front,
-            back=new_card.back,
+            card=new_card
         )

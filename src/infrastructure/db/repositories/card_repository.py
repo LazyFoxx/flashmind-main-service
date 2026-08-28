@@ -22,11 +22,11 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         card_model = result.scalar_one_or_none()
         return card_model.to_entity() if card_model else None
 
-    async def get_by_front(
-        self, front: str, deck_id: Optional[UUID] = None
-     ) -> Optional[Card]:
+    async def get_by_title(
+        self, title: str, deck_id: Optional[UUID] = None
+        ) -> Optional[Card]:
         stmt = select(CardModel).where(
-            CardModel.front == front,
+            CardModel.title == title,
             CardModel.is_deleted == False,
          )
 
@@ -47,10 +47,13 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         if card._fsrs_card is None:
             stmt = (
                 update(CardModel)
-                 .where(CardModel.id == card.id)
-                 .values(
+                  .where(CardModel.id == card.id)
+                  .values(
+                    title=card.title,
                     front=card.front,
                     back=card.back,
+                    hint1=card.hint1,
+                    hint2=card.hint2,
                     fsrs_state=None,
                     next_due=None,
                     difficulty=None,
@@ -58,16 +61,20 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                     card_template_id=card.card_template_id,
                     is_deleted=card.is_deleted,
                     is_updated=card.is_updated,
-                 )
-             )
+                    is_suspended=card.is_suspended,
+                  )
+              )
             await self._update_deck_updated_at(card.deck_id)
         else:
             stmt = (
             update(CardModel)
-             .where(CardModel.id == card.id)
-             .values(
+              .where(CardModel.id == card.id)
+              .values(
+                title=card.title,
                 front=card.front,
                 back=card.back,
+                hint1=card.hint1,
+                hint2=card.hint2,
                 fsrs_state=card._fsrs_card.to_json(),
                 next_due=card._fsrs_card.due,
                 difficulty=card._fsrs_card.difficulty,
@@ -76,8 +83,9 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                 card_template_id=card.card_template_id,
                 is_deleted=card.is_deleted,
                 is_updated=card.is_updated,
-             )
-          )
+                is_suspended=card.is_suspended,
+              )
+           )
         await self.session.execute(stmt)
 
     async def delete(self, card_id: UUID) -> None:
@@ -104,77 +112,77 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
               # Обновляем updated_at у колоды
             await self._update_deck_updated_at(card_model.deck_id)
 
-    async def get_all_light_by_user_and_deck(
-        self,
-        user_id: UUID,
-        desk: bool = True,
-        deck_id: Optional[UUID] = None,
-        offset: Optional[int] = None,  # None = все
-        limit: Optional[int] = None,  # None = все
-        created_at: Optional[bool] = None,
-        difficulty: Optional[bool] = None,
-        stability: Optional[bool] = None,
+    # async def get_all_light_by_user_and_deck(
+    #     self,
+    #     user_id: UUID,
+    #     desk: bool = True,
+    #     deck_id: Optional[UUID] = None,
+    #     offset: Optional[int] = None,  # None = все
+    #     limit: Optional[int] = None,  # None = все
+    #     created_at: Optional[bool] = None,
+    #     difficulty: Optional[bool] = None,
+    #     stability: Optional[bool] = None,
         
 
-    ) -> List[tuple[UUID, UUID, str, Optional[float], Optional[float]]]:
+    # ) -> List[tuple[UUID, UUID, str, Optional[float], Optional[float]]]:
 
-        query = select(
-            CardModel.id,
-            CardModel.deck_id,
-            CardModel.front,
-            CardModel.difficulty,
-            CardModel.stability,
-         )
+    #     query = select(
+    #         CardModel.id,
+    #         CardModel.deck_id,
+    #         CardModel.front,
+    #         CardModel.difficulty,
+    #         CardModel.stability,
+    #      )
 
-        # Фильтруем только не удалённые карточки
-        query = query.where(CardModel.is_deleted == False)
+    #     # Фильтруем только не удалённые карточки
+    #     query = query.where(CardModel.is_deleted == False)
 
-        # Если есть deck_id, фильтруем по нему
-        if deck_id:
-            query = query.where(CardModel.deck_id == deck_id)
+    #     # Если есть deck_id, фильтруем по нему
+    #     if deck_id:
+        #     query = query.where(CardModel.deck_id == deck_id)
 
-        # Если deck_id не передан, фильтруем по пользователю через колоды
-        else:
-            query = (
-                query.join(
-                    DeckModel
-                )  # Присоединим DeckModel, чтобы фильтровать по колодам пользователя
-                .join(
-                    UserProfileModel
-                )  # Присоединим UserProfileModel, чтобы фильтровать по user_id
-                .where(DeckModel.user_id == user_id)
-            )
+        # # Если deck_id не передан, фильтруем по пользователю через колоды
+        # else:
+        #     query = (
+        #         query.join(
+        #             DeckModel
+        #         )  # Присоединим DeckModel, чтобы фильтровать по колодам пользователя
+        #         .join(
+        #             UserProfileModel
+        #         )  # Присоединим UserProfileModel, чтобы фильтровать по user_id
+        #         .where(DeckModel.user_id == user_id)
+        #     )
             
         
-        # сортировка
-        if created_at:
-            if desk:
-                query = query.order_by(desc(CardModel.created_at))
-            else:
-                query = query.order_by(CardModel.created_at)
-        elif difficulty:
-            if desk:
-                query = query.order_by(desc(CardModel.difficulty))
-            else:
-                query = query.order_by(CardModel.difficulty)
-        elif stability:
-            if desk:
-                query = query.order_by(desc(CardModel.stability))
-            else:
-                query = query.order_by(CardModel.stability)
-        else:
-            query = query.order_by(desc(CardModel.created_at))
+        # # сортировка
+        # if created_at:
+        #     if desk:
+        #         query = query.order_by(desc(CardModel.created_at))
+        #     else:
+        #         query = query.order_by(CardModel.created_at)
+        # elif difficulty:
+        #     if desk:
+        #         query = query.order_by(desc(CardModel.difficulty))
+        #     else:
+        #         query = query.order_by(CardModel.difficulty)
+        # elif stability:
+        #     if desk:
+        #         query = query.order_by(desc(CardModel.stability))
+        #     else:
+        #         query = query.order_by(CardModel.stability)
+        # else:
+        #     query = query.order_by(desc(CardModel.created_at))
                 
 
-        if limit is not None:
-            query = query.offset(offset).limit(limit)
+        # if limit is not None:
+        #     query = query.offset(offset).limit(limit)
 
-        result = await self.session.execute(query)
-        rows = result.fetchall()
+        # result = await self.session.execute(query)
+        # rows = result.fetchall()
 
-        # Преобразуем результат в список кортежей
-        cards = [(row.id, row.deck_id, row.front, row.difficulty, row.stability) for row in rows]
-        return cards
+        # # Преобразуем результат в список кортежей
+        # cards = [(row.id, row.deck_id, row.front, row.difficulty, row.stability) for row in rows]
+        # return cards
 
     async def get_total_cards_by_deck_id(self, deck_id: UUID) -> int:
         query = select(func.count(CardModel.id)).where(
@@ -213,12 +221,16 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         in_learning: Optional[bool] = None,
         limit: Optional[int] = None,
         include_deleted: bool = False,
+        include_suspended: bool = True, 
     ) -> List[Card]:
 
          # Базовый запрос, выбираем все карточки в колоде
         query = select(CardModel).where(
             CardModel.deck_id == deck_id,
          )
+        
+        if include_suspended:
+            query = query.where(CardModel.is_suspended == False)
         
         if not include_deleted:
             query = query.where(CardModel.is_deleted == False)
@@ -249,6 +261,7 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
              .where(CardModel.deck_id == deck_id)
              .where(CardModel.next_due <= due_before)
              .where(CardModel.is_deleted == False)
+             .where(CardModel.is_suspended == False)
              .order_by(CardModel.next_due.asc())
          )
 
@@ -261,34 +274,34 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
         return [card_model.to_entity() for card_model in card_models]
     
 
-    async def get_total_due_cards_by_deck_ids(
-        self,
-        deck_ids: List[UUID],
-        due_before: datetime,
-    ) -> List[Tuple[UUID, int]]:
-        """
-        Возвращает список кортежей (deck_id, total_due_cards) для указанных колод.
-        total_due_cards — это количество карт, у которых next_due <= due_before.
-        """
+    # async def get_total_due_cards_by_deck_ids(
+    #     self,
+    #     deck_ids: List[UUID],
+    #     due_before: datetime,
+    # ) -> List[Tuple[UUID, int]]:
+    #     """
+    #     Возвращает список кортежей (deck_id, total_due_cards) для указанных колод.
+    #     total_due_cards — это количество карт, у которых next_due <= due_before.
+    #     """
 
-        query = (
-            select(
-                CardModel.deck_id,
-                func.count(
-                    CardModel.id
-                  ).label("due_count"),
-              )
-              .where(CardModel.deck_id.in_(deck_ids))
-              .where(CardModel.next_due.isnot(None))
-              .where(CardModel.next_due <= due_before)
-              .where(CardModel.is_deleted == False)
-              .group_by(CardModel.deck_id)
-          )
+    #     query = (
+    #         select(
+    #             CardModel.deck_id,
+    #             func.count(
+    #                 CardModel.id
+    #               ).label("due_count"),
+    #           )
+    #           .where(CardModel.deck_id.in_(deck_ids))
+    #           .where(CardModel.next_due.isnot(None))
+    #           .where(CardModel.next_due <= due_before)
+    #           .where(CardModel.is_deleted == False)
+    #           .group_by(CardModel.deck_id)
+    #       )
 
-        result = await self.session.execute(query)
-        rows = result.fetchall()
+    #     result = await self.session.execute(query)
+    #     rows = result.fetchall()
         
-        return [(row.deck_id, row.due_count) for row in rows]
+    #     return [(row.deck_id, row.due_count) for row in rows]
     
     async def _update_deck_updated_at(self, deck_id: UUID) -> None:
         """Обновляет updated_at у указанной колоды."""
@@ -481,8 +494,10 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
             stability = row.stability
             difficulty = row.difficulty
             count = row.count
-
-            if not in_learning:
+            
+            if row.is_suspended:
+                distribution['suspended'] += count
+            elif not in_learning:
                 # in_learning = False → новые
                 distribution['new'] += count
             else:

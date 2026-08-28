@@ -11,3 +11,8 @@ class ReviewDueCardInput:
     card_id: UUID
     rating: int
     review_duration: int
+
+@dataclass(frozen=True, slots=True)
+class ReviewDueCardOutput:
+    card: Card
+    success: bool

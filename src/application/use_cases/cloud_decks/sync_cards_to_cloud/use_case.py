@@ -72,8 +72,20 @@ class SyncCardsToCloudUseCase:
                  # Если у карточки есть шаблон -> обновляем эталон
                 if card.card_template_id  in templates_map:
                     template = templates_map[card.card_template_id]
-                    if template.front != card.front or template.back != card.back:
-                        template = template.set_front_and_back(front=card.front, back=card.back)
+                    if (
+                        template.front != card.front
+                        or template.back != card.back
+                        or template.title != card.title
+                        or template.hint1 != card.hint1
+                        or template.hint2 != card.hint2
+                    ):
+                        template = template.set_content(
+                            front=card.front,
+                            back=card.back,
+                            title=card.title,
+                            hint1=card.hint1,
+                            hint2=card.hint2,
+                        )
                         await self.uow.cloud_cards.update(template)
                         updated_count += 1
                 else:
@@ -82,9 +94,12 @@ class SyncCardsToCloudUseCase:
                     new_template = CloudCardTemplate(
                         id=new_template_id,
                         cloud_deck_id=cloud_deck_id,
+                        title=card.title,
                         front=card.front,
                         back=card.back,
-                     )
+                        hint1=card.hint1,
+                        hint2=card.hint2,
+                    )
                     await self.uow.cloud_cards.add(new_template)
                     card = card.set_card_template_id(card_template_id=new_template_id)
                     await self.uow.cards.update(card)
@@ -132,9 +147,21 @@ class SyncCardsToCloudUseCase:
                     local_card = local_cards_map[template.id]
                     
                     # ПРОВЕРКА В ПАМЯТИ — не лезем в БД без необходимости
-                    if local_card.front != template.front or local_card.back != template.back:
+                    if (
+                        local_card.front != template.front
+                        or local_card.back != template.back
+                        or local_card.title != template.title
+                        or local_card.hint1 != template.hint1
+                        or local_card.hint2 != template.hint2
+                    ):
                         if not local_card.is_updated and not local_card.is_deleted:
-                            updated_card = local_card._copy(front=template.front, back=template.back)
+                            updated_card = local_card._copy(
+                                front=template.front,
+                                back=template.back,
+                                title=template.title,
+                                hint1=template.hint1,
+                                hint2=template.hint2,
+                            )
                             await self.uow.cards.update(updated_card)
                             updated_count += 1
 
@@ -144,8 +171,11 @@ class SyncCardsToCloudUseCase:
                         id=uuid4(), # Новый локальный ID
                         deck_id=deck_id,
                         card_template_id=template.id,
+                        title=template.title,
                         front=template.front,
                         back=template.back,
+                        hint1=template.hint1,
+                        hint2=template.hint2,
                      )
                     await self.uow.cards.add(new_card)
                     added_count += 1

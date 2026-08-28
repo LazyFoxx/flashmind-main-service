@@ -18,42 +18,43 @@ from src.application.use_cases import (
 
 from src.presentation.api.dependencies.auth import get_current_user_id
 from src.presentation.api.dto.v1 import (
-    CardLightResponse,
     CardListResponse,
     CardResponse,
     CreateCardRequest,
     ErrorMessageResponse,
     UpdateCardRequest,
+    CardDetailResponse,
 )
 
 router = APIRouter(prefix="/cards", tags=["cards"])
 
 
 @router.get(
-    "/{card_id}",
-    response_model=CardResponse,
+     "/{card_id}",
+    response_model=CardDetailResponse,
     status_code=status.HTTP_200_OK,
     summary="Получить карточку по ее id",
-    description=("возвращает карточку со всеми основными полями"),
+    description=("возвращает карточку со всеми полями включая историю ревью"),
     responses={
-        404: {
-            "model": ErrorMessageResponse,
-            "description": "Карточка не найдена",
-        },
-    },
+         404: {
+              "model": ErrorMessageResponse,
+              "description": "Карточка не найдена",
+          },
+      },
 )
 @inject
 async def get_card(
     card_id: UUID,
     use_case: FromDishka[GetCardUseCase],
     user_id: UUID = Depends(get_current_user_id),
-) -> CardResponse:
+) -> CardDetailResponse:
 
-    card = await use_case.execute(card_id=card_id)
+    result = await use_case.execute(card_id=card_id, user_id=user_id)
 
-    return CardResponse(
-        id=card.card_id, deck_id=card.deck_id, front=card.front, back=card.back
-    )
+    return CardDetailResponse.from_entity(
+        result.card,
+        review_stats=result.review_stats,
+      )
 
 
 @router.post(
@@ -61,11 +62,11 @@ async def get_card(
     response_model=CardResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Создать новую карточку",
-    description=("Создает новую карточку с front ( уникальное для колоды )"),
+    description=("Создает новую карточку (title - уникально для колоды)"),
     responses={
         409: {
             "model": ErrorMessageResponse,
-            "description": "Карточка с таким front уже существует в этой колоде",
+            "description": "Карточка с таким title уже существует в этой колоде",
         },
         404: {
             "model": ErrorMessageResponse,
@@ -80,23 +81,29 @@ async def create_card(
     user_id: UUID = Depends(get_current_user_id),
 ) -> CardResponse:
     dto = CreateCardInput(
-        user_id=user_id, deck_id=payload.deck_id, front=payload.front, back=payload.back
+        user_id=user_id,
+        deck_id=payload.deck_id,
+        title=payload.title,
+        front=payload.front,
+        back=payload.back,
+        hint1=payload.hint1,
+        hint2=payload.hint2,
     )
-    card = await use_case.execute(input_dto=dto)
+    
+    result = await use_case.execute(input_dto=dto)
 
-    return CardResponse(
-        id=card.card_id, deck_id=card.deck_id, front=card.front, back=card.back
-    )
+    return CardResponse.from_entity(result.card)
 
 
 @router.put(
-    "/{card_id}",
+     "/{card_id}",
     response_model=CardResponse,
     status_code=status.HTTP_200_OK,
-    summary="Обновить поля карточки",
+    summary="Обновить поля карточки (partial update)",
     description=(
-        "Частично изменяет карточку. Даже если обновляется одно поле - обязательно отправлять все поля в том числе не измененные"
-    ),
+        "Частично изменяет карточку. Передавай только те поля, которые хочешь обновить. "
+        "Непереданные поля останутся без изменений."
+     ),
     responses={
         404: {
             "model": ErrorMessageResponse,
@@ -114,14 +121,16 @@ async def update_card(
     dto = UpdateCardInput(
         user_id=user_id,
         card_id=card_id,
+        title=payload.title,
         front=payload.front,
         back=payload.back,
+        hint1=payload.hint1,
+        hint2=payload.hint2,
+        is_suspended=payload.is_suspended,
     )
-    card = await use_case.execute(input_dto=dto)
+    result = await use_case.execute(input_dto=dto)
 
-    return CardResponse(
-        id=card.card_id, deck_id=card.deck_id, front=card.front, back=card.back
-    )
+    return CardResponse.from_entity(result.card)
 
 
 @router.delete(
@@ -149,7 +158,7 @@ async def delete_card(
 @router.get(
     "",
     response_model=CardListResponse,
-    summary="Получить все карточки пользователя, или по колоде ( опционально с пагинацией )",
+    summary="Получить все карточки пользователя по колоде",
     description=(""),
     status_code=200,
 )
@@ -157,41 +166,18 @@ async def delete_card(
 async def get_cards(
     use_case: FromDishka[GetCardsUseCase],
     user_id: UUID = Depends(get_current_user_id),
-    deck_id: Optional[UUID] = Query(
+    deck_id: UUID = Query(
         None,
-        description="фильтр по id колод, если не указан то выводит карточки по всем колодам пользователя",
+        description="фильтр по id колод",
     ),
-    page: Optional[int] = Query(None, ge=1, description="Номер страницы (None = все)"),
-    per_page: Optional[int] = Query(
-        None, ge=1, le=500, description="Карточек на странице (None = все)"
-    ),
-    sort_by: Optional[str] = Query(
-        None,
-        description="Поле для сортировки: 'created_at', 'difficulty', 'stability'",
-    ),
-    sort_order: Optional[str] = Query(
-        None,
-        description="Направление сортировки: 'asc' или 'desc'",
-    ),
-    
     
 ) -> CardListResponse:
     dto = GetCardsInput(user_id=user_id,
                         deck_id=deck_id,
-                        page=page,
-                        per_page=per_page,
-                        sort_by=sort_by,
-                        sort_order=sort_order
                         )
-
+    
     result = await use_case.execute(dto)
 
     return CardListResponse(
-        cards=[
-            CardLightResponse(id=str(card[0]), deck_id=str(card[1]), front=str(card[2]), difficulty=card[3], stability=card[4])
-            for card in result.cards
-        ],
-        total=result.total,
-        page=page,
-        per_page=per_page,
+        cards=[CardResponse.from_entity(card) for card in result.cards],
     )

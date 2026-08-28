@@ -57,19 +57,21 @@ class GetUserDecksUseCase:
             now = get_current_datetime(user.timezone)
             cutoff = get_study_cutoff(now)
             
-            # Получаем количество просроченных карт по всем колодам
-            list_deck_id_and_due_cards = (
-                await self.uow.cards.get_total_due_cards_by_deck_ids(deck_ids=deck_ids, due_before=cutoff)
-            )
-
-            # Исправлено: используем dict() для преобразования списка кортежей в словарь
+            # используем dict() для преобразования списка кортежей в словарь
             cards_count_map = dict(list_deck_id_and_total_cards)
-            cards_due_count_map = dict(list_deck_id_and_due_cards)
+            
+            cards_on_study_by_deck: dict = {}
+            for deck in decks:
+                due_cards = await self.uow.cards.get_due_cards(
+                    deck_id=deck.id,
+                    due_before=cutoff,
+                )
+                cards_on_study_by_deck[str(deck.id)] = due_cards
             
             decks_with_total_cards = []
             for deck in decks:
                 total_cards = cards_count_map.get(deck.id, 0)
-                due_cards_count = cards_due_count_map.get(deck.id, 0)
+                due_cards_count = len(cards_on_study_by_deck[str(deck.id)])
                 
                 updated_deck = deck.with_updated_total_cards(new_total_cards=total_cards)
                 updated_deck = updated_deck.with_updated_due_cards_count(new_due_cards_count=due_cards_count)
@@ -85,4 +87,5 @@ class GetUserDecksUseCase:
             
         # self.logger.debug(f"Найдено {len(decks)} колоды", user_id=input_dto.user_id)
 
-        return GetUserDecksOutput(decks=decks_with_total_cards)
+        return GetUserDecksOutput(decks=decks_with_total_cards,
+                                  cards_on_study_by_deck=cards_on_study_by_deck,)

@@ -37,11 +37,6 @@ class UpdateDeckUseCase:
                 now = get_current_datetime(user_tz)
                 cutoff = get_study_cutoff(now)
                 
-                 # Получаем количество просроченных карт по всем колонам
-                list_deck_id_and_due_cards = (
-                    await self.uow.cards.get_total_due_cards_by_deck_ids(deck_ids=deck_ids, due_before=cutoff)
-                  )
-                
                  # Получаем существующую колоду с проверкой по user_id
                 deck = await self.uow.decks.get_by_id(input_dto.deck_id, user_id=input_dto.user_id)
                 
@@ -52,7 +47,11 @@ class UpdateDeckUseCase:
 
                  # Вычисляем новые значения total_cards и due_cards_count
                 total_cards = list_deck_id_and_total_cards[0][1] if list_deck_id_and_total_cards else 0
-                due_cards_count = list_deck_id_and_due_cards[0][1] if list_deck_id_and_due_cards else 0
+                
+                due_cards = await self.uow.cards.get_due_cards(
+                                    deck_id=deck.id,
+                                    due_before=cutoff,
+                                )
                 
                  # Используем _copy() для обновления только изменяемых полей,
                  # сохраняя все облачные параметры без изменений
@@ -63,7 +62,7 @@ class UpdateDeckUseCase:
                     maximum_interval=input_dto.maximum_interval,
                     color=input_dto.color,
                     total_cards=total_cards,
-                    due_cards_count=due_cards_count,
+                    due_cards_count=len(due_cards),
                  )
 
                 await self.uow.decks.update(updated_deck)
@@ -79,5 +78,6 @@ class UpdateDeckUseCase:
                 raise
 
         return UpdateDeckOutput(
-            deck=updated_deck
+            deck=updated_deck,
+            due_cards=due_cards
          )

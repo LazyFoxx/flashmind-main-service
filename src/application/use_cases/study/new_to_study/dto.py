@@ -14,5 +14,4 @@ class NewToStudyInput:
 
 @dataclass(frozen=True, slots=True)
 class NewToStudyOutput:
-    total: int
     cards: List[Card]

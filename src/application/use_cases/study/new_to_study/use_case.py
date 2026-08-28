@@ -33,17 +33,6 @@ class NewToStudyUseCase:
                         deck_id=input_dto.deck_id, user_id=input_dto.user_id
                     )
 
-                # получаем timezone пользователя и cutoff
-                user = await self.uow.users.get_by_id(input_dto.user_id)
-                user_tz = user.timezone if user else "UTC"
-                now = get_current_datetime(user_tz)
-                cutoff = get_study_cutoff(now)
-                
-                # извлекаем карточки для повторения сегодня
-                cards = await self.uow.cards.get_due_cards(
-                    input_dto.deck_id, due_before=cutoff
-                )
-                
                 # извлекаем новые карточки из колоды
                 new_cards = await self.uow.cards.get_by_deck_id(
                     deck_id=input_dto.deck_id, in_learning=False, limit=input_dto.total
@@ -60,11 +49,6 @@ class NewToStudyUseCase:
 
                 await self.uow.commit()
 
-
-
-                # складываем карточки на повтор и новые карточки к изучению
-                total_cards = cards + learning_cards
-
             except DeckNotExistsError:
                 raise
             except Exception as e:
@@ -74,4 +58,4 @@ class NewToStudyUseCase:
                 )
                 raise
 
-        return NewToStudyOutput(total=len(total_cards), cards=total_cards)
+        return NewToStudyOutput(cards=learning_cards)

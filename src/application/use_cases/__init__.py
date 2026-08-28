@@ -7,7 +7,6 @@ from .decks.create_deck.use_case import CreateDeckInput, CreateDeckUseCase
 from .decks.delete_deck.use_case import DeleteDeckInput, DeleteDeckUseCase
 from .decks.get_user_decks.use_case import GetUserDecksUseCase, GetUserDecksInput
 from .decks.update_deck.use_case import UpdateDeckInput, UpdateDeckUseCase
-from .study.get_study_cards.use_case import GetStudyCardsInput, GetStudyCardsUseCase
 from .study.new_to_study.use_case import NewToStudyInput, NewToStudyUseCase
 from .study.review_due_card.use_case import ReviewDueCardInput, ReviewDueCardsUseCase
 from .users.create_user_profile.use_case import CreateUserProfileUseCase, CreateUserProfileInput
@@ -20,7 +19,6 @@ from .cloud_decks.sync_cards_to_cloud.use_case import SyncCardsToCloudInput, Syn
 from .cloud_decks.import_deck.use_case import ImportDeckInput, ImportDeckUseCase
 from .cloud_decks.get_cloud_deck.use_case import GetCloudDeckInput, GetCloudDeckUseCase
 from .cloud_cards.get_cloud_cards.use_case import GetCloudCardsUseCase, GetCloudCardsInput
-from .cloud_cards.get_cloud_card.use_case import GetCloudCardUseCase
 from .cloud_decks.get_public_decks.use_case import GetPublicDecksUseCase, PublicDecksListOutput
 from .cloud_decks.delete_cloud_deck.use_case import DeleteCloudDeckUseCase, DeleteCloudDeckInput
 from .cloud_decks.can_take_ownership.use_case import CanTakeOwnershipUseCase, CanTakeOwnershipInput
@@ -40,7 +38,6 @@ __all__ = [
     "DeleteCardInput", "DeleteCardUseCase",
     "GetCardsInput", "GetCardsUseCase",
     "NewToStudyInput", "NewToStudyUseCase",
-    "GetStudyCardsInput", "GetStudyCardsUseCase",
     "ReviewDueCardInput", "ReviewDueCardsUseCase",
     "DailyReviewStatInput", "DailyReviewStatUseCase",
     "EnableSharingInput", "EnableSharingUseCase",

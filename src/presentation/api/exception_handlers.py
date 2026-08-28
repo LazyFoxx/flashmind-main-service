@@ -77,7 +77,7 @@ async def cloud_deck_not_exist(request: Request, exc: CloudDeckNotExistsError) -
 async def card_exist(request: Request, exc: CardAlreadyExistsError) -> JSONResponse:
     logger.warning(
         "Карточка с таким front уже существует",
-        front=exc.front,
+        front=exc.title,
         deck_id=str(exc.deck_id),
     )
     return JSONResponse(

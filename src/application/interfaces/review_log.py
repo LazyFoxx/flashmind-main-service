@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 from dataclasses import dataclass
 from datetime import datetime
@@ -167,6 +167,14 @@ class AbstractReviewLogRepository(ABC):
         Returns:
             Словарь {hour_range: percentage}
         """
+        ...
+    
+    @abstractmethod
+    async def get_card_review_history(
+        self,
+        card_id: UUID,
+    ) -> List[Dict[str, Any]]:
+        """Получить историю ревью для конкретной карточки."""
         ...
 
 

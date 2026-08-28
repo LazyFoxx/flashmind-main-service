@@ -15,29 +15,40 @@ class Card:
 
     id: UUID
     deck_id: UUID
-    front: str
-    back: str
+    title: str
+    front: Any
+    back: Any
+    hint1: Optional[str] = None
+    hint2: Optional[str] = None
     difficulty: Optional[float] = None
     stability: Optional[float] = None
     in_learning: bool = False
     _fsrs_card: Optional[FSRS_Card] = None
     
-    card_template_id: Optional[UUID] = None   # Ссылка на шаблон из облака (nullable)
+    card_template_id: Optional[UUID] = None    # Ссылка на шаблон из облака (nullable)
     is_deleted: bool = False                  # Мягкое удаление
     is_updated: bool = False
+    is_suspended: bool = False 
+    
+    created_at: Optional[datetime] = None       # Дата создания (из БД)
 
     def _copy(self, **kwargs: Any) -> "Card":
         """Создаёт копию текущей карточки с возможностью изменения некоторых параметров."""
         return Card(
             id=self.id,
             deck_id=self.deck_id,
+            title=kwargs.get("title", self.title),
             front=kwargs.get("front", self.front),
             back=kwargs.get("back", self.back),
+            hint1=kwargs.get("hint1", self.hint1),
+            hint2=kwargs.get("hint2", self.hint2),
             card_template_id=self.card_template_id,
             is_deleted=self.is_deleted,
             is_updated=self.is_updated,
+            is_suspended=kwargs.get("is_suspended", self.is_suspended),
             in_learning=kwargs.get("in_learning", self.in_learning),
             _fsrs_card=kwargs.get("_fsrs_card", self._fsrs_card),
+            created_at=self.created_at,
         )
     
 
@@ -45,10 +56,10 @@ class Card:
         """Бизнес-метод: переводит карточку в состояние обучения и назначает ей параметры FSRS или сбрасывает в None"""
 
         if in_learning:
-            # Возвращаем новую карточку с FSRS
+             # Возвращаем новую карточку с FSRS
             return self._copy(in_learning=True, _fsrs_card=FSRS_Card())
 
-        # Возвращаем карточку без FSRS, завершая процесс обучения
+         # Возвращаем карточку без FSRS, завершая процесс обучения
         return self._copy(in_learning=False, _fsrs_card=None)
 
     def review(self, scheduler: Scheduler, rating: Rating) -> tuple["Card", ReviewLog]:
@@ -62,10 +73,18 @@ class Card:
             Card(
                 id=self.id,
                 deck_id=self.deck_id,
+                title=self.title,
                 front=self.front,
                 back=self.back,
+                hint1=self.hint1,
+                hint2=self.hint2,
                 in_learning=self.in_learning,
                 _fsrs_card=new_fsrs,
+                card_template_id=self.card_template_id,
+                is_deleted=self.is_deleted,
+                is_updated=self.is_updated,
+                is_suspended=self.is_suspended,
+                created_at=self.created_at,
             ),
             review_log,
         )
@@ -85,3 +104,7 @@ class Card:
     def set_is_updated_true(self) -> "Card":
         """устанавливает is_updated = True."""
         return replace(self, is_updated=True)
+    
+    def set_is_suspended(self, is_suspended: bool) -> "Card":
+        """Устанавливает/убирает флаг отложенной карточки."""
+        return replace(self, is_suspended=is_suspended)
