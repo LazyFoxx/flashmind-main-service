@@ -469,14 +469,15 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
                 .where(DeckModel.user_id == user_id)
             )
 
-        # Группируем по in_learning, stability, difficulty
+        # Группируем по in_learning, stability, difficulty, is_suspended
         query = (
             query.group_by(
                 CardModel.in_learning,
                 CardModel.stability,
                 CardModel.difficulty,
-            )
-        )
+                CardModel.is_suspended,
+             )
+          )
 
         result = await self.session.execute(query)
         rows = result.fetchall()
