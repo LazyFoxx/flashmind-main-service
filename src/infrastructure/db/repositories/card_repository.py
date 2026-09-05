@@ -450,8 +450,9 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
             CardModel.in_learning,
             CardModel.stability,
             CardModel.difficulty,
+            CardModel.is_suspended,
             func.count(CardModel.id).label("count"),
-        )
+         )
 
         # Фильтруем только не удалённые карточки
         query = query.where(CardModel.is_deleted == False)
@@ -493,9 +494,10 @@ class SQlAlchemyCardRepository(AbstractCardRepository):
             in_learning = row.in_learning
             stability = row.stability
             difficulty = row.difficulty
+            is_suspended = row.is_suspended
             count = row.count
             
-            if row.is_suspended:
+            if is_suspended:
                 distribution['suspended'] += count
             elif not in_learning:
                 # in_learning = False → новые
